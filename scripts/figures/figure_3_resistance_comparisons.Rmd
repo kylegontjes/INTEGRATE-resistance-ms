@@ -1,0 +1,207 @@
+---
+title: "Figure 3: Differences in resistance"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+```
+
+# Environment
+
+```{r}
+# Packages
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ComplexHeatmap",'ggalluvial')
+lapply(packages,library,character.only=T)
+
+# Functions
+source("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/lib/consistent_themes.R")
+
+# Print environment
+Sys.info()
+sessionInfo()
+```
+
+# Load data
+
+```{r}
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
+  
+df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
+df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
+
+df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123 <- df%>% subset(study == "2021-23")
+
+MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
+resistance_vars <- paste0(MIC_variables,"_dich_num")  
+```
+
+# Scripts
+```{r}
+get_chisq_flag <- function(variable,df,comparitor){
+  data_table <- table(df[[variable]],df[[comparitor]],useNA = 'no') 
+  test <- if(sum(unlist(data_table) <5)>0){
+    fisher.test(data_table,simulate.p.value = T)
+  } else {
+    chisq.test(data_table)
+  }
+  
+  sig_results <- data.frame(variable = variable,
+                              p_value = test$p.value,
+                              test = ifelse(class(test)=="htest" & test$method == "Fisher's Exact Test for Count Data","Fisher's Exact Test","Chi-squared"),
+                              stars = ifelse(test$p.value < 0.05,"*",""))
+ 
+  # If not tested
+  if(variable %in% paste0(c("FDC","CT","OMC","ERV","DLX"),"_dich_num") & comparitor == 'study'){
+   sig_results$stars <- "NA"
+    
+  }
+  sig_results
+  
+}
+
+get_resistance_freq <- function(variable,df){
+  if(!variable %in% colnames(df)){
+    freq <- NA
+    prop <- NA
+    freq_prop <- "Not tested"
+  results <- cbind.data.frame(variable = variable,data.frame(freq,prop,freq_prop) )
+  } else {
+  n <- sum(is.na(df[[variable]])==F)
+  freq <- sum(df[,variable],na.rm = T)
+  sus <- n-freq
+  prop <- round(freq / n *100,2) 
+  freq_prop <- paste0(freq,' (',prop,'%)')
+  results <- cbind.data.frame(variable = variable,n=n,sus=sus,data.frame(freq,prop,freq_prop)) 
+    
+  }
+  return(results)
+}
+algorithm <- function(overall_df,comparitor,df1,df2,df1name,df2name,population,resistance_order){
+
+sig_results <-lapply(resistance_vars,FUN=function(x){get_chisq_flag(x,df = overall_df,comparitor = comparitor)}) %>% do.call(rbind.data.frame,.)
+
+df1_res <- lapply(resistance_vars,get_resistance_freq,df1) %>% do.call(rbind,.) %>% mutate(dataset = df1name)
+df2_res <- lapply(resistance_vars,get_resistance_freq,df2) %>% do.call(rbind,.) %>% mutate(dataset = df2name)
+res_comps <- rbind(df1_res,df2_res) %>% left_join(.,sig_results)
+
+res_comps$variable <- factor(res_comps$variable ,levels=resistance_vars)
+res_comps$name <- recode(res_comps$variable,
+                         "CZA_dich_num"='Ceftazidime-avibactam',
+                         "CST_dich_num"='Colistin', 
+                         'MERO_dich_num'='Meropenem',
+                         'IMI_dich_num'='Imipenem',
+                         "blbli_dich_num"='BL/BLI agents',
+                         "MVB_dich_num"='Meropenem-vaborbactam',
+                         "IR_dich_num"='Imipenem-relebactam',
+                         "PLZ_dich_num"='Plazomicin',
+                         "TMP_SMX_dich_num"='Trimethoprim-Sulfamethoxazole',
+                         "OMC_dich_num" = "Omadacycline",
+                         "DLX_dich_num" = "Delafloxacin",
+                         "ERV_dich_num" = "Eravacycline",
+                         "FOS_dich_num" = "Fosfomycin",
+                         "CT_dich_num" = "Ceftolozane-tazobactam",
+                         "FDC_dich_num"="Cefiderocol")
+ 
+
+res_comps$name <- factor(res_comps$name,levels = resistance_order)
+
+if(comparitor == 'study'){
+  scale <-  study_color_fill
+  res_comps$dataset <- factor(res_comps$dataset,levels = c("2021-23","2014-15"))
+} else {
+  scale <- ST_scale_fill
+  res_comps$dataset <- factor(res_comps$dataset,levels = c("Not ST258","ST258"))
+} 
+ 
+ggplot(data=res_comps,aes(y=name,x=prop,fill=dataset)) + 
+  geom_bar(stat='identity', position=position_dodge()) + 
+  ylab("") + 
+  xlab("Percentage")  + 
+  theme_bw_me + 
+  theme(legend.position = "bottom",
+        axis.text =   element_text(size=9, color="black"),
+        axis.title = element_text(size = 9, color="black"),
+        legend.text =   element_text(size=9, color="black"),
+        legend.title = element_text(size = 11, color="black"),
+        plot.title = element_text(size = 11,color="black")
+) + scale  +  geom_text(
+  data = res_comps %>% group_by(variable) %>% subset(stars == "*") %>% 
+    summarise(name = first(name), stars = first(stars), max_prop = max(prop, na.rm = TRUE),min_prop = min(prop)) %>% mutate(min_prop = ifelse(is.na(min_prop) ==T,0,min_prop)),
+  aes(x =  max_prop + 12.5, y = name, label = stars,hjust = 0.5,vjust = 0.5),size = 3.5,hjust = 0.5,vjust=0.5,
+  inherit.aes = FALSE, hjust = 0
+)    +  geom_text(
+  data = res_comps %>% group_by(variable) %>% subset(stars == "NA") %>% 
+    summarise(name = first(name), stars = first(stars)),
+  aes(x =  3, y = name, label = stars,hjust = 0.5,vjust = 0),size = 2.75,hjust = 0.5,vjust=0,
+  inherit.aes = FALSE, hjust = 0
+  )   + 
+  geom_text(
+    aes(x = prop  , y = name, label = freq),
+    position = position_dodge(width = 0.9),
+    hjust = -0.05,
+    size = 2.75
+  ) + labs(title = population) +xlim(NA,110.01) + scale_x_continuous(breaks = c(0,20,40,60,80,100))
+}
+```
+
+# A. Kpneumoniae 2014-15 vs. 2021-23
+```{r}
+df_kpn <- subset(df,Species == "Klebsiella pneumoniae")
+df_kpn_201415 <-  subset(df_kpn,Species == "Klebsiella pneumoniae" & study == '2014-15')
+df_kpn_202123 <- subset(df_kpn,Species == "Klebsiella pneumoniae" & study == '2021-23')
+A <- algorithm(overall_df = df_kpn,comparitor = 'study',df1 = df_kpn_201415,df2 = df_kpn_202123,df1name = '2014-15',df2name = '2021-23',population = "Both studies")
+A
+```
+
+# B. Kpneumoniae ST258 2014-15 vs. 2021-23
+```{r}
+df_kpn_ST258 <- subset(df,Species == "Klebsiella pneumoniae" & ST=='258')
+df_kpn_ST258_201415 <-  subset(df_kpn_ST258,study == '2014-15')
+df_kpn_ST258_202123 <- subset(df_kpn_ST258,study == '2021-23')
+B <- algorithm(overall_df = df_kpn_ST258,comparitor = 'study',df1 = df_kpn_ST258_201415,df2 = df_kpn_ST258_202123,df1name = '2014-15',df2name = '2021-23',population = "ST258 isolates")
+B
+```
+
+# C.2021-23 Kpneumoniae ST258  vs. Non ST258
+```{r} 
+# Scale
+OLD_ST <- unique(df_201415$Species_ST) %>% sort
+new_ST <- unique(df_202123$Species_ST) %>% sort 
+ST_over_1 <- table(df$Species_ST) %>% subset(.>1) %>% names
+
+df$Species_ST_new <- ifelse(df$Species_ST %in% c(ST_over_1),df$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.)
+                                          
+break_of_sts <-  c(sort(unique(df$Species_ST_new %>% subset(.!="Singleton STs"))),"Singleton STs")
+break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
+       
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
+ST_palette <- ST_scale$palette(1) 
+ST_258_color <- ST_palette[which(break_of_sts_renamed == "ST258")]
+
+df_kpn_202123$ST258 <- ifelse(df_kpn_202123$ST == '258' & df_kpn_202123$Species == "Klebsiella pneumoniae" , T,F)
+df_kpn_202123_ST258 <-  subset(df_kpn_202123,ST258 == T)
+df_kpn_202123_nonST258 <- subset(df_kpn_202123,ST258==F)
+C <- algorithm(overall_df = df_kpn_202123,comparitor = 'ST258',df1 = df_kpn_202123_ST258,df2 = df_kpn_202123_nonST258,df1name = 'ST258',df2name = 'Not ST258',population = "2021-23 study")
+C
+```
+
+```{r,fig.width=8.5,fig.height=7.25}
+legendA <- cowplot::get_legend(A) %>% cowplot::plot_grid() 
+legendST258 <- cowplot::get_legend(C)%>% cowplot::plot_grid() 
+legends <- cowplot::plot_grid(legendA + theme(plot.margin = margin(b =-1.5,unit='in')),legendST258 + theme(plot.margin = margin(t =-1.5,unit='in')),ncol=1)
+figure3 <- cowplot::plot_grid(A + theme(legend.position='none'),B + theme(legend.position='none'),C + theme(legend.position='none'),legends,labels = c("A", "B","C", ""))
+ 
+figure3
+```
+
+```{r,fig.width=17,fig.height=10.5}   
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_3_resistance_comparisons.png",plot=figure3,width = 8.5,height = 7.25,dpi=900,bg = 'white')
+```

@@ -1,0 +1,66 @@
+---
+title: "Results section 3: Taxonomy"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+```
+
+```{r}
+# Packages
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr")
+lapply(packages,library,character.only=T)
+
+# Functions
+source("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/lib/consistent_themes.R")
+
+# Print environment
+Sys.info()
+sessionInfo()
+```
+
+# Load data
+
+```{r}
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
+  
+df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
+df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
+
+df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123 <- df%>% subset(study == "2021-23")
+
+
+df_202123_all <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRE_metadata_091825.RDS")  %>% subset(study == '2021-23')
+```
+
+# Integrate summary
+```{r}
+paste0("No ST: ",length(unique(df_202123$Species_ST %>% subset(.!= "Klebsiella pneumoniae ST-"))))
+paste0("No Singleton ST: ",table(df_202123$Species_ST %>% subset(.!= "Klebsiella pneumoniae ST-")) %>% subset(.==1) %>% length)
+gontjesr::convert_tableone_into_df(dataset=df_202123,vars='Species_ST')
+
+OLD_ST <- unique(df_201415$Species_ST) %>% sort %>% subset(.!= "Klebsiella pneumoniae ST-")
+new_ST <- unique(df_202123$Species_ST) %>% sort %>% subset(.!= "Klebsiella pneumoniae ST-")
+
+paste0("Number of sequence types found in INTEGRATE and 2014-15: ",sum(new_ST %in% OLD_ST))
+```
+
+# Old study
+```{r}
+paste0("No ST: ",length(unique(df_201415$Species_ST %>% subset(.!= "Klebsiella pneumoniae ST-"))))
+paste0("No Singleton ST: ",table(df_201415$Species_ST %>% subset(.!= "Klebsiella pneumoniae ST-")) %>% subset(.==1) %>% length)
+gontjesr::convert_tableone_into_df(dataset=df_201415,vars='Species_ST')
+```
+
+# Did differences exist
+```{r}
+convert_tableone_into_df(dataset = df,vars = c("ST258","ST17"),factorVars = c("ST258","ST17"),strata='study',outcome_names = c("2014-15","2021-23"))
+```

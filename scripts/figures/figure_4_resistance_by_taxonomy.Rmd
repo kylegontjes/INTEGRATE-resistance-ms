@@ -1,0 +1,152 @@
+---
+title: "Figure 4: Resistance by taxonomy"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+ 
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+```
+
+# Environment
+
+```{r}
+# Packages
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ComplexHeatmap",'ggalluvial')
+lapply(packages,library,character.only=T)
+
+# Functions
+source("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/lib/consistent_themes.R")
+
+# Print environment
+Sys.info()
+sessionInfo()
+```
+
+# Load data
+```{r}
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
+  
+df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
+df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
+
+df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+df$Species_ST_new_subset <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123 <- df%>% subset(study == "2021-23")
+
+MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
+resistance_vars <- paste0(MIC_variables,"_dich_num")  
+```
+
+# Frequency of resistance in INTEGRATE
+
+# Differences in resistance across lineages exist 
+
+# Sequence type 
+```{r}
+Species_sorted <- unique(sort(df_202123$Species))
+overall_ST_order <- lapply(Species_sorted,FUN=function(species){
+  subset_sts <- subset(
+df_202123, Species ==species) %>% .$Species_ST_new_subset %>% unique %>% sort
+  STs_nums <- subset_sts %>% gsub("ST","",.) 
+  ST_numeric <- as.numeric(STs_nums) %>% sort
+  does_dash_exist <- ifelse(sum(grepl("-",STs_nums))>0,T,F)
+  order <- if(does_dash_exist){
+    c(ST_numeric,"-")
+  } else {
+    ST_numeric
+  }
+  
+  sorted_list <- paste0("ST",order)
+  return(sorted_list)
+  
+  }) %>% unlist 
+
+
+df_202123$Species_ST_new_subset <- factor(df_202123$Species_ST_new_subset ,levels = overall_ST_order)
+   
+df_202123_melt <-  reshape2::melt(df_202123 %>% select(isolate_no,Species_ST_new_subset,any_of(resistance_vars)), id.var=c('isolate_no',"Species_ST_new_subset"))  %>% group_by(Species_ST_new_subset,variable) %>%  summarise(count = sum(as.numeric(value),na.rm = T),prop = count / n())  
+
+# Count of species
+species_count <-  reshape2::melt(df_202123 %>% select(isolate_no,Species_ST_new_subset), id.var=c('isolate_no',"Species_ST_new_subset"))  %>% group_by(Species_ST_new_subset) %>%  summarise(count = n()) 
+
+# Convert to wide format where rows are species and columns are resistance variables
+df_202123_melt$count <- as.numeric(df_202123_melt$count)
+df_202123_melt$prop <- as.numeric(df_202123_melt$prop)
+df_202123_wide <- df_202123_melt %>% select(-count) %>% pivot_wider(names_from = variable, values_from = prop, values_fill = 0) 
+df_202123_wide <- df_202123_wide[match(species_count$Species_ST_new_subset,df_202123_wide$Species_ST_new_subset),]
+df_202123_wide$number_of_isolates <- sapply(df_202123_wide$Species_ST_new_subset,FUN=function(x){
+  subset(species_count,Species_ST_new_subset == x) %>% .[["count"]]
+})
+ 
+
+df_202123_wide <- ungroup(df_202123_wide)
+df_202123_wide <- as.data.frame(df_202123_wide)
+rownames(df_202123_wide) <- paste0(df_202123_wide$Species, " (n=",df_202123_wide$number_of_isolates,")")
+
+# Proportion data
+df_202123_count <- df_202123_melt %>% select(-prop) %>% pivot_wider(names_from = variable, values_from = count, values_fill = 0) 
+df_202123_count <- df_202123_count[match(species_count$Species_ST_new_subset,df_202123_count$Species_ST_new_subset),] %>% ungroup %>% select(-Species_ST_new_subset)
+colnames(df_202123_wide) <-  recode(colnames(df_202123_wide),
+                         "CZA_dich_num"='Ceftazidime-avibactam',
+                         "CST_dich_num"='Colistin', 
+                         'MERO_dich_num'='Meropenem',
+                         'IMI_dich_num'='Imipenem',
+                         "blbli_dich_num"='BL/BLI agents',
+                         "MVB_dich_num"='Meropenem-vaborbactam',
+                         "IR_dich_num"='Imipenem-relebactam',
+                         "PLZ_dich_num"='Plazomicin',
+                         "TMP_SMX_dich_num"='Trimethoprim-Sulfamethoxazole',
+                         "OMC_dich_num" = "Omadacycline",
+                         "DLX_dich_num" = "Delafloxacin",
+                         "ERV_dich_num" = "Eravacycline",
+                         "FOS_dich_num" = "Fosfomycin",
+                         "CT_dich_num" = "Ceftolozane-tazobactam",
+                         "FDC_dich_num"="Cefiderocol")
+
+df_202123_wide_mat <- df_202123_wide %>% select(-Species_ST_new_subset, -number_of_isolates)   
+
+colnames(df_202123_wide_mat) <- paste0(colnames(df_202123_wide_mat)," (n=",colSums(df_202123_count) ,")")
+  
+fig <- ComplexHeatmap::Heatmap(df_202123_wide_mat,
+  name = "Resistance", 
+  column_title = "", 
+  row_title = "",
+  row_names_side = "left",
+  column_names_side = "top",
+  column_names_rot = 90,
+  row_names_gp = gpar(fontsize = 8),
+  column_names_gp = gpar(fontsize = 8),
+  cluster_rows = T, cluster_columns = T,
+  show_row_dend = FALSE, show_column_dend = FALSE,
+  show_row_names = TRUE, show_column_names = TRUE,
+  row_title_gp = gpar(fontsize = 6),
+  column_title_gp = gpar(fontsize = 6),
+  cell_fun = function(j, i, x, y, width, height, fill) {
+    val <-  df_202123_count[i, j]
+    if(val >0){
+    grid.text(sprintf("%.0f", df_202123_count[i, j]), x, y, gp = gpar(fontsize = 8))
+    }
+  },
+  col = c("white", "red"),
+  column_gap = unit(0, "mm"),
+  row_gap = unit(0, "mm"),
+  show_heatmap_legend = FALSE,width = unit(10, "cm")
+)
+``` 
+
+```{r,fig.width=5,fig.height=5.75}
+fig
+fig_ht <- grid.grabExpr(draw(fig))
+```
+
+```{r}
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_4_resistance_by_taxonomy.png",plot=fig_ht,width = 5,height = 5.75,dpi=900,bg = 'white')
+```
+

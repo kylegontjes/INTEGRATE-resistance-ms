@@ -1,0 +1,84 @@
+---
+title: "Results section 6: Differences among taxonomic groups"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+```
+
+# Environment
+```{r}
+packages <- c("tidyverse",'ape','kableExtra','phytools','tableone','kableExtra','ggtree','phyloAMR','ggalluvial','colorRamp2',"RColorBrewer",'ComplexHeatmap',"cowplot",'gontjesr') 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+```{r}
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
+  
+df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
+df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
+
+df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+df$ST258 <- ifelse(df$ST == '258' & df$Species == "Klebsiella pneumoniae" , T,F)
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123 <- df%>% subset(study == "2021-23")
+
+MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
+resistance_vars <- paste0(MIC_variables,"_dich_num")  
+``` 
+
+```{r} 
+get_frequency_stats_compare <- function(variable,df,comparitor){
+ data_table <- table(df[[variable]],df[[comparitor]],useNA = 'no')  
+ test <- if(sum(unlist(data_table) <5)>0){
+    fisher.test(data_table,simulate.p.value = T)
+  } else {
+    chisq.test(data_table)
+  }
+  group1 <- colnames(data_table)[1]
+  group2 <- colnames(data_table)[2]
+  
+  group1_total <- sum(data_table[,1])
+  group2_total <- sum(data_table[,2])
+    
+  group1_count <- data_table[,1] %>% subset(names(.)==1)
+  group2_count <- data_table[,2] %>% subset(names(.)==1)
+  
+  group1_perc <- round(c(group1_count/group1_total)*100,1)
+  group2_perc <- round(c(group2_count/group2_total)*100,1)
+  
+  sig_test <- ifelse(class(test)=="htest" & test$method == "Fisher's Exact Test for Count Data","Fisher's Exact Test","Chi-squared")
+  p_value <- test$p.value 
+  data.frame(variable=variable,group1=group1,group1_total=group1_total,group1_count=group1_count,group1_perc=group1_perc,
+             group2=group2,group2_total=group2_total,group2_count=group2_count,group2_perc=group2_perc,
+             test=sig_test,p_value=p_value)
+}
+```
+
+# Differences across ST258 isolates
+```{r}
+df_kpn_ST258 <-  subset(df,ST258 == T)
+#Comparisons
+lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_kpn_ST258,comparitor='study') %>% do.call(rbind,.)%>% favorite_kable() 
+```
+
+# 2021-23 ST258 vs not ST258
+```{r}   
+#Comparisons
+resistance_vars_no_perfect <- subset(resistance_vars,resistance_vars!="IMI_dich_num")
+lapply(resistance_vars_no_perfect,FUN=get_frequency_stats_compare,df=df_202123,comparitor='ST258') %>% do.call(rbind,.)%>% favorite_kable() 
+```

@@ -1,0 +1,278 @@
+---
+title: "Figure 2: Carbapenemase genotype comparison"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+```
+
+# Environment
+
+```{r}
+# Packages
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ComplexHeatmap",'ggalluvial')
+lapply(packages,library,character.only=T)
+
+# Functions
+source("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/lib/consistent_themes.R")
+
+# Print environment
+Sys.info()
+sessionInfo()
+```
+
+# Load data
+
+```{r}
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
+  
+df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
+df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
+
+df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123 <- df%>% subset(study == "2021-23")
+
+df_202123_all <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_metadata_091825.RDS")  %>% subset(study == '2021-23')
+```
+
+# Coordinate ST data
+
+```{r}
+OLD_ST <- unique(df_201415$Species_ST) %>% sort
+new_ST <- unique(df_202123$Species_ST) %>% sort 
+ST_over_1 <- table(df$Species_ST) %>% subset(.>1) %>% names
+
+df$Species_ST_new <- ifelse(df$Species_ST %in% c(ST_over_1),df$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.)
+                                          
+break_of_sts <-  c(sort(unique(df$Species_ST_new %>% subset(.!="Singleton STs"))),"Singleton STs")
+break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
+       
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
+
+
+df$Species_ST_new_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
+ 
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123<- df%>% subset(study == "2021-23")
+```
+
+```{r}
+amrfinder <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-05_master_kpn_dataset_curation/results/amrfinder_cleaned_090525.RDS")
+amrfinder <- subset(amrfinder,amrfinder$isolate_no %in% df$isolate_no) 
+amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
+
+amrfinder_carb_subclass <- subset(amrfinder,subclass == "CARBAPENEM")
+amrfinder_carb <- amrfinder %>% subset(subclass == "CARBAPENEM" | grepl("KPC|NDM|VIM|IMP",element_symbol) | grepl("OXA-48 family",element_name))
+amrfinder_matrix <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-05_master_kpn_dataset_curation/results/amrfinder_matrix_090525.RDS")  %>% subset(rownames(.) %in% df$isolate_no)
+amrfinder_matrix_beta <- amrfinder_matrix %>% select(any_of(sort(unique(amrfinder_beta$element_symbol))))
+amrfinder_matrix_carb <- amrfinder_matrix %>% select(any_of(sort(unique(amrfinder_carb$element_symbol))))
+
+# Melt dataframe matrix so that 
+isolate_level_data <- amrfinder_matrix  %>% mutate(isolate_no = rownames(.)) %>% reshape2::melt(id.vars="isolate_no")
+isolate_level_data <- left_join(isolate_level_data, df %>% select(isolate_no,Species,Species_ST,study,hospital_location,rectal), by = "isolate_no") 
+
+# Get an isolate's carbapenemase genes
+df$blactamase <- sapply(df$isolate_no,FUN=function(x){
+  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=";")
+}) %>% {ifelse(.=="","No blactamase",.)}
+
+
+df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
+  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=";")
+}) %>% {ifelse(.=="","No carbapenemase",.)}
+
+df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
+    carbapenemase <- amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol
+     if(is_empty(carbapenemase)){
+      "No carbapenemase"
+    } else {
+      sapply(carbapenemase,FUN=function(y){
+        str_split(y,"-",simplify=T) %>% .[,1]
+    }) %>% unlist  %>% paste0(collapse=";") 
+    }
+    
+})   
+df$blaKPC_2 <- grepl("KPC-2",df$carbapenemase)  & !grepl("KPC-29",df$carbapenemase)
+df$no_carbapenemase <- grepl("No carbapenemase",df$carbapenemase_family) 
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123<- df%>% subset(study == "2021-23")
+```
+ 
+# Genotype matrix from INTEGRATE   
+ 
+## Sequence type
+```{r}
+Species_sorted <- unique(sort(df_202123$Species))
+overall_ST_order <- lapply(Species_sorted,FUN=function(species){
+  subset_sts <- subset(
+df_202123, Species ==species) %>% .$Species_ST_new_no_species %>% unique %>% sort
+  STs_nums <- subset_sts  %>% gsub("ST","",.) %>% as.numeric
+  ST_numeric <- as.numeric(STs_nums) %>% sort
+  does_dash_exist <- ifelse(sum(grepl("-",STs_nums))>0,T,F)
+  order <- if(does_dash_exist){
+    c(ST_numeric,"-")
+  } else {
+    ST_numeric
+  }
+  
+  sorted_list <- c(paste0("ST",order),"ST-")
+  return(sorted_list)
+  
+  }) %>% unlist 
+
+
+df_202123$Species_ST_new_no_species <- factor(df_202123$Species_ST_new_no_species ,levels = overall_ST_order)
+   
+df_202123_melt <- df_202123  %>% select(Species_ST_new_no_species,carbapenemase)  %>%
+  separate_rows(carbapenemase, sep = ";") %>%  # split the genotypes
+  count(Species_ST_new_no_species,carbapenemase, sort = TRUE)  %>%
+    group_by(Species_ST_new_no_species) %>%
+    mutate(prop = n / sum(n)) %>%
+    ungroup()
+
+# Scales 
+genotypes <- unique(df_202123_melt$carbapenemase) %>% sort
+genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
+
+genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=4, title.position = "top", label.position = "right")) 
+
+# Species_ST_new_no_species count
+Species_ST_count <-   reshape2::melt(df_202123 %>% select(isolate_no,Species_ST_new_no_species), id.var=c('isolate_no',"Species_ST_new_no_species"))  %>% group_by(Species_ST_new_no_species) %>%  summarise(count = n())  
+
+# Convert to wide format where rows are Species_ST_ST_new and columns are resistance variables
+df_202123_melt$count <- as.numeric(df_202123_melt$n)
+df_202123_melt$prop <- as.numeric(df_202123_melt$prop)
+df_202123_wide <- df_202123_melt %>% select(-count,-n) %>% pivot_wider(names_from = carbapenemase, values_from = prop, values_fill = 0) 
+ 
+df_202123_wide <- df_202123_wide[match(Species_ST_count$Species_ST_new_no_species,df_202123_wide$Species_ST_new_no_species),]
+df_202123_wide$number_of_isolates <- sapply(df_202123_wide$Species_ST_new_no_species,FUN=function(x){
+  subset(Species_ST_count,Species_ST_new_no_species == x) %>% .[["count"]]
+})
+
+df_202123_wide <- ungroup(df_202123_wide)
+df_202123_wide <- as.data.frame(df_202123_wide)
+rownames(df_202123_wide) <- paste0(df_202123_wide$Species_ST_new_no_species, " (n=",df_202123_wide$number_of_isolates,")")
+
+# Proportion data
+
+df_202123_count <- df_202123_melt %>% select(-prop,-n) %>% pivot_wider(names_from = carbapenemase, values_from = count, values_fill = 0) 
+df_202123_count <- df_202123_count[match(Species_ST_count$Species_ST_new_no_species,df_202123_count$Species_ST_new_no_species),] %>% ungroup %>% select(-Species_ST_new_no_species)
+df_202123_count <- as.data.frame(df_202123_count)
+df_202123_count[df_202123_count == 0] <- NA
+colnames(df_202123_wide) <- c("Species_ST_new_no_species", paste0(colnames(df_202123_count), " (n=",colSums(df_202123_count,na.rm = T),")") ,'number_of_isolates')
+
+
+df_metadata_202123_melt <- df_202123  %>% select(Species_ST_new_no_species,carbapenemase)  %>%
+  separate_rows(carbapenemase, sep = ";") %>%  # split the genotypes
+  count(Species_ST_new_no_species,carbapenemase, sort = TRUE)  %>%
+    group_by(Species_ST_new_no_species) %>%
+    mutate(prop = n / sum(n)) %>%
+    ungroup()
+
+# Scales  
+genotype_colors_renamed <- genotype_colors
+names(genotype_colors_renamed)  <-   sapply(genotypes,FUN=function(x){
+  paste0(x," (n=",df_202123_count[[x]] %>% sum(.,na.rm = T),")")
+})
+
+column_ha <- columnAnnotation(
+  Genotype = df_202123_wide %>% select(-Species_ST_new_no_species,-number_of_isolates) %>% colnames(),
+  annotation_name_gp = gpar(fontsize = 0),
+  col = list(Genotype = genotype_colors_renamed),
+  annotation_legend_param = list(
+    title_gp = gpar(fontsize = 9),
+    labels_gp = gpar(fontsize = 9),
+    grid_width = unit(0.4, "cm"),
+    grid_height = unit(0.4, "cm")
+  ))
+
+
+A <- ComplexHeatmap::Heatmap(df_202123_wide %>% select(-Species_ST_new_no_species,-number_of_isolates), 
+                  name = "Resistance", 
+                  column_title = "", 
+                  row_title = "",
+                  row_names_side = "left",
+                  column_names_side = "top",
+                  column_names_rot = 90,
+                  row_names_gp = gpar(fontsize = 9),
+                  column_names_gp = gpar(fontsize = 9), 
+                  cluster_rows = T, cluster_columns = T,
+                  show_row_dend = F, show_column_dend = F,
+                  show_row_names = T, show_column_names = T, 
+                  row_title_gp = gpar(fontsize=9),
+                  top_annotation = column_ha,
+                  column_title_gp = gpar(fontsize=9), cell_fun  = function(j, i, x, y, width, height, fill) {
+    val <- df_202123_count[i, j]
+    if (!is.na(val)) {
+        grid.text(sprintf("%.0f", val), x, y, gp = gpar(fontsize = 9))
+    }
+},col = c("white",'red'),show_heatmap_legend = FALSE)
+```
+
+```{r,fig.width=6,fig.height=12.5}  
+ht_grob <- grid.grabExpr(draw(A,show_heatmap_legend=F, show_annotation_legend=F)) 
+A_fig <-  cowplot::plot_grid(ht_grob,ncol=1,rel_heights = c(1),labels = "A")
+```
+
+# B. Compare carbapenemase genotypes between studies
+```{r} 
+genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=4, title.position = "top", label.position = "right"))  
+
+ST_dist <-  df  %>%
+  count(study, carbapenemase) %>%
+  complete(study, carbapenemase, fill = list(n = 0)) %>%
+  group_by(study) %>%
+  mutate(prop = n / sum(n) * 100)
+   
+ST_dist$carbapenemase <- factor(ST_dist$carbapenemase,levels = ST_dist %>% subset(study == "2021-23") %>%  arrange(n) %>% group_by(carbapenemase) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$carbapenemase)
+
+B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
+  geom_alluvium(aes(fill = carbapenemase),width=0.5) +
+  geom_stratum(width=0.5) + theme_bw_me + xlab("") + ylab("Percentage") + genotype_scale + theme(legend.position = "bottom",
+                  axis.text =   element_text(size=12, color="black"),
+                  axis.title = element_text(size = 12, color="black"),
+                  legend.text =   element_text(size=8, color="black"),
+                  legend.title = element_text(size = 10, color="black"),
+                  plot.title = element_text(size = 12, color="black")) + ggtitle("All isolates")
+
+B
+``` 
+
+# C. Kpn ST258
+```{r}
+ST_dist_ST258 <-  df  %>% subset(Species_ST == "Klebsiella pneumoniae ST258") %>%
+  count(study, carbapenemase) %>%
+  complete(study, carbapenemase, fill = list(n = 0)) %>%
+  group_by(study) %>%
+  mutate(prop = n / sum(n) * 100)
+   
+ST_dist_ST258$carbapenemase <- factor(ST_dist_ST258$carbapenemase,levels = ST_dist_ST258  %>% subset(study == "2021-23")  %>% arrange(n) %>% group_by(carbapenemase) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$carbapenemase)
+
+C <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
+  geom_alluvium(aes(fill = carbapenemase),width=0.5) +
+  geom_stratum(width=0.5) + theme_bw_me + xlab("") + ylab("Percentage") + genotype_scale + theme(legend.position = "bottom",
+                  axis.text =   element_text(size=12, color="black"),
+                  axis.title = element_text(size = 12, color="black"),
+                  legend.text =   element_text(size=8, color="black"),
+                  legend.title = element_text(size = 10, color="black"),
+                  plot.title = element_text(size = 12, color="black")) + ggtitle("ST258")
+
+C
+```
+
+```{r,fig.width=4.25,fig.height=8.5}  
+BC <-  cowplot::plot_grid(B + theme(legend.position = 'none',axis.title.x = element_blank()),C + theme(legend.position = 'none',axis.title.x = element_blank()),ncol=2,labels = c("B","C"),label_size = 12,rel_widths = c(1,1))
+figure_2 <-  cowplot::plot_grid(A_fig,BC,ncol=1,rel_heights = c(1,.5))  
+figure_2
+```
+
+```{r}
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_2_carbapenemase.png",plot=figure_2,width = 4.25,height = 8.5,dpi=900,bg = 'white')
+```
