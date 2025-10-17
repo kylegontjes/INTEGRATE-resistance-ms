@@ -135,3 +135,101 @@ df_ST258$GD_KPC2 <- df_ST258$OmpK36GD==1 & df_ST258$`blaKPC-2` ==1
 convert_tableone_into_df(dataset = df_ST258,vars = c('blaKPC_presence','carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation","OmpK36GD","OmpK36TD","GD_KPC2"),strata = 'study',outcome_names = c("2014-15","2021-23"),factorVars = c('carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation","OmpK36GD","OmpK36TD","GD_KPC2")) %>% favorite_kable()
 ```
 
+# Mobsuite data
+## INTEGRATE
+```{r}  
+mobsuite_contig <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Descriptive_epidemiology/2024-12-30_mobsuite/results/INTEGRATE_contig_report.txt")
+mobsuite_contig$isolate_no <- gsub(".fna","",mobsuite_contig$sample_id) 
+mobsuite_contig <- subset(mobsuite_contig,isolate_no %in% df$isolate_no)
+mobtyper <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Descriptive_epidemiology/2024-12-30_mobsuite/results/INTEGRATE_mobtyper_results.txt")
+mobtyper$isolate_no <-mobtyper$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub(".fna","",.)
+mobtyper <- subset(mobtyper,isolate_no %in% df$isolate_no)
+```
+## 2014-15 study
+```{r}
+ amrfinder_mat <- subset(amrfinder_matrix,rownames(amrfinder_matrix) %in% df$isolate_no)
+amrfinder <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/amrfinder_cleaned_091825.RDS")
+amrfinder_carb <- subset(amrfinder,subclass == "CARBAPENEM") %>% subset(isolate_no %in% df$isolate_no)
+mobtyper_old <-  read_delim("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/data/mobsuite/CRKP_mobtyper_results.txt")
+mobtyper_old$isolate_no <-mobtyper_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
+mobtyper_old <- subset(mobtyper_old,isolate_no %in% df$isolate_no)
+mobsuite_contig_old <-  read_delim("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/data/mobsuite/CRKP_contig_report.txt")
+mobsuite_contig_old$isolate_no <-mobsuite_contig_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
+mobsuite_contig_old <- subset(mobsuite_contig_old,isolate_no %in% df$isolate_no)
+
+mobtyper_merged <- bind_rows(mobtyper_old %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor),
+                             mobtyper %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor)) %>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
+mobsuite_contig_merged <- bind_rows(mobsuite_contig_old %>% select(isolate_no,contig_id,size,gc,primary_cluster_id,mash_nearest_neighbor),
+                             mobsuite_contig %>% select(isolate_no,contig_id,size,gc,primary_cluster_id,mash_nearest_neighbor))%>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
+mobtyper_mat <- gontjesr::get_mobtyper_cluster_matrix(df,mobtyper_merged)
+```
+
+KPC plasmid matrix
+```{r}
+get_KPC_plasmid <- function(isolate,amrfinder_carb,mobsuite_contig){
+  amrfinder_sub <- amrfinder_carb %>% subset(isolate_no == isolate)
+  mobsuite_contig_merged <- mobsuite_contig_merged %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id)
+  mobsuite_contig_merged$primary_cluster_id %>% paste0(collapse=';') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
+}
+
+
+df$KPC_plasmid <- lapply(df$isolate_no,get_KPC_plasmid,amrfinder_carb,mobsuite_contig) %>% unlist
+
+mobtyper_merged$KPC_plasmid <- apply(mobtyper_merged,1,FUN=function(x){
+  isolate_kpc <- df %>% subset(isolate_no == x[['isolate_no']]) %>% .$KPC_plasmid %>% str_split(.,";" ) %>% unlist
+  sum(x[['primary_cluster_id']] %in% isolate_kpc) 
+})
+
+mobtyper_merged$carbapenemase <-apply(mobtyper_merged,1,FUN=function(x){
+  mobsuite_contigs <- mobsuite_contig_merged %>% subset(primary_cluster_id == x[["primary_cluster_id"]] & isolate_no == x[["isolate_no"]] ) %>% .$contig_id
+  amrfinder_sub <- amrfinder_carb %>% subset(contig_id %in% mobsuite_contigs)
+  if(nrow(amrfinder_sub)==0){
+    ""
+  } else{
+    
+  paste0(amrfinder_sub$element_symbol_renamed,collapse=';')
+  }
+   
+})
+
+df_202123<- df%>% subset(study == "2021-23")
+
+# Convert KPC_plasmid variable into a matrix where row is isolate and entry is 1 for present and 0 for absent
+KPC_plasmid_matrix <- df_202123 %>% select(isolate_no,KPC_plasmid) %>% 
+    pivot_wider(names_from = KPC_plasmid, values_from = KPC_plasmid) %>%     column_to_rownames("isolate_no")  %>% {ifelse(is.na(.),0,1)}  %>% as.data.frame
+```
+
+# Descriptive statistics
+## All
+```{r}
+paste0("Total plasmids: ",ncol(mobtyper_mat))
+old_plasmids <- mobtyper_mat %>% subset(grepl("PCMP",rownames(.))) %>% colSums(.) %>% subset(.>0) %>% names
+new_plasmids <- mobtyper_mat %>% subset(grepl("INT",rownames(.))) %>% colSums(.) %>% subset(.>0) %>% names
+ggVennDiagram::ggVennDiagram(list(old_plasmids = old_plasmids, new_plasmids = new_plasmids))
+
+```
+
+## KPC
+```{r}
+paste0("Total KPC plasmids: ",length(unique(df$KPC_plasmid %>% subset(!. %in% c("Chromosome","No carbapenemase")))))
+
+KPC_plasmids_old <- unique(df %>% subset(study == '2014-15') %>% .$KPC_plasmid %>% str_split(.,";") %>% unlist) %>% subset(!. %in% c("Chromosome","No carbapenemase"))
+KPC_plasmids_new <- unique(df %>% subset(study == '2021-23') %>%  .$KPC_plasmid %>% str_split(.,";") %>% unlist)%>% subset(!. %in% c("Chromosome","No carbapenemase"))
+
+ggVennDiagram::ggVennDiagram(list(KPC_plasmids_old = KPC_plasmids_old, KPC_plasmids_new = KPC_plasmids_new))
+
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(KPC_plasmid != "No carbapenemase"),vars = "KPC_plasmid",strata='study',outcome_names = c("2021-23",'2014-15'))
+```
+
+### ST258
+```{r}
+paste0("Total KPC plasmids: ",length(unique(df %>% subset(ST=='258') %>% .$KPC_plasmid %>% subset(!. %in% c("Chromosome","No carbapenemase")))))
+
+KPC_plasmids_old <- unique(df %>% subset(study == '2014-15' & ST=='258') %>% .$KPC_plasmid %>% str_split(.,";") %>% unlist) %>% subset(!. %in% c("Chromosome","No carbapenemase"))
+KPC_plasmids_new <- unique(df %>% subset(study == '2021-23' & ST=='258') %>%  .$KPC_plasmid %>% str_split(.,";") %>% unlist)%>% subset(!. %in% c("Chromosome","No carbapenemase"))
+
+ggVennDiagram::ggVennDiagram(list(KPC_plasmids_old = KPC_plasmids_old, KPC_plasmids_new = KPC_plasmids_new))
+
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='258' & KPC_plasmid != "No carbapenemase"),vars = "KPC_plasmid",strata='study',outcome_names = c("2021-23",'2014-15'))
+```
+
