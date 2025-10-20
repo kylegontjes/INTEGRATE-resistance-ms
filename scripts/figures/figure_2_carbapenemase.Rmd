@@ -105,7 +105,7 @@ df_201415 <- df%>% subset(study == "2014-15")
 df_202123<- df%>% subset(study == "2021-23")
 ```
 
-# A Figure with fill being carbapenemase
+# A. Fill being carbapenemase
 ```{r}
 genotypes <- unique(df$carbapenemase) %>% sort
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
@@ -123,7 +123,7 @@ A <- ggplot(data=df,
   theme_bw_me +
   xlab("Count") + ylab("") +
   theme(
-    axis.text.x = element_text(hjust = 1, size=12, color="black"),
+    axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
     axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=12, color="black"),
@@ -138,7 +138,7 @@ A
 ```
 
 
-## B. . Species ST
+## B. Species ST
 ```{r} 
 B <- ggplot(data=df,
        aes(y=forcats::fct_infreq(Species_ST_new), fill=carbapenemase)) +
@@ -147,16 +147,14 @@ B <- ggplot(data=df,
   theme_bw_me +
   xlab("Count") + ylab("") +
   theme(
-    axis.text.x = element_text(hjust = 1, size=12, color="black"),
+    axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
     axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=12, color="black"),
                   legend.title = element_text(size = 12, color="black"),
     plot.title = element_text(size = 0, color="black"),
     legend.position = "none",
-    strip.text = element_text(size=14,color='black')
-        
-  ) + genotype_scale + facet_wrap(~study)
+    strip.text = element_text(size=14,color='black')) + genotype_scale + facet_wrap(~study)
 
 B
 ```
