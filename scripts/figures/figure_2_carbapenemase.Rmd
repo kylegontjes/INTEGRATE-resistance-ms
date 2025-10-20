@@ -198,7 +198,7 @@ D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,
                   axis.title = element_text(size = 12, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
-                  plot.title = element_text(size = 12, color="black")) + ggtitle("ST258")
+                  plot.title = element_text(size = 12, color="black")) + ggtitle("ST258 isolates")
 
 D
 ```

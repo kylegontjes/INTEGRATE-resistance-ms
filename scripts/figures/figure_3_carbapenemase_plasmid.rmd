@@ -132,7 +132,7 @@ A <- ggplot(data=df ,aes(y=forcats::fct_infreq(KPC_plasmid),fill=KPC_plasmid)) +
   geom_text(stat='count',
             aes(label=..count..),
             hjust=-0.05, # push slightly to the right
-            size=3.5)  + xlim(NA,85.1) +
+            size=3.5)  + xlim(NA,95.1) +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
@@ -172,16 +172,16 @@ B
 
 # C. Proportion of plasmids over study periods
 ```{r}
-mobtyper_prop <-  mobtyper_merged  %>% subset(KPC_plasmid ==1) %>%
-  count(study, primary_cluster_id) %>%
-  complete(study, primary_cluster_id, fill = list(n = 0)) %>%
+mobtyper_prop <-  df   %>%
+  count(study, KPC_plasmid) %>%
+  complete(study, KPC_plasmid, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
-mobtyper_prop$primary_cluster_id <- factor(mobtyper_prop$primary_cluster_id,levels = mobtyper_prop %>% arrange(n) %>% group_by(primary_cluster_id) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$primary_cluster_id)
+mobtyper_prop$KPC_plasmid <- factor(mobtyper_prop$KPC_plasmid,levels = mobtyper_prop %>% arrange(n) %>% group_by(KPC_plasmid) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$KPC_plasmid)
  
-C <-  ggplot(mobtyper_prop  ,aes(x = study,stratum = primary_cluster_id,alluvium = primary_cluster_id,y=prop,fill = primary_cluster_id)) +
-  geom_alluvium(aes(fill = primary_cluster_id),width=0.5) +
+C <-  ggplot(mobtyper_prop  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
+  geom_alluvium(aes(fill = KPC_plasmid),width=0.5) +
   geom_stratum(width=0.5) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 12, color="black"),
@@ -195,22 +195,23 @@ C
 # D. 
 ```{r}
 ST258_genomes <- df %>% subset(ST=="258") %>% .$isolate_no
-mobtyper_prop_ST258 <-  mobtyper_merged  %>% subset(isolate_no %in% ST258_genomes & KPC_plasmid ==1) %>%
-  count(study, primary_cluster_id) %>%
-  complete(study, primary_cluster_id, fill = list(n = 0)) %>%
+mobtyper_prop_ST258 <-  df %>% subset(ST=="258")   %>%
+  count(study, KPC_plasmid) %>%
+  complete(study, KPC_plasmid, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
-mobtyper_prop_ST258$primary_cluster_id <- factor(mobtyper_prop_ST258$primary_cluster_id,levels = levels(mobtyper_prop$primary_cluster_id))
+mobtyper_prop_ST258$KPC_plasmid <- factor(mobtyper_prop_ST258$KPC_plasmid,levels = mobtyper_prop %>% arrange(n) %>% group_by(KPC_plasmid) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$KPC_plasmid)
  
-D <-  ggplot(mobtyper_prop_ST258  ,aes(x = study,stratum = primary_cluster_id,alluvium = primary_cluster_id,y=prop,fill = primary_cluster_id)) +
-  geom_alluvium(aes(fill = primary_cluster_id),width=0.5) +
+ 
+D <-  ggplot(mobtyper_prop_ST258  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
+  geom_alluvium(aes(fill = KPC_plasmid),width=0.5) +
   geom_stratum(width=0.5) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 12, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
-                  plot.title = element_text(size = 12, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100)) +  plasmid_fill + ggtitle("ST258") 
+                  plot.title = element_text(size = 12, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100)) +  plasmid_fill + ggtitle("ST258 isolates") 
 D
 ```  
 
