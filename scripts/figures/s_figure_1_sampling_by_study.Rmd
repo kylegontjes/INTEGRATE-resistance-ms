@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 1: Sampling dynamics"
+title: "Figure 1: Sampling dynamics"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -93,7 +93,7 @@ B <- ggplot(data = df %>% subset(study == "2021-23")) +
   ) + ylim(NA,15.1)
 ```
 
-# C. Source
+# C-D. Source
 ```{r}
 df$study <- factor(df$study,levels = c("2014-15","2021-23"))
 df$source_simplified <- factor(df$source_simplified,levels = c(df %>% group_by(source_simplified) %>% summarise (n=n()) %>% arrange(-n) %>% .$source_simplified))
@@ -108,17 +108,39 @@ source_dist <-  df %>% subset(is.na(source_simplified)==F)   %>%
    
 source_dist$source_simplified <- factor(source_dist$source_simplified,levels = source_dist %>% subset(study =='2021-23') %>% arrange(n) %>% group_by(source_simplified) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$source_simplified)
 
-C <- ggplot(source_dist %>% subset(n>0),aes(x = study,stratum = source_simplified,alluvium = source_simplified,y=prop,fill = source_simplified)) +
-  geom_alluvium(aes(fill = source_simplified)) +
-  geom_stratum() + theme_bw_me + xlab("Study") + ylab("Percentage") + source_scale + theme(legend.position = "right",
+
+C <- ggplot(data=df,aes(y=source_simplified,fill=source_simplified)) + geom_bar() +
+  geom_text(stat='count',
+            aes(label=..count..),
+            hjust=-0.05, # push slightly to the right
+            size=3.5) + 
+  xlim(NA, 205.1) +
+  theme_bw_me +
+  xlab("Count") + ylab("") +
+  theme(
+    axis.text.x = element_text(hjust = 0.5, size=10, color="black"),
+    axis.text.y = element_text(size=10, color="black"),
+    axis.title = element_text(size = 12, color="black"),
+                  legend.text =   element_text(size=10, color="black"),
+                  legend.title = element_text(size = 10, color="black"),
+    plot.title = element_text(size = 0, color="black"),
+    legend.position = "none",
+    strip.text = element_text(size=12,color='black')
+        
+  ) + source_scale + facet_wrap(~study)
+
+
+D <- ggplot(source_dist %>% subset(n>0),aes(x = study,stratum = source_simplified,alluvium = source_simplified,y=prop,fill = source_simplified)) +
+  geom_alluvium(aes(fill = source_simplified),width=0.66) +
+  geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage") + source_scale + theme(legend.position = "right",
                   axis.text =   element_text(size=10, color="black"),
                   axis.title = element_text(size = 12, color="black"),
                   legend.text =   element_text(size=10, color="black"),
                   legend.title = element_text(size = 12, color="black"),
-                  plot.title = element_text(size = 0, color="black")) 
+                  plot.title = element_text(size = 0, color="black")) + theme(legend.position='none')
 ```
  
-# D. Sample counts by facility
+# E. Sample counts by facility
 ```{r}
 df_complete <- df %>%
   count(hospital_location_recode, study) %>%
@@ -141,7 +163,7 @@ df_complete$hospital_location_recode <- factor(
 
 df_complete$study <- factor(df_complete$study ,levels = c("2021-23","2014-15"))
 
-D <- ggplot(data = df_complete) +
+E <- ggplot(data = df_complete) +
   geom_bar(
     aes(x = n, y = hospital_location_recode, fill = study),
     stat = "identity",
@@ -168,9 +190,9 @@ D <- ggplot(data = df_complete) +
   )  
 ```
 
-## E. Proportion by study
+## F. Proportion by study
 ```{r}
-E <- ggplot(data = df_complete) +
+f <- ggplot(data = df_complete) +
   geom_bar(
     aes(x = perc, y = hospital_location_recode, fill = study),
     stat = "identity",
@@ -200,13 +222,10 @@ E <- ggplot(data = df_complete) +
 
 ```{r,fig.width=8,fig.height=8} 
 AB <- cowplot::plot_grid(A,B + theme(legend.position = 'none'),ncol=2,labels =c("A","B"),rel_widths = c(1,1))
+CD <- cowplot::plot_grid(C,D,ncol=2,labels = c("C","D"),rel_widths = c(1,0.5))
+EF <-  cowplot::plot_grid(E+ theme(legend.position = 'none'),f + theme(legend.position = 'none'),ncol=2,labels =c("E","F"),rel_widths = c(1,1))
 
-legend <- gontjesr::get_legend(D+ theme(legend.position='bottom'))
-Cowplot_legend <- plot_grid(legend,ncol=1)
-C <- cowplot::plot_grid(C,legend,ncol=2,labels = c("C",""))
-DE <-  cowplot::plot_grid(D+ theme(legend.position = 'none'),E + theme(legend.position = 'none'),ncol=2,labels =c("D","E"),rel_widths = c(1,1))
-
-sfigure1 <- cowplot::plot_grid(AB,C,DE,ncol=1,rel_heights = c(0.65,0.65,1))
+sfigure1 <- cowplot::plot_grid(AB,CD,EF,ncol=1,rel_heights = c(0.65,0.65,1))
 sfigure1 
 ``` 
 
