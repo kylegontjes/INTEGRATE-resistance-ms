@@ -1,5 +1,5 @@
 ---
-title: "Results section 4: Carbapenemase"
+title: "Results section 4 & 5: Carbapenemase and plasmids"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -218,7 +218,7 @@ KPC_plasmids_new <- unique(df %>% subset(study == '2021-23') %>%  .$KPC_plasmid 
 
 ggVennDiagram::ggVennDiagram(list(KPC_plasmids_old = KPC_plasmids_old, KPC_plasmids_new = KPC_plasmids_new))
 
-gontjesr::convert_tableone_into_df(dataset=df %>% subset(KPC_plasmid != "No carbapenemase"),vars = "KPC_plasmid",strata='study',outcome_names = c("2021-23",'2014-15'))
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(KPC_plasmid != "No carbapenemase"),vars = "KPC_plasmid",strata='study',outcome_names = c("2021-23",'2014-15')) %>% favorite_kable()
 ```
 
 ### ST258
@@ -230,6 +230,6 @@ KPC_plasmids_new <- unique(df %>% subset(study == '2021-23' & ST=='258') %>%  .$
 
 ggVennDiagram::ggVennDiagram(list(KPC_plasmids_old = KPC_plasmids_old, KPC_plasmids_new = KPC_plasmids_new))
 
-gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='258' & KPC_plasmid != "No carbapenemase"),vars = "KPC_plasmid",strata='study',outcome_names = c("2021-23",'2014-15'))
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='258' & KPC_plasmid != "No carbapenemase"),vars = "KPC_plasmid",strata='study',outcome_names = c("2021-23",'2014-15')) %>% favorite_kable()
 ```
 
