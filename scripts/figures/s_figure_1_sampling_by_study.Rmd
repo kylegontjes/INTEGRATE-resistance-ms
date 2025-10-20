@@ -43,34 +43,9 @@ number_of_weeks_1415 <- as.numeric(round(difftime(max(df_201415$date,na.rm = T),
 number_of_weeks_2123 <- as.numeric(round(difftime(max(df_202123_all$date,na.rm = T),min(df_202123_all$date,na.rm = T),units = 'weeks')) + 1)
 ```
 
-## A. 2021-23
-```{r}      
-A <- ggplot(data = df %>% subset(study == "2021-23")) +
-  geom_histogram(
-    aes(x = date, fill = study),  # << key addition
-    bins = number_of_weeks_2123
-  ) +
-  xlab("Collection date") +
-  ylab("Isolates") +
-  theme_bw_me +
-  scale_x_date(
-    date_breaks = "6 months",
-    date_labels = "%m-%Y"
-  ) +
-  study_color_fill +
-  theme(
-    legend.position = 'none',
-    axis.text = element_text(size=10, color="black",hjust=0.5,vjust=0.5),
-    axis.title = element_text(size=12, color="black"),
-    legend.text = element_text(size=10, color="black"),
-    legend.title = element_text(size=12, color="black"),
-    plot.title = element_text(size=0, color="black")
-  ) + ylim(NA,15.1)
-```
-
-## B. 2014-15
+## A. 2014-15
 ```{r}
-B <- ggplot(data = df %>% subset(study == "2014-15")) +
+A <- ggplot(data = df %>% subset(study == "2014-15")) +
   geom_histogram(
     aes(x = date, fill = study),  # << key addition
     bins = number_of_weeks_1415
@@ -86,6 +61,31 @@ B <- ggplot(data = df %>% subset(study == "2014-15")) +
   theme(
     legend.position = 'none',
     axis.text = element_text(size=10, color="black"),
+    axis.title = element_text(size=12, color="black"),
+    legend.text = element_text(size=10, color="black"),
+    legend.title = element_text(size=12, color="black"),
+    plot.title = element_text(size=0, color="black")
+  ) + ylim(NA,15.1)
+```
+
+## B. 2021-23
+```{r}      
+B <- ggplot(data = df %>% subset(study == "2021-23")) +
+  geom_histogram(
+    aes(x = date, fill = study),  # << key addition
+    bins = number_of_weeks_2123
+  ) +
+  xlab("Collection date") +
+  ylab("Isolates") +
+  theme_bw_me +
+  scale_x_date(
+    date_breaks = "6 months",
+    date_labels = "%m-%Y"
+  ) +
+  study_color_fill +
+  theme(
+    legend.position = 'none',
+    axis.text = element_text(size=10, color="black",hjust=0.5,vjust=0.5),
     axis.title = element_text(size=12, color="black"),
     legend.text = element_text(size=10, color="black"),
     legend.title = element_text(size=12, color="black"),
