@@ -128,13 +128,13 @@ KPC_plasmid_matrix <- df_202123 %>% select(isolate_no,KPC_plasmid) %>%
 KPC_plasmids <- c(mobtyper_merged  %>% subset(KPC_plasmid ==1) %>% .$primary_cluster_id %>% unique %>% sort)
 plasmid_fill <- scale_fill_manual(breaks = c(KPC_plasmids,"Chromosome","No carbapenemase"),values = c(hues::iwanthue(length(KPC_plasmids)),"darkgray",'lightgray'),name="Carbapenemase-containing plasmid",guide = guide_legend(title.position = "top", label.position = "right"))
 
-A <- ggplot(data=df ,aes(y=forcats::fct_infreq(KPC_plasmid),fill=KPC_plasmid)) + geom_bar(stat='count') + theme(axis.text.x = element_text(angle=90,hjust = 1,vjust=1)) + theme_bw_me + ylab("") + labs(fill="KPC_plasmid") + facet_wrap(~study) + plasmid_fill  + xlab("Count") + theme(legend.position = 'none') +
+A <- ggplot(data=df ,aes(y=forcats::fct_infreq(KPC_plasmid),fill=KPC_plasmid)) + geom_bar(stat='count')  + theme_bw_me + ylab("") + labs(fill="KPC_plasmid") + facet_wrap(~study) + plasmid_fill  + xlab("Count") + theme(legend.position = 'none') +
   geom_text(stat='count',
             aes(label=..count..),
             hjust=-0.05, # push slightly to the right
             size=3.5)  + xlim(NA,85.1) +
   theme(
-    axis.text.x = element_text(hjust = 1, size=12, color="black"),
+    axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
     axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=12, color="black"),
@@ -156,7 +156,7 @@ B <- ggplot(data=df,
   theme_bw_me +
   xlab("Count") + ylab("") +
   theme(
-    axis.text.x = element_text(hjust = 1, size=12, color="black"),
+    axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
     axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=12, color="black"),
@@ -172,7 +172,6 @@ B
 
 # C. Proportion of plasmids over study periods
 ```{r}
-
 mobtyper_prop <-  mobtyper_merged  %>% subset(KPC_plasmid ==1) %>%
   count(study, primary_cluster_id) %>%
   complete(study, primary_cluster_id, fill = list(n = 0)) %>%
@@ -191,12 +190,10 @@ C <-  ggplot(mobtyper_prop  ,aes(x = study,stratum = primary_cluster_id,alluvium
                   plot.title = element_text(size = 12, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100)) +  plasmid_fill+ ggtitle("All isolates") 
 
 C
-
 ```
 
 # D. 
 ```{r}
-
 ST258_genomes <- df %>% subset(ST=="258") %>% .$isolate_no
 mobtyper_prop_ST258 <-  mobtyper_merged  %>% subset(isolate_no %in% ST258_genomes & KPC_plasmid ==1) %>%
   count(study, primary_cluster_id) %>%
@@ -219,7 +216,7 @@ D
 
 ```{r,fig.width=7,fig.height=10.5}  
 AB <-  cowplot::plot_grid(A,B,ncol=1,rel_heights = c(1,.667),labels = c("A","B"),label_size=12)  
-CD <-  cowplot::plot_grid(C + theme(legend.position = 'none',axis.title.x = element_blank()),D + theme(legend.position = 'none',axis.title.x = element_blank()),ncol=2,labels = c("C","D"),label_size = 12,rel_widths = c(1,1))
+CD <-  cowplot::plot_grid(C + theme(legend.position = 'none',axis.title.x = element_blank()),D + theme(legend.position = 'none',axis.title.x = element_blank()),NULL,ncol=3,labels = c("C","D",""),label_size = 12,rel_widths = c(1,1,0.5))
 figure_3 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,.33),labels = c("",""),label_size=12)  
 figure_3
 
