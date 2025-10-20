@@ -69,7 +69,7 @@ A <- ggplot(data=df,
   theme_bw_me +
   xlab("Count") + ylab("") +
   theme(
-    axis.text.x = element_text(hjust = 1, size=12, color="black"),
+    axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
     axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=12, color="black"),
@@ -99,7 +99,7 @@ ST_dist$Species_ST_new <- factor(ST_dist$Species_ST_new,levels = ST_dist %>% arr
 B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = Species_ST_new,alluvium = Species_ST_new,y=prop,fill = Species_ST_new)) +
   geom_alluvium(aes(fill = Species_ST_new),width=0.66) +
   geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage") + ST_scale + theme(legend.position = "bottom",
-                  axis.text =   element_text(size=12, color="black"),
+                  axis.text =   element_text(hjust = 0.5, size=12, color="black"),
                   axis.title = element_text(size = 12, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
