@@ -127,5 +127,5 @@ figure
 ```
 
 ```{r,fig.width=6,fig.height=4}   
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_1_taxonomy.png",plot=figure,width = 9,height = 5.14,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_1_taxonomy.png",plot=figure,width = 9,height = 4.5,dpi=900,bg = 'white')
 ```

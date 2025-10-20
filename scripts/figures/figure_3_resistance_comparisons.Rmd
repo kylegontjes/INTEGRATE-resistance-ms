@@ -157,7 +157,7 @@ ggplot(data=res_comps,aes(y=name,x=prop,fill=dataset)) +
 df_kpn <- subset(df,Species == "Klebsiella pneumoniae")
 df_kpn_201415 <-  subset(df_kpn,Species == "Klebsiella pneumoniae" & study == '2014-15')
 df_kpn_202123 <- subset(df_kpn,Species == "Klebsiella pneumoniae" & study == '2021-23')
-A <- algorithm(overall_df = df_kpn,comparitor = 'study',df1 = df_kpn_201415,df2 = df_kpn_202123,df1name = '2014-15',df2name = '2021-23',population = "Both studies")
+A <- algorithm(overall_df = df_kpn,comparitor = 'study',df1 = df_kpn_201415,df2 = df_kpn_202123,df1name = '2014-15',df2name = '2021-23',population = "All isolates")
 A
 ```
 
