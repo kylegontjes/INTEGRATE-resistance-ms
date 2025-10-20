@@ -58,14 +58,14 @@ df_202123<- df%>% subset(study == "2021-23")
 
 ## A. Species ST
 ```{r}
-A <- ggplot(data=df_202123,
+A <- ggplot(data=df,
        aes(y=forcats::fct_infreq(Species_ST_new), fill=Species_ST_new)) +
   geom_bar() +
   geom_text(stat='count',
             aes(label=..count..),
-            hjust=-0.1, # push slightly to the right
+            hjust=-0.05, # push slightly to the right
             size=3.5) + 
-  xlim(NA, 200.1) +
+  xlim(NA, 325.1) +
   theme_bw_me +
   xlab("Count") + ylab("") +
   theme(
@@ -75,8 +75,10 @@ A <- ggplot(data=df_202123,
                   legend.text =   element_text(size=12, color="black"),
                   legend.title = element_text(size = 12, color="black"),
     plot.title = element_text(size = 0, color="black"),
-    legend.position = "none"
-  ) + ST_scale
+    legend.position = "none",
+    strip.text = element_text(size=14,color='black')
+        
+  ) + ST_scale + facet_wrap(~study)
 
 A
 ```
@@ -95,8 +97,8 @@ ST_dist <-  df  %>%
 ST_dist$Species_ST_new <- factor(ST_dist$Species_ST_new,levels = ST_dist %>% arrange(n) %>% group_by(Species_ST_new) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$Species_ST_new)
 
 B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = Species_ST_new,alluvium = Species_ST_new,y=prop,fill = Species_ST_new)) +
-  geom_alluvium(aes(fill = Species_ST_new),width=0.5) +
-  geom_stratum(width=0.5) + theme_bw_me + xlab("Study") + ylab("Percentage") + ST_scale + theme(legend.position = "bottom",
+  geom_alluvium(aes(fill = Species_ST_new),width=0.66) +
+  geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage") + ST_scale + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 12, color="black"),
                   legend.text =   element_text(size=8, color="black"),
@@ -116,8 +118,8 @@ gontjesr::convert_tableone_into_df(dataset=df_201415,vars='Species_ST')
 
 # Overall figure
 
-```{r,fig.width=6,fig.height=3}
-AB <-  cowplot::plot_grid(A,B + theme(legend.position='none'),rel_widths =  c(1,0.65),labels = c("A","B"),ncol=2)  
+```{r,fig.width=9,fig.height=4.5}
+AB <-  cowplot::plot_grid(A,B + theme(legend.position='none'),rel_widths =  c(1,.33),labels = c("A","B"),ncol=2)  
 ST_scale_legend <- gontjesr::get_legend(B) 
 ST_legend_plot <- cowplot::plot_grid(ST_scale_legend) + theme(plot.margin  = margin(t=0,unit='in'))
 figure <- cowplot::plot_grid(AB ,ncol=1)
@@ -125,5 +127,5 @@ figure
 ```
 
 ```{r,fig.width=6,fig.height=4}   
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_1_taxonomy.png",plot=figure,width = 6,height = 3,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_1_taxonomy.png",plot=figure,width = 9,height = 5.14,dpi=900,bg = 'white')
 ```
