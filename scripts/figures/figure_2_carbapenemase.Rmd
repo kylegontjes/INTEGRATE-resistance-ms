@@ -205,7 +205,7 @@ D
 
 ```{r,fig.width=6,fig.height=9}  
 AB <-  cowplot::plot_grid(A,B,ncol=1,rel_heights = c(1,1),labels = c("A","B"),label_size=12)  
-CD <-  cowplot::plot_grid(C + theme(legend.position = 'none',axis.title.x = element_blank()),D + theme(legend.position = 'none',axis.title.x = element_blank()),ncol=2,labels = c("C","D"),label_size = 12,rel_widths = c(1,1))
+CD <-  cowplot::plot_grid(C + theme(legend.position = 'none',axis.title.x = element_blank()),D + theme(legend.position = 'none',axis.title.x = element_blank()),NULL,ncol=3,labels = c("C","D",""),label_size = 12,rel_widths = c(1,1,0.5))
 figure_2 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,.5),labels = c("",""),label_size=12)  
 figure_2
 ``` 
