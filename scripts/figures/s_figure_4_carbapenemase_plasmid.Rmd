@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 3: Carbapenem resistance-associated genotypes"
+title: "s_figure_4_carbapenemase_plasmid"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -104,25 +104,88 @@ df_201415 <- df%>% subset(study == "2014-15")
 df_202123<- df%>% subset(study == "2021-23")
 ```
 
+
+# Mobsuite data
+## INTEGRATE
+```{r}  
+mobsuite_contig <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Descriptive_epidemiology/2024-12-30_mobsuite/results/INTEGRATE_contig_report.txt")
+mobsuite_contig$isolate_no <- gsub(".fna","",mobsuite_contig$sample_id) 
+mobsuite_contig <- subset(mobsuite_contig,isolate_no %in% df$isolate_no)
+mobtyper <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Descriptive_epidemiology/2024-12-30_mobsuite/results/INTEGRATE_mobtyper_results.txt")
+mobtyper$isolate_no <-mobtyper$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub(".fna","",.)
+mobtyper <- subset(mobtyper,isolate_no %in% df$isolate_no)
+```
+## 2014-15 study
+```{r}
+ amrfinder_mat <- subset(amrfinder_matrix,rownames(amrfinder_matrix) %in% df$isolate_no)
+amrfinder <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/amrfinder_cleaned_091825.RDS")
+amrfinder_carb <- subset(amrfinder,subclass == "CARBAPENEM") %>% subset(isolate_no %in% df$isolate_no)
+mobtyper_old <-  read_delim("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/data/mobsuite/CRKP_mobtyper_results.txt")
+mobtyper_old$isolate_no <-mobtyper_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
+mobtyper_old <- subset(mobtyper_old,isolate_no %in% df$isolate_no)
+mobsuite_contig_old <-  read_delim("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/data/mobsuite/CRKP_contig_report.txt")
+mobsuite_contig_old$isolate_no <-mobsuite_contig_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
+mobsuite_contig_old <- subset(mobsuite_contig_old,isolate_no %in% df$isolate_no)
+
+mobtyper_merged <- bind_rows(mobtyper_old %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor),
+                             mobtyper %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor)) %>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
+mobsuite_contig_merged <- bind_rows(mobsuite_contig_old %>% select(isolate_no,contig_id,size,gc,primary_cluster_id,mash_nearest_neighbor),
+                             mobsuite_contig %>% select(isolate_no,contig_id,size,gc,primary_cluster_id,mash_nearest_neighbor))%>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
+mobtyper_mat <- gontjesr::get_mobtyper_cluster_matrix(df,mobtyper_merged)
+```
+
+KPC plasmid matrix
+```{r}
+get_KPC_plasmid <- function(isolate,amrfinder_carb,mobsuite_contig){
+  amrfinder_sub <- amrfinder_carb %>% subset(isolate_no == isolate)
+  mobsuite_contig_merged <- mobsuite_contig_merged %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id)
+  mobsuite_contig_merged$primary_cluster_id %>% paste0(collapse=';') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
+}
+
+
+df$KPC_plasmid <- lapply(df$isolate_no,get_KPC_plasmid,amrfinder_carb,mobsuite_contig) %>% unlist
+
+mobtyper_merged$KPC_plasmid <- apply(mobtyper_merged,1,FUN=function(x){
+  isolate_kpc <- df %>% subset(isolate_no == x[['isolate_no']]) %>% .$KPC_plasmid %>% str_split(.,";" ) %>% unlist
+  sum(x[['primary_cluster_id']] %in% isolate_kpc) 
+})
+
+mobtyper_merged$carbapenemase <-apply(mobtyper_merged,1,FUN=function(x){
+  mobsuite_contigs <- mobsuite_contig_merged %>% subset(primary_cluster_id == x[["primary_cluster_id"]] & isolate_no == x[["isolate_no"]] ) %>% .$contig_id
+  amrfinder_sub <- amrfinder_carb %>% subset(contig_id %in% mobsuite_contigs)
+  if(nrow(amrfinder_sub)==0){
+    ""
+  } else{
+    
+  paste0(amrfinder_sub$element_symbol_renamed,collapse=';')
+  }
+   
+})
+
+df_202123<- df%>% subset(study == "2021-23")
+
+# Convert KPC_plasmid variable into a matrix where row is isolate and entry is 1 for present and 0 for absent
+KPC_plasmid_matrix <- df %>% select(isolate_no,KPC_plasmid) %>% 
+    pivot_wider(names_from = KPC_plasmid, values_from = KPC_plasmid) %>%     column_to_rownames("isolate_no")  %>% {ifelse(is.na(.),0,1)}  %>% as.data.frame
+```
+
 # Supplemental Figure:
-```{r,fig.width=9.5,height=4.75}
+```{r,fig.width=7.125,height=4.75}
 kleborate <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/kleborate_both_studies_091825.RDS") %>% subset(species == "Klebsiella pneumoniae") %>% subset(isolate_no %in% df$isolate_no)
 rownames(kleborate) <- kleborate$isolate_no
 kleborate_matrix <- gontjesr::get_presence_absence_matrix(kleborate,'Omp_mutations') %>% as.data.frame
 df <-left_join(df,kleborate_matrix %>% mutate(isolate_no = rownames(.))) %>% left_join(amrfinder_matrix_beta %>% mutate(isolate_no = rownames(.))) %>% as.data.frame
-rownames(df) <- df$isolate_no
-df_carb_omp <- df %>% select(carbapenemase, any_of(c(unique(amrfinder_beta$element_symbol) ,colnames(kleborate_matrix)))) 
-
+rownames(df) <- df$isolate_no 
 # Carb
-df_melt <- df  %>% select(Species_ST,carbapenemase)  %>%
-  separate_rows(carbapenemase, sep = ";") %>%  # split the genotypes
-  count(Species_ST,carbapenemase, sort = TRUE)  %>%
+df_melt <- df  %>% select(Species_ST,KPC_plasmid)  %>%
+  separate_rows(KPC_plasmid, sep = ";") %>%  # split the genotypes
+  count(Species_ST,KPC_plasmid, sort = TRUE)  %>%
     group_by(Species_ST) %>%
     mutate(prop = n / sum(n)) %>%
     ungroup()
  
 # Scales 
-genotypes <- unique(df_melt$carbapenemase) %>% sort
+genotypes <- unique(df$carbapenemase) %>% sort
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray","brown"), c(genotypes,"blaOXA-181;blaNDM-5"))
  
 #ST
@@ -138,7 +201,7 @@ row_annots <- rowAnnotation(Study = df$study,`Major STs` = df$major_STs,
     grid_height = unit(0.25, "cm")
   ))
 
-porin_bla_genotype <- ComplexHeatmap::Heatmap(df_carb_omp %>%  select(-carbapenemase) %>% mutate_all(as.numeric) %>% select_if(colSums(.,na.rm = T)>0) %>% subset(is.na(rowSums(.))==F),col=c("white","black"),show_row_names = F,show_row_dend = F,show_column_dend = F,name = "Genotype",right_annotation = row_annots,
+porin_bla_genotype <- ComplexHeatmap::Heatmap(KPC_plasmid_matrix%>% mutate_all(as.numeric) %>% select_if(colSums(.,na.rm = T)>0) %>% subset(is.na(rowSums(.))==F),col=c("white","black"),show_row_names = F,show_row_dend = F,show_column_dend = F,name = "Genotype",right_annotation = row_annots,
   heatmap_legend_param = list(
     labels = c("1" = "Present","0" = "Absent"),
     labels_gp = gpar(fontsize = 9),
@@ -153,5 +216,5 @@ gghtmp <- cowplot::plot_grid(ht_draw)
 ```
 
 ```{r}
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_3_carbapenem_resistance_associated_genotypes.png",plot=gghtmp,width = 9.5,height = 4.75,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_4_carbapenemase_plasmid.png",plot=gghtmp,width = 7.125,height = 4.75,dpi=900,bg = 'white')
 ```
