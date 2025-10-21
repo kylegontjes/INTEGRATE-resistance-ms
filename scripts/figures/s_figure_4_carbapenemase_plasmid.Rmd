@@ -170,7 +170,7 @@ KPC_plasmid_matrix <- df %>% select(isolate_no,KPC_plasmid) %>%
 ```
 
 # Supplemental Figure:
-```{r,fig.width=7.125,height=4.75}
+```{r,fig.width=7.125,height=5.25}
 kleborate <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/kleborate_both_studies_091825.RDS") %>% subset(species == "Klebsiella pneumoniae") %>% subset(isolate_no %in% df$isolate_no)
 rownames(kleborate) <- kleborate$isolate_no
 kleborate_matrix <- gontjesr::get_presence_absence_matrix(kleborate,'Omp_mutations') %>% as.data.frame
@@ -216,5 +216,5 @@ gghtmp <- cowplot::plot_grid(ht_draw)
 ```
 
 ```{r}
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_4_carbapenemase_plasmid.png",plot=gghtmp,width = 7.125,height = 4.75,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_4_carbapenemase_plasmid.png",plot=gghtmp,width = 7.125,height = 5.25,dpi=900,bg = 'white')
 ```
