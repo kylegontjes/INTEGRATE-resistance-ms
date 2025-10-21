@@ -96,6 +96,7 @@ B <- ggplot(data = df %>% subset(study == "2021-23")) +
 # C-D. Source
 ```{r}
 df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+df$source_simplified <- str_to_title(df$source_simplified)
 df$source_simplified <- factor(df$source_simplified,levels = c(df %>% group_by(source_simplified) %>% summarise (n=n()) %>% arrange(-n) %>% .$source_simplified))
 
 source_scale <- scale_fill_manual(breaks = levels(df$source_simplified),values = c(hues::iwanthue(n = length(unique(df$source_simplified)))),name = "Source", guide = guide_legend(ncol=1, title.position = "top", label.position = "right")) 
@@ -106,8 +107,8 @@ source_dist <-  df %>% subset(is.na(source_simplified)==F)   %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
-source_dist$source_simplified <- factor(source_dist$source_simplified,levels = source_dist %>% subset(study =='2021-23') %>% arrange(n) %>% group_by(source_simplified) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$source_simplified)
 
+source_dist$source_simplified <- factor(source_dist$source_simplified,levels = source_dist %>% subset(study =='2021-23') %>% arrange(n) %>% group_by(source_simplified) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$source_simplified) 
 
 C <- ggplot(data=df,aes(y=source_simplified,fill=source_simplified)) + geom_bar() +
   geom_text(stat='count',
@@ -116,7 +117,7 @@ C <- ggplot(data=df,aes(y=source_simplified,fill=source_simplified)) + geom_bar(
             size=3.5) + 
   xlim(NA, 205.1) +
   theme_bw_me +
-  xlab("Count") + ylab("") +
+  xlab("Isolates") + ylab("") +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=10, color="black"),
     axis.text.y = element_text(size=10, color="black"),

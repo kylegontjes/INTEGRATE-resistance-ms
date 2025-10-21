@@ -121,7 +121,7 @@ A <- ggplot(data=df,
             size=3.5)  +
   xlim(NA, 330.1) +
   theme_bw_me +
-  xlab("Count") + ylab("") +
+  xlab("Isolates") + ylab("") +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
@@ -138,14 +138,14 @@ A
 ```
 
 
-## B. Species ST
+## C. Species ST
 ```{r} 
-B <- ggplot(data=df,
+C <- ggplot(data=df,
        aes(y=forcats::fct_infreq(Species_ST_new), fill=carbapenemase)) +
   geom_bar() +
   xlim(NA, 310.1) +
   theme_bw_me +
-  xlab("Count") + ylab("") +
+  xlab("Isolates") + ylab("") +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
@@ -156,10 +156,10 @@ B <- ggplot(data=df,
     legend.position = "none",
     strip.text = element_text(size=14,color='black')) + genotype_scale + facet_wrap(~study)
 
-B
+C
 ```
 
-# C. Compare carbapenemase genotypes between studies
+# B. Compare carbapenemase genotypes between studies
 ```{r} 
 ST_dist <-  df  %>%
   count(study, carbapenemase) %>%
@@ -169,16 +169,16 @@ ST_dist <-  df  %>%
    
 ST_dist$carbapenemase <- factor(ST_dist$carbapenemase,levels = ST_dist %>% subset(study == "2021-23") %>%  arrange(n) %>% group_by(carbapenemase) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$carbapenemase)
 
-C <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
+B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
   geom_alluvium(aes(fill = carbapenemase),width=0.66) +
   geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage") + genotype_scale + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
-                  axis.title = element_text(size = 12, color="black"),
+                  axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
                   plot.title = element_text(size = 12, color="black")) + ggtitle("All isolates")
 
-C
+B
 ``` 
 
 # D. Kpn ST258
@@ -195,7 +195,7 @@ D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,
   geom_alluvium(aes(fill = carbapenemase),width=0.66) +
   geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage") + genotype_scale + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
-                  axis.title = element_text(size = 12, color="black"),
+                  axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
                   plot.title = element_text(size = 12, color="black")) + ggtitle("ST258 isolates")
@@ -203,13 +203,13 @@ D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,
 D
 ```
 
-```{r,fig.width=6,fig.height=9}  
-AB <-  cowplot::plot_grid(A,B,ncol=1,rel_heights = c(1,1),labels = c("A","B"),label_size=12)  
-CD <-  cowplot::plot_grid(C + theme(legend.position = 'none',axis.title.x = element_blank()),D + theme(legend.position = 'none',axis.title.x = element_blank()),NULL,ncol=3,labels = c("C","D",""),label_size = 12,rel_widths = c(1,1,0.5))
-figure_2 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,.5),labels = c("",""),label_size=12)  
+```{r,fig.width=9,fig.height=6}  
+AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=12)  
+CD <-  cowplot::plot_grid(C + theme(legend.position = 'none'),D + theme(legend.position = 'none'),ncol=2,labels = c("C","D"),label_size = 12,rel_widths = c(1,.33))
+figure_2 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,1),labels = c("",""),label_size=12)  
 figure_2
 ``` 
 
 ```{r}
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_2_carbapenemase.png",plot=figure_2,width = 6,height = 9,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_2_carbapenemase.png",plot=figure_2,width = 9,height = 6,dpi=900,bg = 'white')
 ```
