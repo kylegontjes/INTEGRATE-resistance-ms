@@ -171,7 +171,7 @@ B <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00008,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,220.5) + ggtitle("ST258") + theme(legend.position = 'none')
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00008,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,222.5) + ggtitle("ST258") + theme(legend.position = 'none')
 B
 ```
 
@@ -201,7 +201,7 @@ C <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00011,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,127.5) + ggtitle("ST14") + theme(legend.position = 'none')
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00011,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,128.5) + ggtitle("ST14") + theme(legend.position = 'none')
 C
 ```
 
@@ -230,7 +230,7 @@ D <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00003,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,41.5)+ ggtitle("ST17") + theme(legend.position = 'none')
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00003,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,42.5)+ ggtitle("ST17") + theme(legend.position = 'none')
 D
 ```
 
@@ -259,23 +259,23 @@ E <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00004,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,41.5)+ ggtitle("ST307") + theme(legend.position = 'none') 
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00004,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,42.5)+ ggtitle("ST307") + theme(legend.position = 'none') 
 E
 ```
 
 # Combine figures
-```{r,fig.width=13,fig.height=15}
+```{r,fig.width=13,fig.height=16}
 A_fig <- cowplot::plot_grid(A + theme(legend.position='none'),labels = c("A"))
 A_legend <- cowplot::get_legend(A)
 legend_fig <- cowplot::plot_grid(A_legend)
 smaller <- cowplot::plot_grid(B,C,D,E,ncol=2,labels = c("B","C","D","E"),hjust = 0.25)
 merged <- cowplot::plot_grid(A_fig,smaller,ncol=2,rel_widths = c(0.5,1))
-figure <- cowplot::plot_grid(merged,A_legend,rel_heights = c(1,0.025),ncol=1)
+figure <- cowplot::plot_grid(merged,A_legend,rel_heights = c(1,0.075),ncol=1)
 figure
 ```
 
 
 
 ```{r,fig.width=17,fig.height=10.5}   
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_resistance_phylogeny.png",plot=figure,width = 13,height = 15,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_resistance_phylogeny.png",plot=figure,width = 13,height = 16,dpi=900,bg = 'white')
 ```
