@@ -232,8 +232,6 @@ A <- gheatmap(p11,KPC_plasmid_matrix %>% select(genotype@column_names_param$labe
 A 
 ```
 
-
-
 ```{r}
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_carbapenem_plasmids_phylogeny.png",plot=A,width = 9.25,height =19 ,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_carbapenem_plasmids_phylogeny.png",plot=A,width = 9.25,height =10 ,dpi=900,bg = 'white')
 ```
