@@ -1,5 +1,5 @@
 ---
-title: "s_figure_X_carbapenemase_genotypes_phylogeny"
+title: "s_figure_X_carbapenem_plasmids_phylogeny"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -93,7 +93,7 @@ df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
     } else {
       sapply(carbapenemase,FUN=function(y){
         str_split(y,"-",simplify=T) %>% .[,1]
-    }) %>% unlist  %>% paste0(collapse=" & ") 
+    }) %>% unlist  %>% paste0(collapse=" &") 
     }
     
 })   
@@ -104,46 +104,96 @@ df_201415 <- df%>% subset(study == "2014-15")
 df_202123<- df%>% subset(study == "2021-23")
 ```
 
+
+# Mobsuite data
+## INTEGRATE
+```{r}  
+mobsuite_contig <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Descriptive_epidemiology/2024-12-30_mobsuite/results/INTEGRATE_contig_report.txt")
+mobsuite_contig$isolate_no <- gsub(".fna","",mobsuite_contig$sample_id) 
+mobsuite_contig <- subset(mobsuite_contig,isolate_no %in% df$isolate_no)
+mobtyper <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Descriptive_epidemiology/2024-12-30_mobsuite/results/INTEGRATE_mobtyper_results.txt")
+mobtyper$isolate_no <-mobtyper$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub(".fna","",.)
+mobtyper <- subset(mobtyper,isolate_no %in% df$isolate_no)
+```
+## 2014-15 study
+```{r}
+ amrfinder_mat <- subset(amrfinder_matrix,rownames(amrfinder_matrix) %in% df$isolate_no)
+amrfinder <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/amrfinder_cleaned_091825.RDS")
+amrfinder_carb <- subset(amrfinder,subclass == "CARBAPENEM") %>% subset(isolate_no %in% df$isolate_no)
+mobtyper_old <-  read_delim("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/data/mobsuite/CRKP_mobtyper_results.txt")
+mobtyper_old$isolate_no <-mobtyper_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
+mobtyper_old <- subset(mobtyper_old,isolate_no %in% df$isolate_no)
+mobsuite_contig_old <-  read_delim("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/data/mobsuite/CRKP_contig_report.txt")
+mobsuite_contig_old$isolate_no <-mobsuite_contig_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
+mobsuite_contig_old <- subset(mobsuite_contig_old,isolate_no %in% df$isolate_no)
+
+mobtyper_merged <- bind_rows(mobtyper_old %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor),
+                             mobtyper %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor)) %>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
+mobsuite_contig_merged <- bind_rows(mobsuite_contig_old %>% select(isolate_no,contig_id,size,gc,primary_cluster_id,mash_nearest_neighbor),
+                             mobsuite_contig %>% select(isolate_no,contig_id,size,gc,primary_cluster_id,mash_nearest_neighbor))%>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
+mobtyper_mat <- gontjesr::get_mobtyper_cluster_matrix(df,mobtyper_merged)
+```
+
+KPC plasmid matrix
+```{r}
+get_KPC_plasmid <- function(isolate,amrfinder_carb,mobsuite_contig){
+  amrfinder_sub <- amrfinder_carb %>% subset(isolate_no == isolate)
+  mobsuite_contig_merged <- mobsuite_contig_merged %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id)
+  mobsuite_contig_merged$primary_cluster_id %>% paste0(collapse=' & ') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
+}
+
+
+df$KPC_plasmid <- lapply(df$isolate_no,get_KPC_plasmid,amrfinder_carb,mobsuite_contig) %>% unlist
+
+mobtyper_merged$KPC_plasmid <- apply(mobtyper_merged,1,FUN=function(x){
+  isolate_kpc <- df %>% subset(isolate_no == x[['isolate_no']]) %>% .$KPC_plasmid %>% str_split(.," &" ) %>% unlist
+  sum(x[['primary_cluster_id']] %in% isolate_kpc) 
+})
+
+mobtyper_merged$carbapenemase <-apply(mobtyper_merged,1,FUN=function(x){
+  mobsuite_contigs <- mobsuite_contig_merged %>% subset(primary_cluster_id == x[["primary_cluster_id"]] & isolate_no == x[["isolate_no"]] ) %>% .$contig_id
+  amrfinder_sub <- amrfinder_carb %>% subset(contig_id %in% mobsuite_contigs)
+  if(nrow(amrfinder_sub)==0){
+    ""
+  } else{
+    
+  paste0(amrfinder_sub$element_symbol_renamed,collapse=' & ')
+  }
+   
+})
+
+df_202123<- df%>% subset(study == "2021-23")
+
+# Convert KPC_plasmid variable into a matrix where row is isolate and entry is 1 for present and 0 for absent
+KPC_plasmid_matrix <- df %>% select(isolate_no,KPC_plasmid) %>% separate_rows(KPC_plasmid,sep=' & ') %>% 
+    pivot_wider(names_from = KPC_plasmid, values_from = KPC_plasmid) %>%     column_to_rownames("isolate_no")  %>% {ifelse(is.na(.),0,1)}  %>% as.data.frame
+```
+
 # Supplemental Figure:
-```{r,fig.width=9.5,height=6.7857}
+```{r,fig.width=7.125,height=6.7857}
 kleborate <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/kleborate_both_studies_091825.RDS") %>% subset(species == "Klebsiella pneumoniae") %>% subset(isolate_no %in% df$isolate_no)
 rownames(kleborate) <- kleborate$isolate_no
-kleborate_matrix <- gontjesr:::get_presence_absence_matrix(kleborate,'Omp_mutations') %>% as.data.frame
+kleborate_matrix <- gontjesr::get_presence_absence_matrix(kleborate,'Omp_mutations') %>% as.data.frame
 df <-left_join(df,kleborate_matrix %>% mutate(isolate_no = rownames(.))) %>% left_join(amrfinder_matrix_beta %>% mutate(isolate_no = rownames(.))) %>% as.data.frame
-rownames(df) <- df$isolate_no
-df$major_STs <- ifelse(df$ST %in% c("258","14","307","17","25","11"),df$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
-df_carb_omp <- df %>% select(study,major_STs,any_of(c(unique(amrfinder_beta$element_symbol) ,colnames(kleborate_matrix)))) 
+rownames(df) <- df$isolate_no 
+# Carb
+df_melt <- df  %>% select(Species_ST,KPC_plasmid)  %>%
+  separate_rows(KPC_plasmid, sep = " & ") %>%  # split the genotypes
+  count(Species_ST,KPC_plasmid, sort = TRUE)  %>%
+    group_by(Species_ST) %>%
+    mutate(prop = n / sum(n)) %>%
+    ungroup()
+ 
+# Scales 
+genotypes <- unique(df$carbapenemase) %>% sort
+genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
+genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=3, title.position = "top", label.position = "right"))   
+ 
+#ST
+ST_palette <- ST_scale$palette(1) 
+ST_palette <- c(ST_palette,"Other STs"='lightgray')
 ```
 
-```{r}
-# OMP Muttions
-kleb_matrix_count <- df_carb_omp %>% select(colnames(kleborate_matrix)) %>% colSums() %>% sort
-mutations_over_4 <- names(subset(kleb_matrix_count,kleb_matrix_count>4))
-muts_under <- subset(names(kleb_matrix_count),!names(kleb_matrix_count) %in% mutations_over_4)
-ompK35_truncations_under_4 <- subset(muts_under,grepl("K35-",muts_under))
-ompK36_truncations_under_4 <- subset(muts_under,grepl("K36-",muts_under))
-
-df_carb_omp$ompK35_rare_truncation <- df_carb_omp %>% select(ompK35_truncations_under_4) %>% rowSums(.) %>% {ifelse(.>0,1,0)}
-df_carb_omp$ompK36_rare_truncation <- df_carb_omp %>% select(ompK36_truncations_under_4) %>% rowSums(.) %>% {ifelse(.>0,1,0)}
-
-df_carb_omp <- df_carb_omp %>% select(-muts_under)
-
-# bla genotpyes
-bla_count <- df_carb_omp %>% select(colnames(amrfinder_matrix_beta)) %>% colSums() %>% sort
-bla_over_4 <-names(bla_count)[bla_count>4]
-bla_under_4 <- names(bla_count)[bla_count<4]
-
-families_under_four <- str_split(bla_under_4,"-",simplify = T) %>% .[,1] %>% gsub("bla","",.) %>% unique
-
-store_thes <- lapply(families_under_four,FUN=function(x,df_carb_omp,bla_under_4){
-  cols_of_family <- bla_under_4[grepl(x,bla_under_4)]
-  new_col_name <- paste0("Rare_bla",x)
-  df_carb_omp[[new_col_name]] <<- df_carb_omp %>% select(all_of(cols_of_family)) %>% rowSums() %>% {ifelse(.>0,1,0)}
-},df_carb_omp,bla_under_4)  
-
-df_carb_omp <- df_carb_omp %>% select(-bla_under_4)
-
-```
 
 # Phylogeny 
 ```{r}
@@ -151,7 +201,7 @@ tree_new <- read.tree("~/Desktop/gl_nfs/Project_INTEGRATE/Sequence_data/variant_
 tree_new_final <- tree_new %>% keep.tip(df$isolate_no %>% subset(. %in% tree_new$tip.label)) %>% phytools::midpoint.root()
 ```
 
-```{r,fig.width=11,fig.height=8.8}
+```{r,fig.width=9.25,fig.height=10}
 OLD_ST <- unique(df_201415$Species_ST) %>% sort
 new_ST <- unique(df_202123$Species_ST) %>% sort 
 ST_over_1 <- table(df$Species_ST) %>% subset(.>1) %>% names
@@ -164,8 +214,8 @@ break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
 ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=5, title.position = "top", label.position = "right"))
 feature_colors <- c(`1` = "black",`0`="white")
 feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Tip state", guide = guide_legend(nrow=2, title.position = "top", label.position = "right"))
-geno_vars <- colnames(df_carb_omp) %>% subset(!.%in% c("study","major_STs"))
-genotype <- df_carb_omp %>% subset(rownames(.) %in% tree_new_final$tip.label) %>% select(geno_vars) %>% drop_na() %>% select_if(colSums(.)>0) %>% ComplexHeatmap::Heatmap()
+geno_vars <- colnames(KPC_plasmid_matrix) %>% subset(!.%in% c("study","major_STs","No carbapenemase"))
+genotype <- KPC_plasmid_matrix %>% subset(rownames(.) %in% tree_new_final$tip.label) %>% select(geno_vars) %>% drop_na()  %>% select_if(colSums(.) >0) %>% ComplexHeatmap::Heatmap()
 
 genotypes <- unique(df$carbapenemase) %>% sort
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
@@ -178,11 +228,12 @@ p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% selec
 p01 <- p0 + ggnewscale::new_scale_fill()
 p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0025,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
-A <- gheatmap(p11,df_carb_omp %>% select(genotype@column_names_param$labels[ComplexHeatmap::column_order(genotype)]) %>% mutate_all(as.factor)  %>% `colnames<-`(recode(colnames(.),"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation') %>% gsub("Rare_","Rare ",.)),color  = NULL,width=0.05*length(geno_vars),offset=0.005,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,480) + theme(legend.position = 'bottom')
+A <- gheatmap(p11,KPC_plasmid_matrix %>% select(genotype@column_names_param$labels[ComplexHeatmap::column_order(genotype)]) %>% mutate_all(as.factor)  %>% `colnames<-`(recode(colnames(.),"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation') %>% trimws(.,"both")),color = NULL,width=0.05*length(geno_vars),offset=0.005,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,460) + theme(legend.position = 'bottom')
 A 
 ```
 
-```{r}
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_carbapenem_resistance_associated_genotypes_phylogeny.png",plot=A,width = 11,height = 8.8,dpi=900,bg = 'white')
-``` 
 
+
+```{r}
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_carbapenem_plasmids_phylogeny.png",plot=A,width = 9.25,height =19 ,dpi=900,bg = 'white')
+```
