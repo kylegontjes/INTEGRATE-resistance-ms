@@ -151,7 +151,7 @@ tree_new <- read.tree("~/Desktop/gl_nfs/Project_INTEGRATE/Sequence_data/variant_
 tree_new_final <- tree_new %>% keep.tip(df$isolate_no %>% subset(. %in% tree_new$tip.label)) %>% phytools::midpoint.root()
 ```
 
-```{r,fig.width=11,fig.height=8.8}
+```{r,fig.width=11,fig.height=10}
 OLD_ST <- unique(df_201415$Species_ST) %>% sort
 new_ST <- unique(df_202123$Species_ST) %>% sort 
 ST_over_1 <- table(df$Species_ST) %>% subset(.>1) %>% names
@@ -183,6 +183,6 @@ A
 ```
 
 ```{r}
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_carbapenem_resistance_associated_genotypes_phylogeny.png",plot=A,width = 11,height = 8.8,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_carbapenem_resistance_associated_genotypes_phylogeny.png",plot=A,width = 11,height = 10,dpi=900,bg = 'white')
 ``` 
 
