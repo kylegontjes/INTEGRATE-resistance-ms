@@ -133,7 +133,7 @@ C <- ggplot(data=df,aes(y=source_simplified,fill=source_simplified)) + geom_bar(
 
 D <- ggplot(source_dist %>% subset(n>0),aes(x = study,stratum = source_simplified,alluvium = source_simplified,y=prop,fill = source_simplified)) +
   geom_alluvium(aes(fill = source_simplified),width=0.66) +
-  geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage") + source_scale + theme(legend.position = "right",
+  geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + source_scale + theme(legend.position = "right",
                   axis.text =   element_text(size=10, color="black"),
                   axis.title = element_text(size = 12, color="black"),
                   legend.text =   element_text(size=10, color="black"),
@@ -218,7 +218,6 @@ f <- ggplot(data = df_complete) +
     legend.title = element_text(size = 12, color = "black"),
     plot.title = element_text(size = 0, color = "black")
   )
-
 ```
 
 ```{r,fig.width=8,fig.height=8} 
@@ -233,4 +232,3 @@ sfigure1
 ```{r}
 ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_1_sampling.png",plot=sfigure1,width = 8,height = 8,dpi=900,bg = 'white')
 ```
-
