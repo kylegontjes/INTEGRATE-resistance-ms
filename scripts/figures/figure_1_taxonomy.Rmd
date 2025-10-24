@@ -35,7 +35,6 @@ df$study <- factor(df$study,levels = c("2014-15","2021-23"))
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23")
 
-
 df_202123_all <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRE_metadata_091825.RDS")  %>% subset(study == '2021-23')
 ```
 # Coordinate ST data
@@ -119,9 +118,7 @@ gontjesr::convert_tableone_into_df(dataset=df_201415,vars='Species_ST')
 # Overall figure
 
 ```{r,fig.width=9,fig.height=4.5}
-AB <-  cowplot::plot_grid(A,B + theme(legend.position='none'),rel_widths =  c(1,.33),labels = c("A","B"),ncol=2)  
-ST_scale_legend <- gontjesr::get_legend(B) 
-ST_legend_plot <- cowplot::plot_grid(ST_scale_legend) + theme(plot.margin  = margin(t=0,unit='in'))
+AB <-  cowplot::plot_grid(A,B + theme(legend.position='none'),rel_widths =  c(1,.33),labels = c("A","B"),ncol=2)   
 figure <- cowplot::plot_grid(AB ,ncol=1)
 figure
 ```
