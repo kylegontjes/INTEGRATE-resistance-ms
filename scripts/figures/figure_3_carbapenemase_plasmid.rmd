@@ -93,14 +93,14 @@ KPC plasmid matrix
 get_KPC_plasmid <- function(isolate,amrfinder_carb,mobsuite_contig){
   amrfinder_sub <- amrfinder_carb %>% subset(isolate_no == isolate)
   mobsuite_contig_merged <- mobsuite_contig_merged %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id)
-  mobsuite_contig_merged$primary_cluster_id %>% paste0(collapse=';') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
+  mobsuite_contig_merged$primary_cluster_id %>% paste0(collapse=' & ') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
 }
 
 
 df$KPC_plasmid <- lapply(df$isolate_no,get_KPC_plasmid,amrfinder_carb,mobsuite_contig) %>% unlist
 
 mobtyper_merged$KPC_plasmid <- apply(mobtyper_merged,1,FUN=function(x){
-  isolate_kpc <- df %>% subset(isolate_no == x[['isolate_no']]) %>% .$KPC_plasmid %>% str_split(.,";" ) %>% unlist
+  isolate_kpc <- df %>% subset(isolate_no == x[['isolate_no']]) %>% .$KPC_plasmid %>% str_split(.," & " ) %>% unlist
   sum(x[['primary_cluster_id']] %in% isolate_kpc) 
 })
 
@@ -111,7 +111,7 @@ mobtyper_merged$carbapenemase <-apply(mobtyper_merged,1,FUN=function(x){
     ""
   } else{
     
-  paste0(amrfinder_sub$element_symbol_renamed,collapse=';')
+  paste0(amrfinder_sub$element_symbol_renamed,collapse=' & ')
   }
    
 })

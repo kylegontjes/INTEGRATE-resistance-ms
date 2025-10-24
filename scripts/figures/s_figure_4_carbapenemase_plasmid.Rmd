@@ -78,12 +78,12 @@ isolate_level_data <- left_join(isolate_level_data, df %>% select(isolate_no,Spe
 
 # Get an isolate's carbapenemase genes
 df$blactamase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=";")
+  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No blactamase",.)}
 
 
 df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=";")
+  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No carbapenemase",.)}
 
 df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
@@ -93,7 +93,7 @@ df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
     } else {
       sapply(carbapenemase,FUN=function(y){
         str_split(y,"-",simplify=T) %>% .[,1]
-    }) %>% unlist  %>% paste0(collapse=";") 
+    }) %>% unlist  %>% paste0(collapse=" & ") 
     }
     
 })   
@@ -139,14 +139,14 @@ KPC plasmid matrix
 get_KPC_plasmid <- function(isolate,amrfinder_carb,mobsuite_contig){
   amrfinder_sub <- amrfinder_carb %>% subset(isolate_no == isolate)
   mobsuite_contig_merged <- mobsuite_contig_merged %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id)
-  mobsuite_contig_merged$primary_cluster_id %>% paste0(collapse=';') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
+  mobsuite_contig_merged$primary_cluster_id %>% paste0(collapse=' & ') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
 }
 
 
 df$KPC_plasmid <- lapply(df$isolate_no,get_KPC_plasmid,amrfinder_carb,mobsuite_contig) %>% unlist
 
 mobtyper_merged$KPC_plasmid <- apply(mobtyper_merged,1,FUN=function(x){
-  isolate_kpc <- df %>% subset(isolate_no == x[['isolate_no']]) %>% .$KPC_plasmid %>% str_split(.,";" ) %>% unlist
+  isolate_kpc <- df %>% subset(isolate_no == x[['isolate_no']]) %>% .$KPC_plasmid %>% str_split(.," & " ) %>% unlist
   sum(x[['primary_cluster_id']] %in% isolate_kpc) 
 })
 
@@ -157,7 +157,7 @@ mobtyper_merged$carbapenemase <-apply(mobtyper_merged,1,FUN=function(x){
     ""
   } else{
     
-  paste0(amrfinder_sub$element_symbol_renamed,collapse=';')
+  paste0(amrfinder_sub$element_symbol_renamed,collapse=' & ')
   }
    
 })
@@ -165,8 +165,9 @@ mobtyper_merged$carbapenemase <-apply(mobtyper_merged,1,FUN=function(x){
 df_202123<- df%>% subset(study == "2021-23")
 
 # Convert KPC_plasmid variable into a matrix where row is isolate and entry is 1 for present and 0 for absent
-KPC_plasmid_matrix <- df %>% select(isolate_no,KPC_plasmid) %>% 
-    pivot_wider(names_from = KPC_plasmid, values_from = KPC_plasmid) %>%     column_to_rownames("isolate_no")  %>% {ifelse(is.na(.),0,1)}  %>% as.data.frame
+## If ; value, show entry in both the plasmids (i.e., add 1 to both columns)
+
+KPC_plasmid_matrix <- df %>% select(isolate_no,KPC_plasmid) %>% separate_rows(KPC_plasmid,sep = ' & ') %>%     pivot_wider(names_from = KPC_plasmid, values_from = KPC_plasmid) %>%     column_to_rownames("isolate_no")  %>% {ifelse(is.na(.),0,1)}  %>% as.data.frame 
 ```
 
 # Supplemental Figure:
@@ -178,7 +179,7 @@ df <-left_join(df,kleborate_matrix %>% mutate(isolate_no = rownames(.))) %>% lef
 rownames(df) <- df$isolate_no 
 # Carb
 df_melt <- df  %>% select(Species_ST,KPC_plasmid)  %>%
-  separate_rows(KPC_plasmid, sep = ";") %>%  # split the genotypes
+  separate_rows(KPC_plasmid, sep = " & ") %>%  # split the genotypes
   count(Species_ST,KPC_plasmid, sort = TRUE)  %>%
     group_by(Species_ST) %>%
     mutate(prop = n / sum(n)) %>%

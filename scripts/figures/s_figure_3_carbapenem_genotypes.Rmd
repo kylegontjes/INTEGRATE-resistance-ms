@@ -78,12 +78,12 @@ isolate_level_data <- left_join(isolate_level_data, df %>% select(isolate_no,Spe
 
 # Get an isolate's carbapenemase genes
 df$blactamase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=";")
+  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No blactamase",.)}
 
 
 df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=";")
+  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No carbapenemase",.)}
 
 df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
@@ -93,7 +93,7 @@ df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
     } else {
       sapply(carbapenemase,FUN=function(y){
         str_split(y,"-",simplify=T) %>% .[,1]
-    }) %>% unlist  %>% paste0(collapse=";") 
+    }) %>% unlist  %>% paste0(collapse=" & ") 
     }
     
 })   
@@ -148,7 +148,7 @@ df_carb_omp <- df_carb_omp %>% select(-bla_under_4)
 ```{r,fig.width=8,height=8}
 # Carb
 df_melt <- df  %>% select(Species_ST,carbapenemase)  %>%
-  separate_rows(carbapenemase, sep = ";") %>%  # split the genotypes
+  separate_rows(carbapenemase, sep = " & ") %>%  # split the genotypes
   count(Species_ST,carbapenemase, sort = TRUE)  %>%
     group_by(Species_ST) %>%
     mutate(prop = n / sum(n)) %>%

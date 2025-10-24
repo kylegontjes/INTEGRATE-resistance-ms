@@ -78,12 +78,12 @@ isolate_level_data <- left_join(isolate_level_data, df %>% select(isolate_no,Spe
 
 # Get an isolate's carbapenemase genes
 df$blactamase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=";")
+  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No blactamase",.)}
 
 
 df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=";")
+  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No carbapenemase",.)}
 
 df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
@@ -93,7 +93,7 @@ df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
     } else {
       sapply(carbapenemase,FUN=function(y){
         str_split(y,"-",simplify=T) %>% .[,1]
-    }) %>% unlist  %>% paste0(collapse=";") 
+    }) %>% unlist  %>% paste0(collapse=" & ") 
     }
     
 })   
