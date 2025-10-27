@@ -147,7 +147,7 @@ A <- ggplot(data=df ,aes(y=forcats::fct_infreq(KPC_plasmid),fill=KPC_plasmid)) +
 A
 ```
 
-## C. . Species ST
+## C. Species ST
 ```{r} 
 C <- ggplot(data=df,
        aes(y=forcats::fct_infreq(Species_ST_new), fill=KPC_plasmid)) +
@@ -178,7 +178,15 @@ mobtyper_prop <-  df   %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
-mobtyper_prop$KPC_plasmid <- factor(mobtyper_prop$KPC_plasmid,levels = mobtyper_prop %>% arrange(n) %>% group_by(KPC_plasmid) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$KPC_plasmid)
+
+get_factor_order_plasmid <- function(ST_dist,var){
+  new_order <- ST_dist %>% subset(study =='2021-23') %>% arrange(-n) %>% subset(n>0) %>% .[[var]] 
+  zero_new_order_old <- ST_dist %>% subset(study =='2014-15') %>% subset(!get(var) %in% new_order) %>% arrange(-n) %>% .[[var]]
+  c(c(new_order,zero_new_order_old) %>% subset(!.%in% c("Chromosome","No carbapenemase")),"Chromosome","No carbapenemase")
+}
+ 
+mobtyper_prop$KPC_plasmid <- factor(mobtyper_prop$KPC_plasmid,levels = get_factor_order_plasmid(mobtyper_prop,'KPC_plasmid'))
+mobtyper_prop <- mobtyper_prop %>% arrange(KPC_plasmid)  
  
 B <-  ggplot(mobtyper_prop  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
   geom_alluvium(aes(fill = KPC_plasmid),width=0.5) +
@@ -200,9 +208,9 @@ mobtyper_prop_ST258 <-  df %>% subset(ST=="258")   %>%
   complete(study, KPC_plasmid, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
-   
-mobtyper_prop_ST258$KPC_plasmid <- factor(mobtyper_prop_ST258$KPC_plasmid,levels = mobtyper_prop %>% arrange(n) %>% group_by(KPC_plasmid) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$KPC_plasmid)
  
+mobtyper_prop_ST258$KPC_plasmid <- factor(mobtyper_prop_ST258$KPC_plasmid,levels = get_factor_order_plasmid(mobtyper_prop_ST258,'KPC_plasmid'))
+mobtyper_prop_ST258 <- mobtyper_prop_ST258 %>% arrange(KPC_plasmid)  
  
 D <-  ggplot(mobtyper_prop_ST258  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
   geom_alluvium(aes(fill = KPC_plasmid),width=0.5) +

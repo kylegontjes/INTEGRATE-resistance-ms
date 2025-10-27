@@ -167,7 +167,14 @@ ST_dist <-  df  %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
-ST_dist$carbapenemase <- factor(ST_dist$carbapenemase,levels = ST_dist %>% subset(study == "2021-23") %>%  arrange(n) %>% group_by(carbapenemase) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$carbapenemase)
+get_factor_order_carb <- function(ST_dist,var){
+  new_order <- ST_dist %>% subset(study =='2021-23') %>% arrange(-n) %>% subset(n>0) %>% .[[var]] 
+  zero_new_order_old <- ST_dist %>% subset(study =='2014-15') %>% subset(!get(var) %in% new_order) %>% arrange(-n) %>% .[[var]]
+  c(c(new_order,zero_new_order_old) %>% subset(.!="No carbapenemase"),"No carbapenemase")
+}
+ 
+ST_dist$carbapenemase <- factor(ST_dist$carbapenemase,levels = get_factor_order_carb(ST_dist,'carbapenemase'))
+ST_dist <- ST_dist %>% arrange(carbapenemase) 
 
 B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
   geom_alluvium(aes(fill = carbapenemase),width=0.66) +
@@ -189,7 +196,8 @@ ST_dist_ST258 <-  df  %>% subset(Species_ST == "Klebsiella pneumoniae ST258") %>
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
-ST_dist_ST258$carbapenemase <- factor(ST_dist_ST258$carbapenemase,levels = ST_dist_ST258  %>% subset(study == "2021-23")  %>% arrange(n) %>% group_by(carbapenemase) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$carbapenemase)
+ST_dist_ST258$carbapenemase <- factor(ST_dist_ST258$carbapenemase,levels = get_factor_order_carb(ST_dist_ST258,'carbapenemase'))
+ST_dist_ST258 <- ST_dist_ST258 %>% arrange(carbapenemase)  
 
 D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
   geom_alluvium(aes(fill = carbapenemase),width=0.66) +
@@ -203,7 +211,7 @@ D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,
 D
 ```
 
-```{r,fig.width=9,fig.height=6}  
+```{r,fig.width=9,fig.height=6.76} 
 AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=12)  
 CD <-  cowplot::plot_grid(C + theme(legend.position = 'none'),D + theme(legend.position = 'none'),ncol=2,labels = c("C","D"),label_size = 12,rel_widths = c(1,.33))
 figure_2 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,1),labels = c("",""),label_size=12)  
@@ -211,5 +219,5 @@ figure_2
 ``` 
 
 ```{r}
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_2_carbapenemase.png",plot=figure_2,width = 9,height = 6,dpi=900,bg = 'white')
+ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_2_carbapenemase.png",plot=figure_2,width = 9,height = 6.76,dpi=900,bg = 'white')
 ```
