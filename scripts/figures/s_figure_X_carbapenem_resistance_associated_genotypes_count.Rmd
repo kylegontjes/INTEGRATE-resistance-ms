@@ -176,7 +176,7 @@ melted_row_summary <- melted_row %>% group_by(study,major_STs,variable) %>% summ
 melted_row_summary$proportion <- ifelse(melted_row_summary$study =='2021-23',melted_row_summary$n/isolates_2123,melted_row_summary$n/isolates_1415)
 
 # How to normalize data by count in study 
-melted_row_summary$variable <- recode(melted_row_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation') %>% gsub("Rare_","Rare ",.)
+melted_row_summary$variable <- recode(melted_row_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in OmpK36") %>% gsub("Rare_","Rare ",.)
 melted_row_summary$variable <- factor(melted_row_summary$variable,levels = melted_row_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
 
 
@@ -186,7 +186,7 @@ A <- ggplot(data=melted_row_summary,aes(y=variable,fill=major_STs,x=proportion))
   inherit.aes = F,  
   aes(
     label = count,
-    x = sumar+.025,
+    x = sumar+.026,
     y= variable
   ),
   size = 2.5,
@@ -206,7 +206,7 @@ melted_row_no_carb_summary <- melted_row_no_carb %>% group_by(study,major_STs,va
 melted_row_no_carb_summary$proportion <- ifelse(melted_row_no_carb_summary$study =='2021-23',melted_row_no_carb_summary$n/non_carbapenemase_isolates_2123,melted_row_no_carb_summary$n/non_carbapenemase_isolates_1415)
 
 # How to normalize data by count in study 
-melted_row_no_carb_summary$variable <- recode(melted_row_no_carb_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation') %>% gsub("Rare_","Rare ",.)
+melted_row_no_carb_summary$variable <- recode(melted_row_no_carb_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in OmpK36") %>% gsub("Rare_","Rare ",.)
 melted_row_no_carb_summary$variable <- factor(melted_row_no_carb_summary$variable,levels = melted_row_no_carb_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
 
 
@@ -216,7 +216,7 @@ B <- ggplot(data=melted_row_no_carb_summary,aes(y=variable,fill=major_STs,x=prop
   inherit.aes = F,  
   aes(
     label = count,
-    x = sumar+.02,
+    x = sumar+.0225,
     y= variable
   ),
   size = 2.5,
@@ -230,8 +230,8 @@ AB <- cowplot::plot_grid(A + theme(legend.position = 'none'),B+ theme(legend.pos
 figure <- cowplot::plot_grid(AB,legends,rel_heights = c(1,0.075),ncol=1)
 figure
 ```
-```{r}
 
+```{r}
 ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_X_carbapenem_resistance_associated_genotypes_count.png",plot=figure,width = 8,height = 10,dpi=900,bg = 'white')
 ```
 
