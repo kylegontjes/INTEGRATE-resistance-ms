@@ -189,8 +189,8 @@ mobtyper_prop$KPC_plasmid <- factor(mobtyper_prop$KPC_plasmid,levels = get_facto
 mobtyper_prop <- mobtyper_prop %>% arrange(KPC_plasmid)  
  
 B <-  ggplot(mobtyper_prop  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
-  geom_alluvium(aes(fill = KPC_plasmid),width=0.5) +
-  geom_stratum(width=0.5) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
+  geom_alluvium(aes(fill = KPC_plasmid),width=0.66) +
+  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
@@ -213,8 +213,8 @@ mobtyper_prop_ST258$KPC_plasmid <- factor(mobtyper_prop_ST258$KPC_plasmid,levels
 mobtyper_prop_ST258 <- mobtyper_prop_ST258 %>% arrange(KPC_plasmid)  
  
 D <-  ggplot(mobtyper_prop_ST258  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
-  geom_alluvium(aes(fill = KPC_plasmid),width=0.5) +
-  geom_stratum(width=0.5) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
+  geom_alluvium(aes(fill = KPC_plasmid),width=0.66) +
+  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
