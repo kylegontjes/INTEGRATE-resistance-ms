@@ -128,7 +128,24 @@ KPC_plasmid_matrix <- df_202123 %>% select(isolate_no,KPC_plasmid) %>%
 KPC_plasmids <- c(mobtyper_merged  %>% subset(KPC_plasmid ==1) %>% .$primary_cluster_id %>% unique %>% sort)
 plasmid_fill <- scale_fill_manual(breaks = c(KPC_plasmids,"Chromosome","No carbapenemase"),values = c(hues::iwanthue(length(KPC_plasmids)),"darkgray",'lightgray'),name="Carbapenemase-containing plasmid",guide = guide_legend(title.position = "top", label.position = "right"))
 
-A <- ggplot(data=df ,aes(y=forcats::fct_infreq(KPC_plasmid),fill=KPC_plasmid)) + geom_bar(stat='count')  + theme_bw_me + ylab("") + labs(fill="KPC_plasmid") + facet_wrap(~study) + plasmid_fill  + xlab("Isolates") + theme(legend.position = 'none') +
+
+mobtyper_prop <-  df   %>%
+  count(study, KPC_plasmid) %>%
+  complete(study, KPC_plasmid, fill = list(n = 0)) %>%
+  group_by(study) %>%
+  mutate(prop = n / sum(n) * 100)
+   
+
+get_factor_order_plasmid <- function(ST_dist,var){
+  new_order <- ST_dist %>% subset(study =='2021-23') %>% arrange(-n) %>% subset(n>0) %>% .[[var]] 
+  zero_new_order_old <- ST_dist %>% subset(study =='2014-15') %>% subset(!get(var) %in% new_order) %>% arrange(-n) %>% .[[var]]
+  c(c(new_order,zero_new_order_old) %>% subset(!.%in% c("Chromosome","No carbapenemase")),"Chromosome","No carbapenemase")
+}
+ 
+df$KPC_plasmid <- factor(df$KPC_plasmid,levels = get_factor_order_plasmid(mobtyper_prop,'KPC_plasmid'))
+mobtyper_prop$KPC_plasmid <- factor(mobtyper_prop$KPC_plasmid,levels = get_factor_order_plasmid(mobtyper_prop,'KPC_plasmid'))
+
+A <- ggplot(data=df ,aes(y=KPC_plasmid,fill=KPC_plasmid)) + geom_bar(stat='count')  + theme_bw_me + ylab("") + labs(fill="KPC_plasmid") + facet_wrap(~study) + plasmid_fill  + xlab("Isolates") + theme(legend.position = 'none') +
   geom_text(stat='count',
             aes(label=..count..),
             hjust=-0.05, 
@@ -149,8 +166,22 @@ A
 
 ## C. Species ST
 ```{r} 
+get_factor_order <- function(ST_dist,var){
+  new_order <- ST_dist %>% subset(study =='2021-23') %>% arrange(-n) %>% subset(n>0) %>% .[[var]] 
+  zero_new_order_old <- ST_dist %>% subset(study =='2014-15') %>% subset(!get(var) %in% new_order) %>% arrange(-n) %>% .[[var]]
+  c(c(new_order,zero_new_order_old) %>% subset(.!="Singleton STs"),"Singleton STs")
+}
+ 
+ST_dist <-  df  %>%
+  count(study, Species_ST_new) %>%
+  complete(study, Species_ST_new, fill = list(n = 0)) %>%
+  group_by(study) %>%
+  mutate(prop = n / sum(n) * 100)
+   
+df$Species_ST_new <- factor(df$Species_ST_new,levels = get_factor_order(ST_dist,'Species_ST_new'))
+
 C <- ggplot(data=df,
-       aes(y=forcats::fct_infreq(Species_ST_new), fill=KPC_plasmid)) +
+       aes(y=Species_ST_new, fill=KPC_plasmid)) +
   geom_bar() +
   xlim(NA, 310.1) +
   theme_bw_me +
@@ -172,22 +203,6 @@ C
 
 # B. Proportion of plasmids over study periods
 ```{r}
-mobtyper_prop <-  df   %>%
-  count(study, KPC_plasmid) %>%
-  complete(study, KPC_plasmid, fill = list(n = 0)) %>%
-  group_by(study) %>%
-  mutate(prop = n / sum(n) * 100)
-   
-
-get_factor_order_plasmid <- function(ST_dist,var){
-  new_order <- ST_dist %>% subset(study =='2021-23') %>% arrange(-n) %>% subset(n>0) %>% .[[var]] 
-  zero_new_order_old <- ST_dist %>% subset(study =='2014-15') %>% subset(!get(var) %in% new_order) %>% arrange(-n) %>% .[[var]]
-  c(c(new_order,zero_new_order_old) %>% subset(!.%in% c("Chromosome","No carbapenemase")),"Chromosome","No carbapenemase")
-}
- 
-mobtyper_prop$KPC_plasmid <- factor(mobtyper_prop$KPC_plasmid,levels = get_factor_order_plasmid(mobtyper_prop,'KPC_plasmid'))
-mobtyper_prop <- mobtyper_prop %>% arrange(KPC_plasmid)  
- 
 B <-  ggplot(mobtyper_prop  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
   geom_alluvium(aes(fill = KPC_plasmid),width=0.66) +
   geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
@@ -208,9 +223,6 @@ mobtyper_prop_ST258 <-  df %>% subset(ST=="258")   %>%
   complete(study, KPC_plasmid, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
- 
-mobtyper_prop_ST258$KPC_plasmid <- factor(mobtyper_prop_ST258$KPC_plasmid,levels = get_factor_order_plasmid(mobtyper_prop_ST258,'KPC_plasmid'))
-mobtyper_prop_ST258 <- mobtyper_prop_ST258 %>% arrange(KPC_plasmid)  
  
 D <-  ggplot(mobtyper_prop_ST258  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
   geom_alluvium(aes(fill = KPC_plasmid),width=0.66) +
