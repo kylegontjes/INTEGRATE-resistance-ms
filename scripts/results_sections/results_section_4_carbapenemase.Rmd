@@ -231,7 +231,7 @@ ggVennDiagram::ggVennDiagram(list(KPC_plasmids_old = KPC_plasmids_old, KPC_plasm
 
 variables <-  c("KPC_plasmid","AA018","AA274",'AD548','AA356','AA552','AA357','AA275','AA038','AA434')
 
-gontjesr::convert_tableone_into_df(dataset=df %>% subset(KPC_plasmid != "No carbapenemase"),vars =variables,strata='study',outcome_names = c("2021-23",'2014-15'),factorVars =variables) %>% favorite_kable()
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(KPC_plasmid != "No carbapenemase"),vars =variables,strata='study',outcome_names = c("2014-15",'2021-23'),factorVars =variables) %>% favorite_kable()
 ```
 
 ### ST258
@@ -243,6 +243,6 @@ KPC_plasmids_new <- unique(df %>% subset(study == '2021-23' & ST=='258') %>%  .$
 
 ggVennDiagram::ggVennDiagram(list(KPC_plasmids_old = KPC_plasmids_old, KPC_plasmids_new = KPC_plasmids_new))
 
-gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='258' & KPC_plasmid != "No carbapenemase"),vars = variables,strata='study',outcome_names = c("2021-23",'2014-15'),argsNormal = 'KPC_plasmid',factorVars = variables) %>% favorite_kable()
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='258' & KPC_plasmid != "No carbapenemase"),vars = variables,strata='study',outcome_names = c("2014-15",'2021-23'),argsNormal = 'KPC_plasmid',factorVars = variables) %>% favorite_kable()
 ```
 
