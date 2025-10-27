@@ -211,16 +211,15 @@ df$Species_ST_new <- ifelse(df$Species_ST %in% c(ST_over_1),df$Species_ST,"Singl
 break_of_sts <-  c(sort(unique(df$Species_ST_new %>% subset(.!="Singleton STs"))),"Singleton STs")
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
        
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=5, title.position = "top", label.position = "right"))
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=5, title.position = "top", label.position = "right",order=1))
 feature_colors <- c(`1` = "black",`0`="white")
-feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Tip state", guide = guide_legend(nrow=2, title.position = "top", label.position = "right"))
+feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Presence", guide = guide_legend(nrow=2, title.position = "top", label.position = "right",order=3))
 geno_vars <- colnames(KPC_plasmid_matrix) %>% subset(!.%in% c("study","major_STs","No carbapenemase"))
 genotype <- KPC_plasmid_matrix %>% subset(rownames(.) %in% tree_new_final$tip.label) %>% select(geno_vars) %>% drop_na()  %>% select_if(colSums(.) >0) %>% ComplexHeatmap::Heatmap()
 
 genotypes <- unique(df$carbapenemase) %>% sort
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
-
-genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=3, title.position = "top", label.position = "right"))   
+genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=3, title.position = "top", label.position = "right",order=2))   
 
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
