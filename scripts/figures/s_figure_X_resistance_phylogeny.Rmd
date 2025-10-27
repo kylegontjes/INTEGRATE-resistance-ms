@@ -123,9 +123,9 @@ resistance_clustering <-df %>% subset(isolate_no %in% tree_new_final$tip.label) 
 
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
-p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_new) %>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_new) %>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale + theme(legend.key = element_rect(colour = c('black')))
 p01 <- p0 + ggnewscale::new_scale_fill()
-p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.006,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
+p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.006,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale + theme(legend.key = element_rect(colour = c('black')))
 p11 <- p1 + ggnewscale::new_scale_fill()
 A <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(resistance_clustering)]) %>% mutate_all(as.factor) %>% `colnames<-`(recode(colnames(.),
                          "CZA_dich_num"='Ceftazidime-avibactam',
@@ -142,7 +142,7 @@ A <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.012,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,432.5) + theme(legend.position = 'bottom')
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.012,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,432.5) + theme(legend.position = 'bottom',legend.key = element_rect(colour = c('black')))
 A 
 ```
 
