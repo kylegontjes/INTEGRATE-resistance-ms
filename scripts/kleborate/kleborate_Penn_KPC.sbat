@@ -1,0 +1,22 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=kleborate_Penn_KPC
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/kleborate/kleborate_Penn_KPC.out
+# Number of cores, amount of memory, and walltime
+#SBATCH --nodes=1 --ntasks=1 --cpus-per-task=1 --mem=10g --time=10:00:00
+
+# Job commands
+## Output folder
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate
+
+## Version
+kleborate --version
+
+## Run on Penn KPC isolates
+kleborate -a $(find /nfs/turbo/umms-esnitkin/Project_Penn_KPC/Sequence_data/assembly/illumina/spades/*/*fasta) -p kpsc -o kpsc_Penn_KPC --trim_headers

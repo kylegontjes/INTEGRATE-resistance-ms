@@ -1,0 +1,51 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=amrfinder_INTEGRATE
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=./amrfinder_integrate.out
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=30 --mem=160g --time=5:00:00
+
+IFS=$'\n'       # make newlines the only separator
+set -f          # disable globbing
+
+# NOTE: AMRFinder must be installed into a conda environment (that is subsequently activated) to run this script
+
+# Move to (already created) results section
+
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/amrfinder
+
+# Run this command to identify version
+
+amrfinder --version
+
+# Get a list of isolates 
+## EDIT THIS PATH
+## This parallelization works for files in a single directory (i.e.,  /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/*_contigs_l1000.fasta)
+## To run this on more than one directory, either create 3 separate runs (probably faster) OR edit the script to include the full path (i.e., /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/INT_CRE_01/INT_CRE_01_contigs_l1000.fasta)
+
+isolates=`ls /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/ |sort`
+
+# Initiate a list of commands
+
+command_list_array=()
+
+# Run for loop, where it generates isolate command for each of the forward end files.
+
+for isolate in $isolates
+do
+        # Echo isolate name
+        echo $isolate
+        # Create current command
+        curr_cmd="amrfinder -n  /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/$isolate/$isolate\_contigs_l1000.fasta --plus -o $isolate\_amrfinder.out"
+        echo $curr_cmd
+        # Add the amrfinder command to list
+        command_list_array+=("$curr_cmd")
+done
+
+# Run convict commands using the unix parallel command.
+parallel ::: "${command_list_array[@]}"

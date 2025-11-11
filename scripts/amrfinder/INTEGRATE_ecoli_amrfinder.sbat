@@ -1,0 +1,40 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=amrfinder_INTEGRATE_ecoli
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/amrfinder/amrfinder_INTEGRATE_ecoli.out
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=20 --mem=120g --time=2:00:00
+
+IFS=$'\n' # make newlines the only separator
+set -f # disable globbing
+
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/amrfinder
+
+# Version
+amrfinder --version
+
+isolates=`cat /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/amrfinder/INTEGRATE_ecoli_genomes.txt`
+
+# Initiate a list of commands
+command_list_array=()
+
+# Run for loop, where it generates isolate command for each of the forward end files.
+for isolate in $isolates
+do
+        # Echo isolate name
+        echo $isolate
+        # Create current command
+        curr_cmd="amrfinder -n /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/$isolate/$isolate\_contigs_l1000.fasta --plus -o $isolate\_amrfinder.out --organism Escherichia"
+        echo $curr_cmd
+        # Add the amrfinder command to list
+        command_list_array+=("$curr_cmd")
+done
+
+# Run convict commands using the unix parallel command.
+parallel ::: "${command_list_array[@]}"
+

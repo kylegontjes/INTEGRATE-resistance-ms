@@ -1,0 +1,39 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=mobsuite_INTEGRATE
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/mobsuite/mobsuite_INTEGRATE.out
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=30 --mem=150g --time=12:00:00
+
+IFS=$'\n'       # make newlines the only separator
+set -f          # disable globbing
+
+# Isolates of interest
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/mobsuite
+ 
+isolates=`ls -D /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/ | sort`
+
+# Initiate a list of commands
+command_list_array=()
+
+mob_recon --version
+
+# Run for loop, where it generates isolate command for each of the forward end files.
+for isolate in $isolates
+do
+        # Echo isolate name
+        echo $isolate
+        # Create current command
+        curr_cmd="mob_recon --infile /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/$isolate/$isolate\_contigs_l1000.fasta  --outdir ./$isolate "
+        echo $curr_cmd
+        # Add the amrfinder command to list
+        command_list_array+=("$curr_cmd")
+done
+
+# Run convict commands using the unix parallel command.
+parallel ::: "${command_list_array[@]}"

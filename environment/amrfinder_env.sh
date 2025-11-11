@@ -1,0 +1,1 @@
+conda create -y -c conda-forge -c bioconda -n amrfinder_v_4_0_23 --strict-channel-priority ncbi-amrfinderplus

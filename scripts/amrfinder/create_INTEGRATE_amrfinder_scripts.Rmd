@@ -1,0 +1,138 @@
+---
+title: "create_amrfinder_script_integrate"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+# Sequencing data
+```{r}  
+# QCD
+qcd <- read.csv("../../../Sequence_data/illumina_fastq/master_qc_summary.csv")  %>% subset(grepl("NEG_CTL",Sample)==F) 
+qcd$qc_pass <- qcd$QC.Check=="PASS"  
+qcd_pass <- subset(qcd,qc_pass==T)
+``` 
+
+# Species 
+```{r}
+table(qcd_pass$Species)
+```
+
+# Kpn genomes - https://www.nature.com/articles/s41579-019-0315-1
+```{r}
+kpn_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella pneumoniae","Klebsiella quasipneumoniae","Klebsiella variicola", "Klebsiella africana","Klebsiella quasivariicola")) %>% .$Sample
+writeLines(kpn_genomes,"./scripts/amrfinder/INTEGRATE_kpsc_genomes.txt") 
+```
+
+# KOSC - https://doi.org/10.1128/CMR.00006-21
+```{r}
+kosc_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella grimontii", "Klebsiella huaxiensis", "Klebsiella michiganensis", "Klebsiella oxytoca", "Klebsiella pasteurii", "Klebsiella spallanzanii")) %>% .$Sample
+writeLines(kosc_genomes,"./scripts/amrfinder/INTEGRATE_kosc_genomes.txt")
+```
+
+# Other kleb
+```{r}
+other_kleb_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella aerogenes")) %>% .$Sample
+writeLines(other_kleb_genomes,"./scripts/amrfinder/INTEGRATE_other_kleb_genomes.txt")
+```
+
+# E coli
+```{r}
+ecoli_genomes <- qcd_pass %>% subset(Species == "Escherichia coli") %>% .$Sample
+writeLines(ecoli_genomes,"./scripts/amrfinder/INTEGRATE_ecoli_genomes.txt")
+```
+
+# Other genomes (default to kpnsc)
+```{r}
+other_genomes <- subset(qcd_pass,!Sample %in% c(kpn_genomes,kosc_genomes,other_kleb_genomes,ecoli_genomes)) %>% .$Sample
+writeLines(other_genomes,"./scripts/amrfinder/INTEGRATE_non_kleb_ecoli_genomes.txt")
+```
+
+# Model species
+
+```{bash}
+cd scripts/amrfinder
+echo '#!/bin/sh
+# Job name
+#SBATCH --job-name=amrfinder_INTEGRATE_species
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/amrfinder/amrfinder_INTEGRATE_species.out
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=20 --mem=120g --time=2:00:00
+
+IFS=$'\''\n'\'' # make newlines the only separator
+set -f # disable globbing
+
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/amrfinder
+
+# Version
+amrfinder --version
+
+isolates=`cat /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/amrfinder/INTEGRATE_species_genomes.txt`
+
+# Initiate a list of commands
+command_list_array=()
+
+# Run for loop, where it generates isolate command for each of the forward end files.
+for isolate in $isolates
+do
+        # Echo isolate name
+        echo $isolate
+        # Create current command
+        curr_cmd="amrfinder -n /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/$isolate/$isolate\_contigs_l1000.fasta --plus -o $isolate\_amrfinder.out species_name"
+        echo $curr_cmd
+        # Add the amrfinder command to list
+        command_list_array+=("$curr_cmd")
+done
+
+# Run convict commands using the unix parallel command.
+parallel ::: "${command_list_array[@]}"
+' > model_INTEGRATE_kleborate.sbat
+```
+
+# Edit these
+```{r}
+setwd("./scripts/amrfinder")
+species_groups <- c("kpsc","kosc","other_kleb","ecoli","non_kleb_ecoli")
+for (species in species_groups){
+  script <- readLines(paste0("model_INTEGRATE_kleborate.sbat"))
+  species_name <- recode(species,
+                         "kpsc"="--organism Klebsiella_pneumoniae",
+                         "kosc"="--organism Klebsiella_oxytoca",
+                         "other_kleb"="--organism Klebsiella_pneumoniae",
+                         "ecoli"="--organism Escherichia",
+                         "non_kleb_ecoli"="")
+  
+  script <- gsub("species_name",species_name,script) %>% gsub("species",species,.) 
+  writeLines(script,paste0("INTEGRATE_",species,"_amrfinder.sbat"))
+}
+
+```
+
