@@ -1,5 +1,5 @@
 ---
-title: "figure_3_carbapenemase_plasmid"
+title: "Figure 3: Carbapenemase plasmids"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -204,8 +204,8 @@ C
 # B. Proportion of plasmids over study periods
 ```{r}
 B <-  ggplot(mobtyper_prop  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
-  geom_alluvium(aes(fill = KPC_plasmid),width=0.66) +
-  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
+  geom_alluvium(aes(fill = KPC_plasmid),width=0.66,alpha=1) +
+  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage (%)")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
@@ -225,8 +225,8 @@ mobtyper_prop_ST258 <-  df %>% subset(ST=="258")   %>%
   mutate(prop = n / sum(n) * 100)
  
 D <-  ggplot(mobtyper_prop_ST258  ,aes(x = study,stratum = KPC_plasmid,alluvium = KPC_plasmid,y=prop,fill = KPC_plasmid)) +
-  geom_alluvium(aes(fill = KPC_plasmid),width=0.66) +
-  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage")  + theme(legend.position = "bottom",
+  geom_alluvium(aes(fill = KPC_plasmid),width=0.66,alpha=1) +
+  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage (%)")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),

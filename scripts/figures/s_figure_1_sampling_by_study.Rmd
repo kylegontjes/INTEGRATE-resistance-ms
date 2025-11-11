@@ -132,7 +132,7 @@ C <- ggplot(data=df,aes(y=source_simplified,fill=source_simplified)) + geom_bar(
 
 
 D <- ggplot(source_dist %>% subset(n>0),aes(x = study,stratum = source_simplified,alluvium = source_simplified,y=prop,fill = source_simplified)) +
-  geom_alluvium(aes(fill = source_simplified),width=0.66) +
+  geom_alluvium(aes(fill = source_simplified),width=0.66,alpha=1) +
   geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + source_scale + theme(legend.position = "right",
                   axis.text =   element_text(size=10, color="black"),
                   axis.title = element_text(size = 12, color="black"),
@@ -205,7 +205,7 @@ f <- ggplot(data = df_complete) +
     hjust = -0.2,
     size = 2.5
   ) +
-  xlab("Percentage") +
+  xlab("Percentage (%)") +
   ylab("") +
   xlim(NA, 20.01) +
   theme_bw_me +

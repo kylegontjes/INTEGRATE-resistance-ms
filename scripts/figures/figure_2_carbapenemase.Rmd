@@ -83,7 +83,6 @@ df$blactamase <- sapply(df$isolate_no,FUN=function(x){
   amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No blactamase",.)}
 
-
 df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
   amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No carbapenemase",.)}
@@ -204,7 +203,7 @@ get_factor_order_carb <- function(ST_dist,var){
    
 
 B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
-  geom_alluvium(aes(fill = carbapenemase),width=0.66) +
+  geom_alluvium(aes(fill = carbapenemase),width=0.66,alpha=1) +
   geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + genotype_scale + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
@@ -225,7 +224,7 @@ ST_dist_ST258 <-  df  %>% subset(Species_ST == "Klebsiella pneumoniae ST258") %>
     
 
 D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
-  geom_alluvium(aes(fill = carbapenemase),width=0.66) +
+  geom_alluvium(aes(fill = carbapenemase,alpha=1),width=0.66) +
   geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + genotype_scale + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
