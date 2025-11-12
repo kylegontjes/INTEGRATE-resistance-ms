@@ -8,7 +8,7 @@
 #SBATCH --partition=standard
 #SBATCH --account=esnitkin1
 #SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/kleborate/kleborate_INTEGRATE_other_kleb.out
-#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=20 --mem=120g --time=2:00:00
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=30 --mem=150g --time=10:00:00
 
 IFS=$'\n' # make newlines the only separator
 set -f # disable globbing
@@ -16,26 +16,10 @@ set -f # disable globbing
 cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate
 
 # Version
-amrfinder --version
+kleborate --version
 
 isolates=`cat /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/kleborate/INTEGRATE_other_kleb_genomes.txt` 
+IFS=$'\n' read -r -d "" -a assembly_array <<< "$isolates"
 
-# Initiate a list of commands
-command_list_array=()
-
-# Run for loop, where it generates isolate command for each of the forward end files.
-for isolate in $isolates
-do
-        # Echo isolate name
-        echo $isolate
-        # Create current command
-        curr_cmd="
-kleborate -a /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/$isolate/$isolate\_contigs_l1000.fasta -p kpsc -o kpsc_INTEGRATE --trim_headers"
-        echo $curr_cmd
-        # Add the amrfinder command to list
-        command_list_array+=("$curr_cmd")
-done
-
-# Run convict commands using the unix parallel command.
-parallel ::: "${command_list_array[@]}"
+kleborate -a "${assembly_array[@]}" -p kpsc -o kleb_non_kpsc_or_kosc_INTEGRATE --trim_headers 
 

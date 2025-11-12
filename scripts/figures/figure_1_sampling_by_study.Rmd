@@ -9,7 +9,7 @@ output: html_document
 require(knitr)
 opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
 opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
-opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
 # Environment
@@ -19,7 +19,7 @@ packages <- c("tidyverse","gridExtra","kableExtra","cowplot","forcats","ggalluvi
 lapply(packages,library,character.only=T)
 
 # Functions
-source("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/lib/consistent_themes.R")
+source("./lib/consistent_themes.R")
 
 # Print environment
 Sys.info()
@@ -28,16 +28,12 @@ sessionInfo()
 
 # Load data
 ```{r}
-df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
-
-recode_LTACH_string <- sort(df$hospital_location) %>% unique %>% `names<-`(paste0("LTACH ",1:length(.))) %>% setNames(names(.), .)
-
-df$hospital_location_recode <- dplyr::recode(df$hospital_location, !!! recode_LTACH_string)   %>% factor(.,levels =paste0("LTACH ",1:length(recode_LTACH_string)) )
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
 
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23")
 
-df_202123_all <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRE_metadata_091825.RDS")  %>% subset(study == '2021-23')
+df_202123_all <- readRDS("./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS") %>% subset(study == '2021-23')
 
 number_of_weeks_1415 <- as.numeric(round(difftime(max(df_201415$date,na.rm = T),min(df_201415$date,na.rm = T),units = 'weeks')) + 1)
 number_of_weeks_2123 <- as.numeric(round(difftime(max(df_202123_all$date,na.rm = T),min(df_202123_all$date,na.rm = T),units = 'weeks')) + 1)
@@ -48,15 +44,13 @@ number_of_weeks_2123 <- as.numeric(round(difftime(max(df_202123_all$date,na.rm =
 A <- ggplot(data = df %>% subset(study == "2014-15")) +
   geom_histogram(
     aes(x = date, fill = study),  # << key addition
-    bins = number_of_weeks_1415
-  ) +
+    bins = number_of_weeks_1415) +
   xlab("Collection date") +
   ylab("Isolates") +
   theme_bw_me +
   scale_x_date(
     date_breaks = "3 months",
-    date_labels = "%m-%Y"
-  ) +
+    date_labels = "%m-%Y") +
   study_color_fill +
   theme(
     legend.position = 'none',
@@ -64,8 +58,7 @@ A <- ggplot(data = df %>% subset(study == "2014-15")) +
     axis.title = element_text(size=12, color="black"),
     legend.text = element_text(size=10, color="black"),
     legend.title = element_text(size=12, color="black"),
-    plot.title = element_text(size=0, color="black")
-  ) + ylim(NA,15.1)
+    plot.title = element_text(size=0, color="black")) + ylim(NA,15.1)
 ```
 
 ## B. 2021-23
@@ -73,15 +66,13 @@ A <- ggplot(data = df %>% subset(study == "2014-15")) +
 B <- ggplot(data = df %>% subset(study == "2021-23")) +
   geom_histogram(
     aes(x = date, fill = study),  # << key addition
-    bins = number_of_weeks_2123
-  ) +
+    bins = number_of_weeks_2123) +
   xlab("Collection date") +
   ylab("Isolates") +
   theme_bw_me +
   scale_x_date(
     date_breaks = "6 months",
-    date_labels = "%m-%Y"
-  ) +
+    date_labels = "%m-%Y") +
   study_color_fill +
   theme(
     legend.position = 'none',
@@ -89,13 +80,11 @@ B <- ggplot(data = df %>% subset(study == "2021-23")) +
     axis.title = element_text(size=12, color="black"),
     legend.text = element_text(size=10, color="black"),
     legend.title = element_text(size=12, color="black"),
-    plot.title = element_text(size=0, color="black")
-  ) + ylim(NA,15.1)
+    plot.title = element_text(size=0, color="black")) + ylim(NA,15.1)
 ```
 
-# C-D. Source
-```{r}
-df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+# C & D. Source differences
+```{r} 
 df$source_simplified <- str_to_title(df$source_simplified)
 df$source_simplified <- factor(df$source_simplified,levels = c(df %>% group_by(source_simplified) %>% summarise (n=n()) %>% arrange(-n) %>% .$source_simplified))
 
@@ -107,13 +96,12 @@ source_dist <-  df %>% subset(is.na(source_simplified)==F)   %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
-
 source_dist$source_simplified <- factor(source_dist$source_simplified,levels = source_dist %>% subset(study =='2021-23') %>% arrange(n) %>% group_by(source_simplified) %>% summarise (n = sum(n)) %>% arrange(-n) %>% .$source_simplified) 
 
 C <- ggplot(data=df,aes(y=source_simplified,fill=source_simplified)) + geom_bar() +
   geom_text(stat='count',
             aes(label=..count..),
-            hjust=-0.05, # push slightly to the right
+            hjust=-0.05, 
             size=3.5) + 
   xlim(NA, 205.1) +
   theme_bw_me +
@@ -127,12 +115,11 @@ C <- ggplot(data=df,aes(y=source_simplified,fill=source_simplified)) + geom_bar(
     plot.title = element_text(size = 0, color="black"),
     legend.position = "none",
     strip.text = element_text(size=12,color='black')
-        
   ) + source_scale + facet_wrap(~study)
 
 
 D <- ggplot(source_dist %>% subset(n>0),aes(x = study,stratum = source_simplified,alluvium = source_simplified,y=prop,fill = source_simplified)) +
-  geom_alluvium(aes(fill = source_simplified),width=0.66,alpha=1) +
+  geom_alluvium(aes(fill = source_simplified),width=0.66,alpha=0.75) +
   geom_stratum(width=0.66) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + source_scale + theme(legend.position = "right",
                   axis.text =   element_text(size=10, color="black"),
                   axis.title = element_text(size = 12, color="black"),
@@ -216,8 +203,7 @@ f <- ggplot(data = df_complete) +
     axis.title = element_text(size = 12, color = "black"), 
     legend.text = element_text(size = 10, color = "black"),
     legend.title = element_text(size = 12, color = "black"),
-    plot.title = element_text(size = 0, color = "black")
-  )
+    plot.title = element_text(size = 0, color = "black"))
 ```
 
 ```{r,fig.width=8,fig.height=8} 
@@ -225,10 +211,10 @@ AB <- cowplot::plot_grid(A,B + theme(legend.position = 'none'),ncol=2,labels =c(
 CD <- cowplot::plot_grid(C,D,ncol=2,labels = c("C","D"),rel_widths = c(1,0.5))
 EF <-  cowplot::plot_grid(E+ theme(legend.position = 'none'),f + theme(legend.position = 'none'),ncol=2,labels =c("E","F"),rel_widths = c(1,1))
 
-sfigure1 <- cowplot::plot_grid(AB,CD,EF,ncol=1,rel_heights = c(0.65,0.65,1))
-sfigure1 
+figure1 <- cowplot::plot_grid(AB,CD,EF,ncol=1,rel_heights = c(0.65,0.65,1))
+figure1 
 ``` 
 
 ```{r}
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_1_sampling.png",plot=sfigure1,width = 8,height = 8,dpi=900,bg = 'white')
+ggsave(filename = "./figures/figure_1_sampling.png",plot=figure1,width = 8,height = 8,dpi=900,bg = 'white')
 ```

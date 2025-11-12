@@ -43,25 +43,25 @@ table(qcd_pass$Species)
 
 # Kpn genomes - https://www.nature.com/articles/s41579-019-0315-1
 ```{r}
-kpn_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella pneumoniae","Klebsiella quasipneumoniae","Klebsiella variicola", "Klebsiella africana","Klebsiella quasivariicola")) %>% .$Sample
+kpn_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella pneumoniae","Klebsiella quasipneumoniae","Klebsiella variicola", "Klebsiella africana","Klebsiella quasivariicola")) %>% .$Sample %>% paste0("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/",.,"/",.,"_contigs_l1000.fasta")
 writeLines(kpn_genomes,"./scripts/kleborate/INTEGRATE_kpsc_genomes.txt") 
 ```
 
 # KOSC - https://doi.org/10.1128/CMR.00006-21
 ```{r}
-kosc_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella grimontii", "Klebsiella huaxiensis", "Klebsiella michiganensis", "Klebsiella oxytoca", "Klebsiella pasteurii", "Klebsiella spallanzanii")) %>% .$Sample
+kosc_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella grimontii", "Klebsiella huaxiensis", "Klebsiella michiganensis", "Klebsiella oxytoca", "Klebsiella pasteurii", "Klebsiella spallanzanii")) %>% .$Sample %>% paste0("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/",.,"/",.,"_contigs_l1000.fasta")
 writeLines(kosc_genomes,"./scripts/kleborate/INTEGRATE_kosc_genomes.txt")
 ```
 
 # Other kleb
 ```{r}
-other_kleb_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella aerogenes")) %>% .$Sample
+other_kleb_genomes <- qcd_pass %>% subset(Species %in% c("Klebsiella aerogenes")) %>% .$Sample%>% paste0("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/",.,"/",.,"_contigs_l1000.fasta")
 writeLines(other_kleb_genomes,"./scripts/kleborate/INTEGRATE_other_kleb_genomes.txt")
 ```
 
 # E coli
 ```{r}
-ecoli_genomes <- qcd_pass %>% subset(Species == "Escherichia coli") %>% .$Sample
+ecoli_genomes <- qcd_pass %>% subset(Species == "Escherichia coli") %>% .$Sample %>%  paste0("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/",.,"/",.,"_contigs_l1000.fasta")
 writeLines(ecoli_genomes,"./scripts/kleborate/INTEGRATE_ecoli_genomes.txt")
 ```
 
@@ -79,7 +79,7 @@ echo '#!/bin/sh
 #SBATCH --partition=standard
 #SBATCH --account=esnitkin1
 #SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/kleborate/kleborate_INTEGRATE_species.out
-#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=20 --mem=120g --time=2:00:00
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=30 --mem=150g --time=10:00:00
 
 IFS=$'\''\n'\'' # make newlines the only separator
 set -f # disable globbing
@@ -87,28 +87,12 @@ set -f # disable globbing
 cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate
 
 # Version
-amrfinder --version
+kleborate --version
 
 isolates=`cat /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/kleborate/INTEGRATE_species_genomes.txt` 
+IFS=$'\''\n'\'' read -r -d "''" -a assembly_array <<< "$isolates"
 
-# Initiate a list of commands
-command_list_array=()
-
-# Run for loop, where it generates isolate command for each of the forward end files.
-for isolate in $isolates
-do
-        # Echo isolate name
-        echo $isolate
-        # Create current command
-        curr_cmd="
-kleborate -a /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/spades/$isolate/$isolate\_contigs_l1000.fasta -p species_abbrev -o species_abbrev_INTEGRATE --trim_headers"
-        echo $curr_cmd
-        # Add the amrfinder command to list
-        command_list_array+=("$curr_cmd")
-done
-
-# Run convict commands using the unix parallel command.
-parallel ::: "${command_list_array[@]}"
+kleborate -a "${assembly_array[@]}" -p species_complex -o species_abbrev_name_INTEGRATE --trim_headers 
 ' > model_INTEGRATE_kleborate.sbat
 ```
 
@@ -118,14 +102,19 @@ setwd("./scripts/kleborate")
 species_groups <- c("kpsc","kosc","other_kleb","ecoli")
 for (species in species_groups){
   script <- readLines(paste0("model_INTEGRATE_kleborate.sbat"))
-  species_name <- recode(species,
+  species_complex <- recode(species,
                          "kpsc"="kpsc",
                          "kosc"="kosc",
                          "other_kleb"="kpsc",
-                         "ecoli"="escherichia",
-                         "non_kleb_ecoli"="kpsc") 
+                         "ecoli"="escherichia")
   
-  script <- gsub("species_abbrev",species_name,script) %>% gsub("species",species,.) 
+  species_abbrev_name  <- recode(species,
+                         "kpsc"="kpsc",
+                         "kosc"="kosc",
+                         "other_kleb"="kleb_non_kpsc_or_kosc",
+                         "ecoli"="escherichia") 
+  
+  script <- gsub("species_abbrev_name",species_abbrev_name,script)  %>% gsub("species_complex",species_complex,.)   %>% gsub("species",species,.) 
   writeLines(script,paste0("INTEGRATE_",species,"_kleborate.sbat"))
 }
 ```

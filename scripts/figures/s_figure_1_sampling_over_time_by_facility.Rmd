@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 2: Sampling by facility"
+title: "Supplemental Figure 1: Sampling by facility in 2021-23 study"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -9,17 +9,17 @@ output: html_document
 require(knitr)
 opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
 opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
-opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
 # Environment
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra")
+packages <- c("tidyverse")
 lapply(packages,library,character.only=T)
 
 # Functions
-source("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/lib/consistent_themes.R")
+source("./lib/consistent_themes.R")
 
 # Print environment
 Sys.info()
@@ -28,16 +28,12 @@ sessionInfo()
 
 # Load data
 ```{r}
-df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
-
-recode_LTACH_string <- sort(df$hospital_location) %>% unique %>% `names<-`(paste0("LTACH ",1:length(.))) %>% setNames(names(.), .)
-
-df$hospital_location_recode <- dplyr::recode(df$hospital_location, !!! recode_LTACH_string) %>% factor(.,levels =paste0("LTACH ",1:length(recode_LTACH_string)) )
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
 
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23")
 
-df_202123_all <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRE_metadata_091825.RDS")  %>% subset(study == '2021-23')
+df_202123_all <- readRDS("./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS") %>% subset(study == '2021-23') 
 ```
 
 # Sampling over time
@@ -59,11 +55,13 @@ figure <- ggplot(data = df_202123 %>% subset(is.na(hospital_location)==F)) +
   theme(
     strip.text = element_text(size =12),
     axis.text.x = element_text(angle = 90, hjust = 0.5,vjust=0.5)
-  )  + scale_y_continuous(breaks = c(0,3,6,9),labels = c(0,3,6,9)) 
+  )  + scale_y_continuous(breaks = c(0,2,4,6,8),labels = c(0,2,4,6,8),limits = c(0,8.1)) 
 ```
 
 ```{r,fig.width=8.75,fig.height=7}
 figure
+```
 
-ggsave(plot=figure,filename = './Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_2_sampling_over_time_and_space.png',bg='white',dpi=900,height=7,width=8.75)
+```{r}
+ggsave(plot=figure,filename = './figures/s_figure_1_sampling_over_time_and_space.png',bg='white', dpi=900, height=7, width=8.75)
 ```

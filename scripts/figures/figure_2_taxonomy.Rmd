@@ -9,34 +9,31 @@ output: html_document
 require(knitr)
 opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
 opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
-opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
+# Environment
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ggalluvial")
+packages <- c("tidyverse","gridExtra","kableExtra","cowplot","ggalluvial")
 lapply(packages,library,character.only=T)
 
 # Functions
-source("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/lib/consistent_themes.R")
+source("./lib/consistent_themes.R")
 
 # Print environment
 Sys.info()
 sessionInfo()
 ```
 
+# Load data
 ```{r}
-df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
-  
-df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
-df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
-
-df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")  
+ 
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23")
-
-df_202123_all <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRE_metadata_091825.RDS")  %>% subset(study == '2021-23')
 ```
+
 # Coordinate ST data
 
 ```{r}
@@ -76,9 +73,9 @@ A <- ggplot(data=df,
   geom_bar() +
   geom_text(stat='count',
             aes(label=..count..),
-            hjust=-0.05, # push slightly to the right
+            hjust=-0.05, 
             size=3.5) + 
-  xlim(NA, 325.1) +
+  xlim(NA, 327.5) +
   theme_bw_me +
   xlab("Isolates") + ylab("") +
   theme(
@@ -89,8 +86,7 @@ A <- ggplot(data=df,
                   legend.title = element_text(size = 12, color="black"),
     plot.title = element_text(size = 0, color="black"),
     legend.position = "none",
-    strip.text = element_text(size=14,color='black')
-        
+    strip.text = element_text(size=14,color='black') 
   ) + ST_scale + facet_wrap(~study)
 
 A
@@ -102,35 +98,29 @@ A
 
 ```{r} 
 ST_dist <- ST_dist %>% arrange(Species_ST_new)
+ST_dist$alpha_value <- ifelse(ST_dist$Species_ST_new == "Singleton STs",0,0.75)
 
 B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = Species_ST_new,alluvium = Species_ST_new,y=prop,fill = Species_ST_new)) +
-  geom_alluvium(aes(fill = Species_ST_new,alpha = Species_ST_new != "Singleton STs"),width=0.66,data=ST_dist %>% subset(n>0)) +
+  geom_alluvium(aes(alpha=alpha_value),width=0.66)+ scale_alpha_identity() +
   geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + ST_scale + theme(legend.position = "bottom",
                   axis.text =   element_text(hjust = 0.5, size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
-                  plot.title = element_text(size = 0, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100))
+                  plot.title = element_text(size = 0, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100))  
  
 B
 ```
-
-```{r}
-paste0("No ST: ",length(unique(df_202123$Species_ST)))
-gontjesr::convert_tableone_into_df(dataset=df_202123,vars='Species_ST')
-
-paste0("Prior study No ST: ",length(unique(df_201415$Species_ST)))
-gontjesr::convert_tableone_into_df(dataset=df_201415,vars='Species_ST')
-```
-
+ 
 # Overall figure
 
 ```{r,fig.width=9,fig.height=4.5}
 AB <-  cowplot::plot_grid(A,B + theme(legend.position='none'),rel_widths =  c(1,.33),labels = c("A","B"),ncol=2)   
+
 figure <- cowplot::plot_grid(AB ,ncol=1)
 figure
 ```
 
 ```{r,fig.width=6,fig.height=4}   
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_1_taxonomy.png",plot=figure,width = 9,height = 4.5,dpi=900,bg = 'white')
+ggsave(filename = "./figures/figure_2_taxonomy.png",plot=figure,width = 9,height = 4.5,dpi=900,bg = 'white')
 ```

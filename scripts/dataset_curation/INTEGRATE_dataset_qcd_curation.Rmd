@@ -12,7 +12,6 @@ opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
 ```
 
-
 # Environment
 
 ```{r environment, echo=F, message=FALSE, include=F, results=F}
@@ -30,9 +29,13 @@ sessionInfo()
 
 # Sequencing data
 ```{r} 
-sample_lookup = read_delim("../../../Sequence_data/metadata/sample_lookup/2025-03-25_INT_CRE_genome_sample_lookup.txt")
+# Sample lookup
+sample_lookup = read_delim("../../../Sequence_data/metadata/sample_lookup/2025-03-25_INT_CRE_genome_sample_lookup.txt") 
+
+# QCD
 qcd <- read.csv("../../../Sequence_data/illumina_fastq/master_qc_summary.csv")  %>% subset(grepl("NEG_CTL",Sample)==F) 
-qcd$qc_pass <- qcd$QC.Check=="PASS" 
+colnames(qcd) <- snakecase::to_snake_case(colnames(qcd))
+qcd$qc_pass <- qcd$qc_check=="PASS" 
 
 paste0("Number of isolates that had sequencing runs: ",nrow(qcd))
 paste0("Number of isolates that had passed our quality control filters: ",sum(qcd$qc_pass))
@@ -44,13 +47,13 @@ paste0("Percentage of isolates that had passed our quality control filters: ",ro
 escre_list <- read.csv("../../data/INTEGRATE_MERLIN_WGS_Species_calls_030925_LLC.csv")
 escre_species <- subset(escre_list,Enterobacterales == T) %>% .$Species
 
-qcd$CRE <- qcd$Species %in% escre_species 
+qcd$CRE <- qcd$species %in% escre_species 
 
 paste0("Number of QC-passing isolates that were ESCrE: ", sum(qcd$qc_pass & qcd$CRE))
 paste0("Percentage of QC-passing isolates that were ESCrE: ", round(sum(qcd$qc_pass & qcd$CRE) / sum(qcd$qc_pass ) * 100 ,2))
 
 paste0("What were the non ESCrE calls?")
-qcd %>% subset(qc_pass==T & CRE==F) %>% group_by(Species) %>% summarize(n=n())  %>% arrange(-n)
+qcd %>% subset(qc_pass==T & CRE==F) %>% group_by(species) %>% summarize(n=n())  %>% arrange(-n)
 ```
 
 ## Filtering #2: Mismatches
@@ -58,21 +61,21 @@ qcd %>% subset(qc_pass==T & CRE==F) %>% group_by(Species) %>% summarize(n=n())  
 mismatches <- readxl::read_xlsx("../../data/INTEGRATE_lab_WGS_species_mismatches_021025_llc.xlsx")  %>% .[-nrow(.),] 
 
 paste0("Number of isolates with species-level differences: ", nrow(mismatches))
-paste0("Proportion of isolates with species-level differences: ", round(nrow(mismatches) / nrow(qcd_pass)*100,2))
+paste0("Proportion of isolates with species-level differences: ", round(nrow(mismatches) / sum(qcd$qc_pass)*100,2))
  
 # Genus level
 mismatches$genus_mismatch <- mismatches$lab_genus != mismatches$WGS_genus
 paste0("Number of isolates with genus-level differences: ", sum(mismatches$genus_mismatch))
-paste0("Proportion of isolates with genus-level differences: ", round(sum(mismatches$genus_mismatch) / nrow(qcd_pass)*100,2))
+paste0("Proportion of isolates with genus-level differences: ", round(sum(mismatches$genus_mismatch) / sum(qcd$qc_pass)*100,2))
  
 # Mismatched differences
 to_drop_isolates <- mismatches %>% subset(`Keep/Drop`=="drop") %>% .$sample_id    
-paste0("Number of isolates to drop: ", length(dropped_isolates)) 
+paste0("Number of isolates to drop: ", length(to_drop_isolates)) 
 ```
 
 # Remove QCD isolates
 ```{r}
-qcd <- qcd %>% subset(Sample !='INT_CRE_1168')
+qcd <- qcd %>% subset(sample !='INT_CRE_1168')
 
 paste0("Final qcd genomes: ",nrow(qcd))
 ```
@@ -84,14 +87,12 @@ get_sample_id = function(isolate,sample_lookup){
   subset(sample_lookup,`Genome ID` == isolate) %>% .$`Sample ID` %>% as.character() %>% paste0(collapse=";") %>% trimws(.,whitespace = ";")
 }
 
-qcd$sample_id <- sapply(qcd$Sample,get_sample_id,sample_lookup) %>% as.character() 
+qcd$sample_id <- sapply(qcd$sample,get_sample_id,sample_lookup) %>% as.character() 
 ```
 
 # Merge QCD data with the dataset
 ```{r}
-get_genomic_id <- function(sample_id,sample_lookup){
-   subset(sample_lookup,`Sample ID` == sample_id) %>% .$`Genome ID` %>% as.character() %>% paste0(collapse=";") %>% trimws(.,whitespace = ";")
-}
+# Load
 df <- read_delim("../../data/integrate_metadata_20251107.txt")
 df <- df %>%  rename(lab_species = species )
 
@@ -100,17 +101,26 @@ df <- df %>%  rename(lab_species = species )
 paste0("Initial isolates in metadata: ",nrow(df))
 df <- df %>% subset(status !="Drop")
 
-df$genome_ids <- sapply(df$sample_id,get_genomic_id,sample_lookup) %>% as.character() 
-df$genome_ids_multiple <- grepl(";",df$genome_ids)
-
 ## Drop INT_1259 cause it had a duplicate??
 df <- df %>% subset(sample_id != 'INT_1259')
 paste0("Retained isolate count: ",nrow(df))
 
+# Get genome IDS
+get_genomic_id <- function(sample_id,sample_lookup){
+   subset(sample_lookup,`Sample ID` == sample_id) %>% .$`Genome ID` %>% as.character() %>% paste0(collapse=";") %>% trimws(.,whitespace = ";")
+}
+
+df$genome_ids <- sapply(df$sample_id,get_genomic_id,sample_lookup) %>% as.character() 
+
+# Multiple genome IDs
+df$genome_ids_multiple <- grepl(";",df$genome_ids)
+paste0("Number of retained metadata entries with multiple genome_ids: ",sum(df$genome_ids_multiple))
+
 # Get qc-passing genomes
 df$genome_ids_qc_passing <- sapply(df$genome_ids,function(x){
   ids <- unlist(strsplit(x,";"))
-  qc_pass_ids <- ids[ids %in% subset(qcd,qc_pass==T)$Sample]
+  qcd_entries <- qcd %>% subset(sample %in% ids)
+  qc_pass_ids <- qcd_entries %>% subset(qc_pass==T) %>% .$sample
   if(length(qc_pass_ids)==0){
     return("")
   } else {
@@ -121,20 +131,56 @@ df$genome_ids_qc_passing <- sapply(df$genome_ids,function(x){
 # Get CRE qc-passing genomes
 df$genome_ids_qc_passing_CRE <- sapply(df$genome_ids_qc_passing,function(x){
   ids <- unlist(strsplit(x,";"))
-  CRE <- ids[ids %in% subset(qcd,qc_pass==T & CRE==T)$Sample]  
+  CRE <- ids[ids %in% subset(qcd,qc_pass==T & CRE==T)$sample]  
  if(length(CRE)==0){
     return("")
   } else {
     return(paste0(CRE,collapse=";"))
   }
 }) 
-  
+
+paste0("Metadata without QC-passing CRE genomes: ",sum(df$genome_ids_qc_passing_CRE==''))
+paste0("Percentage of metadata without QC-passing CRE genomes: ",round(sum(df$genome_ids_qc_passing_CRE=='') / nrow(df) *100,2),"%")
+paste0("Metadata with duplicate CRE QC genomes: ",grepl(';', df$genome_ids_qc_passing_CRE ) %>% sum)
+paste0("Final CRE qc-passing genome data: ",grepl('INT', df$genome_ids_qc_passing_CRE ) %>% sum)
+
+df$isolate_no <- sapply(df$sample_id,FUN=function(x){
+  df_sub <- subset(df,sample_id==x)
+  if(df_sub$genome_ids_qc_passing_CRE != ""){
+    df_sub$genome_ids_qc_passing_CRE
+  } else{
+    if(df_sub$genome_ids_qc_passing!= ""){ 
+    df_sub$genome_ids_qc_passing
+    } else {
+      df_sub$genome_ids
+    }
+  } 
+}) %>% unlist(use.names = F) %>% `names<-`(NULL)
 ```
 
 # Merge QCD with metadata
 ```{r}
-df <- left_join(df,qcd)
-saveRDS(df,"./data/dataset_curation/INTEGRATE_metadata_qcd_merged.RDS")
+qcd$isolate_no <- qcd$sample  
+
+# Add qcd for isolates with and without duplicates (failed, thankfully!)
+df_merged <- lapply(df$isolate_no,FUN=function(x){
+  isolates <- str_split(x,";") %>% unlist
+  df_sub <- subset(df,isolate_no ==x)
+  qcd_sub <- subset(qcd,isolate_no %in% isolates)
+  if(grepl(";",x)==F ){
+    left_join(df_sub,qcd_sub)
+  } else {
+    qcd_sub_merged <- qcd_sub %>% summarise(across(everything(), ~ paste(unique(.), collapse = ";"))) 
+    left_join(df_sub,qcd_sub_merged)
+  }
+}) %>% do.call(rbind,.)
+
+paste0("Number of isolates: ",nrow(df_merged))
+paste0("Number of qc_passing isolates: ",sum(df_merged$qc_pass==TRUE))
+paste0("Number of qc_passing CRE isolates: ",sum(df_merged$qc_pass==TRUE & df_merged$CRE==TRUE))
 ```
 
-
+# Save
+```{r}
+saveRDS(df_merged,"./data/dataset/INTEGRATE_metadata_qcd_merged.RDS")
+```

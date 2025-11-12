@@ -1,0 +1,59 @@
+---
+title: "Make final CA CRKP clinical and first isolate dataset"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+```
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+# Environment
+
+#Packages
+packages <- c("tidyverse") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+```{r}
+df_metadata_all <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")
+```
+
+# Clinical CRE
+```{r} 
+df_metadata_all_clinical <- subset(df_metadata_all,rectal_logical==F)
+saveRDS(df_metadata_all_clinical,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.RDS")
+write_csv(df_metadata_all_clinical,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.csv")
+```
+
+
+# Clinical CRKP
+```{r} 
+df_metadata_all_clinical_kpn <- subset(df_metadata_all_clinical,species == "Klebsiella pneumoniae")
+
+# Get first clinical CRKP isolate using participant and date variable, but retain those with participant_id as unique entries 
+df_metadata_all_clinical_kpn_first_isolate <- df_metadata_all_clinical_kpn %>% group_by(participant_id) %>% arrange(date) %>% slice(1) %>% ungroup() 
+
+# Create flag for in final dataset (i.e., first isolate)
+df_metadata_all_clinical_kpn$first_isolate <- df_metadata_all_clinical_kpn$isolate_no %in% df_metadata_all_clinical_kpn_first_isolate$isolate_no
+
+# All clinical isolates
+saveRDS(df_metadata_all_clinical_kpn,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.RDS") 
+write_csv(df_metadata_all_clinical_kpn,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.csv") 
+
+# First isolate + NA clinical isolates
+saveRDS(df_metadata_all_clinical_kpn_first_isolate,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS") 
+write_csv(df_metadata_all_clinical_kpn_first_isolate,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.csv") 
+```

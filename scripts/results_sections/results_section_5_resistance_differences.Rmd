@@ -27,7 +27,7 @@ sessionInfo()
 
 # Load data
 ```{r}
-df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_CRE_metadata_091825.RDS")  
   
 df$study <- factor(df$study,levels = c("2014-15","2021-23"))
 df_201415 <- df%>% subset(study == "2014-15")
@@ -37,6 +37,21 @@ shared_antibiotics <-  c('MERO',"IMI",'blbli','MVB','IR','CZA',"CST","PLZ","FOS"
   
 novel_antibiotics <-  c("FDC","CT","OMC","ERV","DLX")  %>% paste0(.,"_dich_num") 
 ```
+
+# Isolates not all resistance outcomes
+```{r}
+isolates_2123 <- df_202123$isolate_no
+
+na_data <- lapply(isolates_2123,FUN=function(x){
+  df_202123 %>% subset(isolate_no == x) %>% select(shared_antibiotics,novel_antibiotics) %>% is.na() %>% rowSums() %>% `names<-`(x)
+}) %>% unlist
+
+at_least_one_missing <- df_202123 %>% subset(isolate_no %in% c(na_data %>% subset(.>0) %>% names()))
+
+write_csv(at_least_one_missing,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-11-05_missing_resistance/results/INTEGRATE_missing_at_least_one_resistance_entry_110525.csv")
+at_least_one_missing %>% favorite_kable() 
+```
+
 
 # Differences across groups
 ```{r}

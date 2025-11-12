@@ -1,0 +1,187 @@
+---
+title: "figure_probe_selected_strains"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+knitr::opts_knit$set(root.dir = '~/Desktop/gl_nfs/Project_NG_surveillance/Analysis/2024_NG_enrichment_probe_creation/',base.dir = '~/Desktop/gl_nfs/Project_NG_surveillance/Analysis/') 
+```
+
+# Tasks:
+1. Add any relevant profile stats  
+
+# Environment
+
+```{r environment, echo=T, message=FALSE, include=T, results=T}
+#Packages
+packages <- c("tidyverse",'ape','ggtree')
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()  
+```
+
+# Data
+## Public data
+```{r}
+# tree
+tree <- read.tree("./2024-12-17_cognac/results/cognac_nj.tre")
+
+# relevant metadata
+ng_amrsearch <- read_csv("../data/pathogenwatch_metadata/Neisseria_gonorrhoeae_amrsearch.csv") %>% subset(`Genome Name` %in% tree$tip.label)
+ng_snps <- readRDS("../data/ng_pathogenwatch_files/ng_snps.RDS") %>% subset(`Genome.Name` %in% tree$tip.label) %>% mutate(`Genome Name` = Genome.Name)
+ng_STs <- read.csv("../data/pathogenwatch_metadata/Neisseria_gonorrhoeae_mlst.csv")
+ng_meta <- left_join(ng_amrsearch , ng_snps) %>% left_join(.,ng_STs %>% select(Genome.Name,ST) %>% `colnames<-`(c("Genome Name","ST")))
+ng_meta <- as.data.frame(ng_meta)
+ng_sample_metadata <- read_csv("../data/pathogenwatch_metadata/Neisseria_gonorrhoeae_metadata.csv") %>% subset(displayname %in% tree$tip.label)
+colnames(ng_meta)[1] <- "Isolate"
+rownames(ng_meta) <- ng_meta$`Genome Name`
+```
+
+# Profile data
+```{r} 
+clr_collapse <- readRDS("./2025-02-22_distinct_profiles/results/cluster_collapse.RDS")
+clr_str <- readRDS("./2025-02-22_distinct_profiles/results/cluster_str.RDS")
+clr_stats <-  readRDS("2025-02-22_distinct_profiles/results/cluster_stats.RDS") 
+clr_results_list <-  readRDS("2025-02-22_distinct_profiles/results/cluster_results_list.RDS")
+profile_id <-  readRDS("2025-02-22_distinct_profiles/results/profile_id.RDS") 
+```
+
+# Probe strains
+```{r}
+profiles_350 <- readRDS("./2025-02-24_selected_isolates/results/3000_profiles/dataframes/profiles_350.RDS")
+chosen_genomes <-profiles_350$iso_by_qual %>% unname() 
+chosen_genomes_meta <- ng_sample_metadata %>% subset(displayname %in% chosen_genomes)
+```
+
+# Generate grouped data
+```{r} 
+ng_meta <- left_join(ng_amrsearch[,c(-1,-3,-4)], ng_snps[,c(-1,-3,-4)], by = join_by(`Genome Name` == `Genome.Name`))
+colnames(ng_meta)[1] <- "Isolate"
+rownames(ng_meta) <- ng_meta$Isolate
+
+# ng snp gene grouping
+
+snp_data <- ng_snps[,5:66]
+prefixes <- unique(str_extract(colnames(snp_data), "^[^_]+"))
+
+collapsed_snps <- as.data.frame(sapply(prefixes, function(prefix) {
+  matched_cols <- grep(paste0("^", prefix, "_"), colnames(snp_data), value = TRUE)
+  if (length(matched_cols) > 0) {
+    rowSums(snp_data[, matched_cols, drop = FALSE], na.rm = TRUE)
+  } else {
+    snp_data[, prefix, drop = FALSE]
+  }
+}))
+
+rownames(collapsed_snps) <- rownames(ng_snps)
+collapsed_snps_binary <- collapsed_snps %>% mutate_all(~ as.factor(ifelse(. > 0, "1", "0")))
+colnames(collapsed_snps_binary)[colnames(collapsed_snps_binary) == "X16S"] <- "16S_rDNA"
+colnames(collapsed_snps_binary)[colnames(collapsed_snps_binary) == "X23S"] <- "23S_rDNA"
+
+ng_meta_gene_grouped <- left_join(ng_meta[, 1:9], collapsed_snps_binary %>% as.data.frame %>% mutate(Isolate = rownames(.))) %>% as.data.frame()
+rownames(ng_meta_gene_grouped) <- ng_meta_gene_grouped$Isolate
+``` 
+
+# Year data
+## See if collect date helps
+```{r}
+ng_sample_metadata$year %>% table(useNA = 'ifany')
+table(chosen_genomes_meta$year,useNA = 'ifany') %>% sort
+
+ng_sample_metadata$year_recode <- ifelse(is.na(ng_sample_metadata$year),ng_sample_metadata$`Collection date`,
+                                         ifelse(is.na(ng_sample_metadata$`Collection date`) & is.na(ng_sample_metadata$year),"Unknown",ng_sample_metadata$year))
+
+A <- ggplot(data=ng_sample_metadata %>% subset(is.na(year_recode)==F & displayname %in% chosen_genomes),aes(x=as.numeric(year_recode))) + geom_histogram(fill='black',stat='count') + theme_bw_me  + xlab("Year") + ylab("Isolates")
+```
+ 
+# Country
+```{r}
+chosen_genomes_meta_no_country_recode %>% reverse_geocode(.,lat =latitude ,long=longitude,method="osm",full_results=T,
+                                                          custom_query  = list("accept-language"="en-US")) -> results
+ng_sample_metadata$Country %>% table(useNA = 'ifany')
+ng_sample_metadata$Country_recode <- recode(ng_sample_metadata$Country,
+                                            'Brasil' = "Brazil",
+                                            "HongKong" = "Hong Kong",
+                                            "The Netherlands" = "Netherlands",
+                                            "UK" = "United Kingdom",
+                                            "USA" = "United States",
+                                            "View Nam" = "Vietnam",.missing = "Unknown" )
+table(chosen_genomes_meta$Country_recode,useNA = 'ifany') %>% sort
+table(chosen_genomes_meta$`City/region`,chosen_genomes_meta$Country_recode,useNA = 'ifany') 
+chosen_genomes_meta_no_country_recode <- subset(ng_sample_metadata,Country_recode=="Unknown")
+
+B <- ggplot(data=ng_sample_metadata  %>% subset(displayname %in% chosen_genomes),aes(x=forcats::fct_infreq(Country_recode))) + geom_bar(fill='black',stat='count') + theme_bw_me  + xlab("Year") + ylab("Isolates") + theme(axis.text.x = element_text(angle=90)) 
+```
+
+# Add st data
+```{r}
+ng_meta <- left_join(ng_meta, ng_STs %>% select(Genome.Name,ST) %>% `colnames<-`(c("Isolate","ST")))
+STs <- ng_meta %>% subset(Isolate %in% chosen_genomes) %>% group_by(ST) %>% summarise(n=n(),prop=n/nrow(ng_meta),perc=prop*100)
+top_STs = STs %>% arrange(-n)  %>% .$ST %>% as.vector %>% unlist %>% `names<-`(NULL)
+ng_meta$ST_recode <- ifelse(ng_meta$ST %in% top_STs,ng_meta$ST,"Other ST")
+```
+
+# Sequence type
+```{r}
+theme_bw_me <- theme(panel.background = element_rect(fill = "white",colour = NA), panel.grid = element_blank(),
+                     strip.background = element_rect(fill = "white",colour = "black"),
+                     panel.grid.major = element_blank(),
+                     panel.grid.minor = element_blank(),
+                     axis.line = element_line(colour = "black"),legend.position = "bottom")
+STs$major <- ifelse(STs$ST %in% top_STs,T,F)
+# Merge minor STs into one row 
+STs_singleton <- subset(STs,n==1) %>% summarise(ST='Singleton STs',n=sum(n),prop=sum(prop),perc=sum(perc),major=F)
+STs_major <- subset(STs,major==T & n>1) %>% arrange(-n)
+STs_merged <- rbind(STs_major,STs_minor) %>% rbind(.,STs_singleton)
+STs_merged$ST <- factor(STs_merged$ST,levels = STs_merged$ST)
+
+C <- ggplot(data=STs_merged,aes(x=ST,y=perc)) + geom_histogram(stat='identity',fill='black') + theme(axis.text.x = element_text(angle=90)) + theme_bw_me + ylab("Percentage (%)") + geom_text(aes(label=n),size=2.25,nudge_y = 0.25) + xlab("Sequence type (ST)")
+```
+
+
+# Resistance frequency figure
+```{r}
+Resistance_fill <-  scale_fill_manual(breaks =c("RESISTANT","INTERMEDIATE","NOT_FOUND"),values=c("red","yellow","lightgray"), labels = c("Resistant","Intermediate","Susceptible"),name="Resistance",guide = guide_legend(nrow=1,title.position = "top", label.position = "right")) 
+resistance_vars <-  colnames(ng_amrsearch %>% select(-`Genome ID`, -`Genome Name`,-Version,-`Library Version`))  
+
+reshaped_resistance <- reshape2::melt(ng_amrsearch %>% select(`Genome Name`,resistance_vars),id.vars = 'Genome Name') %>% subset(`Genome Name` %in% chosen_genomes)
+reshaped_resistance$value <- factor(reshaped_resistance$value,levels=c("RESISTANT","INTERMEDIATE","NOT_FOUND"))
+reshaped_resistance$variable <- factor(reshaped_resistance$variable,levels = c(reshaped_resistance %>% group_by(variable)%>% summarise(n=sum(value %in% c("INTERMEDIATE","RESISTANT"))) %>% arrange(-n) %>% .$variable))
+reshaped_resistance_collapsed <- reshaped_resistance %>%  group_by(variable,value) %>% summarise(n=length(value),perc = n / nrow(ng_meta_gene_grouped)*100)
+
+D <- ggplot(data=reshaped_resistance_collapsed,aes(x=variable,fill=value,y=perc)) +  geom_histogram(stat='identity') + Resistance_fill  + theme_bw_me + xlab("Antibiotic") + ylab("Percentage (%)")   + theme(legend.position = 'bottom') + theme(axis.text.x = element_text(angle=90))
+```
+
+# Variant matrix
+```{r}
+mutation_vars <- colnames(ng_meta_gene_grouped %>% select(-Isolate,-resistance_vars)) 
+
+mutation_fill <-  scale_fill_manual(breaks =c(1,0),values=c("black","lightgray"), labels = c("Present","Absent"),name="Presence",guide = guide_legend(nrow=1,title.position = "top", label.position = "right")) 
+
+reshaped_mutation <- reshape2::melt(ng_meta_gene_grouped %>% select(`Isolate`,mutation_vars),id.vars = 'Isolate')  %>% subset(`Isolate` %in% chosen_genomes)
+reshaped_mutation$value <- factor(reshaped_mutation$value,levels=c(0,1))
+reshaped_mutation$variable <- factor(reshaped_mutation$variable,levels = c(reshaped_mutation %>% group_by(variable)%>% summarise(n=sum(value %in% c(1))) %>% arrange(-n) %>% .$variable))
+reshaped_mutatio_collapsed <- reshaped_mutation %>% mutate(value = as.numeric(as.character((value)))) %>%  group_by(variable) %>% summarise(n=sum(value),perc = n / length(reshaped_mutation$Isolate %>% unique)*100)
+
+E <- ggplot(data=reshaped_mutatio_collapsed,aes(x=variable,y=perc)) + geom_histogram(stat='identity',fill='black') + mutation_fill + theme_bw_me + xlab("Genotype") + ylab("Percentage (%)") + mutation_fill + geom_text(aes(label = n),size = 2.25,nudge_y = 1) + theme(axis.text.x = element_text(angle=90))
+```
+
+
+```{r,fig.width=15,fig.height=15}
+AB_cow <- cowplot::plot_grid(A,B,labels =c("A","B"))
+C_cow <- cowplot::plot_grid(C,labels = "C")
+DE_cow <- cowplot::plot_grid(D + theme(legend.position='bottom'),E,ncol=2,labels =  c("D","E"))
+cowplot::plot_grid(AB_cow,C_cow,DE_cow,ncol=1)
+```
+

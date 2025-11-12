@@ -1,0 +1,94 @@
+---
+title: "curate_amrfinder_data"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
+```
+
+# Environment
+
+```{r environment, echo=T, message=FALSE, include=T, results=T}
+#Packages
+packages <- c("tidyverse") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+# Load data
+```{r}
+df <- readRDS("./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")   
+isolates <- df$isolate_no 
+```
+
+# Load amrfinder
+```{r}
+amrfinder_201415 <- read_delim("./data/amrfinder/Penn_KPC_amrfinder_results.txt")
+amrfinder_202123 <- read_delim("./data/amrfinder/INTEGRATE_amrfinder_results.txt")
+
+amrfinder <- rbind.data.frame(amrfinder_201415,amrfinder_202123)
+colnames(amrfinder) <- snakecase::to_snake_case(colnames(amrfinder) )%>% gsub("x_","",.)
+```
+
+
+# Load and curate amrfinder dataset
+```{r} 
+amrfinder$isolate_no <- pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
+ x %>% str_split(.,"_") %>% unlist %>% .[1:(length(.)-1)] %>% paste0(.,collapse = "_")
+},mc.cores=5) %>% unlist
+
+amrfinder$contig <-  pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
+ x %>% str_split(.,"_") %>% unlist %>% .[length(.)]   
+},mc.cores=5) %>% unlist
+ 
+amrfinder <- amrfinder %>% select(-protein_id,-hmm_accession,-hmm_description)  
+amrfinder <- subset(amrfinder, isolate_no %in% isolates)
+
+# Curate new element_symbol
+amrfinder$element_symbol_renamed <- apply(amrfinder,1,FUN=function(x){
+  name <- x[["element_symbol"]] 
+  # Get name
+    if(x[["type"]] == "AMR" & x[["class"]] == "BETA-LACTAM" ){
+      if(grepl("-",name) == F| str_split(name,"-",simplify=T) %>% .[,ncol(.)] %>% grepl("[0-9]", .) ==F){
+        if(x[["coverage_of_reference"]] < 100 | x[["identity_to_reference"]] < 100){
+          name <- str_split(x[["closest_reference_name"]],pattern = " ",simplify = T) %>% .[,ncol(.)] %>% paste0('bla',.)
+        }
+      }
+    }
+    if(x[["element_symbol"]] == 'ampC') {
+      name <- x[["element_symbol"]]
+    }
+    if(x[["coverage_of_reference"]] < 100){
+        name <- paste0(name,"?")
+    }
+    if(x[["identity_to_reference"]] <100) {
+        name <- paste0(name,"*")
+    }
+    return(name)
+})
+
+saveRDS(amrfinder,file="./data/amrfinder/amrfinder_curated.RDS")
+
+get_amrfinder_matrix <- function(amrfinder,isolates){
+  unique_genes <- amrfinder$element_symbol_renamed %>% unique
+  pbmcapply::pbmclapply(unique_genes,FUN =function(x,amrfinder){
+    isolates_with_gene <-  subset(amrfinder,element_symbol_renamed == x) %>% select(isolate_no) %>% unlist
+    row <- assign(paste0(x),ifelse(isolates %in% isolates_with_gene,1,0))
+    return(row)},mc.cores=5,amrfinder) %>% do.call(bind_cols,.) %>% as.data.frame %>% `colnames<-`(unique_genes) %>% `rownames<-`(isolates)
+}
+
+amrfinder_mat <- get_amrfinder_matrix(amrfinder = amrfinder,isolates = isolates)
+
+saveRDS(amrfinder_mat,file="./data/amrfinder/amrfinder_matrix.RDS")
+``` 
