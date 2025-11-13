@@ -59,25 +59,24 @@ df_202123<- df%>% subset(study == "2021-23")
 ```{r}
 amrfinder <- readRDS("./data/amrfinder/amrfinder_curated.RDS")
 amrfinder <- subset(amrfinder,amrfinder$isolate_no %in% df$isolate_no) 
-amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
-
-amrfinder_carb_subclass <- subset(amrfinder,subclass == "CARBAPENEM")
-amrfinder_carb <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol) | grepl("KPC|NDM|VIM|IMP",element_symbol) | grepl("OXA-48 family",element_name))
+amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla",element_symbol))
+ 
+amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol) | grepl("KPC|NDM|VIM|IMP",element_symbol) | grepl("OXA-48 family",element_name))
 amrfinder_matrix <- readRDS("./data/amrfinder/amrfinder_matrix.RDS")  %>% subset(rownames(.) %in% df$isolate_no)
-amrfinder_matrix_beta <- amrfinder_matrix %>% select(any_of(sort(unique(amrfinder_beta$element_symbol))))
-amrfinder_matrix_carb <- amrfinder_matrix %>% select(any_of(sort(unique(amrfinder_carb$element_symbol))))
+amrfinder_matrix_beta <- amrfinder_matrix %>% select(any_of(sort(unique(amrfinder_beta_bla$element_symbol))))
+amrfinder_matrix_carb <- amrfinder_matrix %>% select(any_of(sort(unique(amrfinder_carb_bla$element_symbol))))
 
 # Get an isolate's carbapenemase genes
 df$blactamase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
+  amrfinder_beta_bla %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No blactamase",.)}
 
 df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
+  amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No carbapenemase",.)}
 
 df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
-    carbapenemase <- amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol
+    carbapenemase <- amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol
      if(is_empty(carbapenemase)){
       "No carbapenemase"
     } else {
@@ -132,7 +131,6 @@ A <- ggplot(data=df,
     plot.title = element_text(size = 0, color="black"),
     legend.position = "none",
     strip.text = element_text(size=14,color='black')
-        
   )
 
 A

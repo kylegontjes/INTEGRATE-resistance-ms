@@ -1,0 +1,52 @@
+---
+title: "Merge KPSC kleborate data"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
+```
+
+# Environment
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+# Kleborate
+```{r}
+## Old 
+kleborate_2014_15<- read_delim("./data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt") %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))    %>% mutate(study = "2014-15") 
+ 
+## New
+kleborate_INTEGRATE <-  read_delim("./data/kleborate/kpsc_INTEGRATE//klebsiella_pneumo_complex_output.txt") %>% mutate(study = "2021-23")  %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
+```
+
+# Kleborate joint
+```{r}
+kleborate_joint <- rbind(kleborate_2014_15,kleborate_INTEGRATE) 
+
+saveRDS(kleborate_joint,"./data/kleborate/kleborate_kpsc_both_studies.RDS")
+```
+
+# Kleborate matrix of omp mutations
+```{r}
+rownames(kleborate_joint) <- kleborate_joint$isolate_no
+kleborate_matrix <- gontjesr::get_presence_absence_matrix(kleborate_joint,'Omp_mutations') %>% as.data.frame
+
+saveRDS(kleborate_matrix,"./data/kleborate/kleborate_kpsc_both_studies_matrix.RDS")
+```
+
