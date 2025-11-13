@@ -41,7 +41,6 @@ amrfinder <- rbind.data.frame(amrfinder_201415,amrfinder_202123)
 colnames(amrfinder) <- snakecase::to_snake_case(colnames(amrfinder) )%>% gsub("x_","",.)
 ```
 
-
 # Load and curate amrfinder dataset
 ```{r} 
 amrfinder$isolate_no <- pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
@@ -59,7 +58,7 @@ amrfinder <- subset(amrfinder, isolate_no %in% isolates)
 amrfinder$element_symbol_renamed <- apply(amrfinder,1,FUN=function(x){
   name <- x[["element_symbol"]] 
   # Get name
-    if(x[["type"]] == "AMR" & x[["class"]] == "BETA-LACTAM" ){
+    if(x[["type"]] == "AMR" & x[["class"]] == "BETA-LACTAM" & x[["subtype"]] != "POINT"){
       if(grepl("-",name) == F| str_split(name,"-",simplify=T) %>% .[,ncol(.)] %>% grepl("[0-9]", .) ==F){
         if(x[["coverage_of_reference"]] < 100 | x[["identity_to_reference"]] < 100){
           name <- str_split(x[["closest_reference_name"]],pattern = " ",simplify = T) %>% .[,ncol(.)] %>% paste0('bla',.)
@@ -75,6 +74,10 @@ amrfinder$element_symbol_renamed <- apply(amrfinder,1,FUN=function(x){
     if(x[["identity_to_reference"]] <100) {
         name <- paste0(name,"*")
     }
+  # Point mutants
+  if(x[["subtype"]] == "POINT"){
+    name <- x[["element_symbol"]] 
+  }
     return(name)
 })
 

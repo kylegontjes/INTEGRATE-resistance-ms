@@ -1,0 +1,215 @@
+---
+title: "Supplemental Figure 2: Carbapenemase resistance mutations"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
+```
+
+# Environment
+
+```{r}
+# Packages
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot")
+lapply(packages,library,character.only=T)
+
+# Functions
+source("././lib/consistent_themes.R")
+
+# Print environment
+Sys.info()
+sessionInfo()
+```
+
+# Load data
+
+```{r}
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
+   
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123 <- df%>% subset(study == "2021-23") 
+```
+
+# Coordinate ST data
+
+```{r}
+OLD_ST <- unique(df_201415$Species_ST) %>% sort
+new_ST <- unique(df_202123$Species_ST) %>% sort 
+ST_over_1 <- table(df$Species_ST) %>% subset(.>1) %>% names
+
+df$Species_ST_new <- ifelse(df$Species_ST %in% c(ST_over_1),df$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.)
+                                          
+break_of_sts <-  c(sort(unique(df$Species_ST_new %>% subset(.!="Singleton STs"))),"Singleton STs")
+break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
+       
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
+
+df$Species_ST_new_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
+
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123<- df%>% subset(study == "2021-23")
+```
+
+```{r}
+amrfinder <- readRDS("./data/amrfinder/amrfinder_curated.RDS") %>% subset(isolate_no %in% df$isolate_no)
+amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
+
+amrfinder_carb_subclass <- subset(amrfinder,subclass == "CARBAPENEM")
+amrfinder_carb <- amrfinder %>% subset(subclass == "CARBAPENEM" | grepl("KPC|NDM|VIM|IMP",element_symbol) | grepl("OXA-48 family",element_name))
+amrfinder_matrix <- readRDS("./data/amrfinder/amrfinder_matrix.RDS") %>% subset(rownames(.) %in% df$isolate_no)
+amrfinder_matrix_beta <- amrfinder_matrix %>% select(any_of(sort(unique(amrfinder_beta$element_symbol))))
+amrfinder_matrix_carb <- amrfinder_matrix %>% select(any_of(sort(unique(amrfinder_carb$element_symbol))))
+
+# Melt dataframe matrix so that 
+isolate_level_data <- amrfinder_matrix  %>% mutate(isolate_no = rownames(.)) %>% reshape2::melt(id.vars="isolate_no")
+isolate_level_data <- left_join(isolate_level_data, df %>% select(isolate_no,species,Species_ST,Species_ST_new,study,hospital_location,rectal), by = "isolate_no") 
+
+# Get an isolate's carbapenemase genes
+df$blactamase <- sapply(df$isolate_no,FUN=function(x){
+  amrfinder_beta %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
+}) %>% {ifelse(.=="","No blactamase",.)}
+
+
+df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
+  amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
+}) %>% {ifelse(.=="","No carbapenemase",.)}
+
+df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
+    carbapenemase <- amrfinder_carb %>% subset(isolate_no == x) %>% .$element_symbol
+     if(is_empty(carbapenemase)){
+      "No carbapenemase"
+    } else {
+      sapply(carbapenemase,FUN=function(y){
+        str_split(y,"-",simplify=T) %>% .[,1]
+    }) %>% unlist  %>% paste0(collapse=" & ") 
+    }
+    
+})   
+df$blaKPC_2 <- grepl("KPC-2",df$carbapenemase)  & !grepl("KPC-29",df$carbapenemase)
+df$no_carbapenemase <- grepl("No carbapenemase",df$carbapenemase_family) 
+df$major_STs <- ifelse(df$ST %in% c("258","14","307","17","25","11"),df$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123<- df%>% subset(study == "2021-23")
+```
+
+# Supplemental Figure:
+```{r,fig.width=9.5,height=6.7857}
+kleborate_matrix <- readRDS("./data/kleborate/kleborate_kpsc_both_studies_matrix.RDS") #%>% select_if(!colnames(.) %in% c("OmpK36GD","OmpK36TD"))
+df <- left_join(df,kleborate_matrix %>% mutate(isolate_no = rownames(.))) %>% left_join(amrfinder_matrix_beta %>% mutate(isolate_no = rownames(.))) %>% as.data.frame
+rownames(df) <- df$isolate_no
+df$major_STs <- ifelse(df$ST %in% c("ST258","ST14","ST307","ST17","ST25","ST11"),df$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
+df_carb_omp <- df %>% select(study,major_STs,any_of(c(unique(amrfinder_beta$element_symbol) ,colnames(kleborate_matrix)))) 
+```
+
+```{r}
+# Omp mutations
+kleb_matrix_count <- df_carb_omp %>% select(colnames(kleborate_matrix)) %>% colSums() %>% sort
+mutations_over_4 <- names(subset(kleb_matrix_count,kleb_matrix_count>4))
+muts_under <- subset(names(kleb_matrix_count),!names(kleb_matrix_count) %in% mutations_over_4)
+ompK35_truncations_under_4 <- subset(muts_under,grepl("K35-",muts_under))
+ompK36_truncations_under_4 <- subset(muts_under,grepl("K36-",muts_under))
+
+df_carb_omp$ompK35_rare_truncation <- df_carb_omp %>% select(ompK35_truncations_under_4) %>% rowSums(.) %>% {ifelse(.>0,1,0)}
+df_carb_omp$ompK36_rare_truncation <- df_carb_omp %>% select(ompK36_truncations_under_4) %>% rowSums(.) %>% {ifelse(.>0,1,0)}
+
+df_carb_omp <- df_carb_omp %>% select(-muts_under)
+
+# bla genotpyes
+bla_count <- df_carb_omp %>% select(colnames(amrfinder_matrix_beta)) %>% colSums() %>% sort
+bla_over_4 <- names(bla_count)[bla_count>4] 
+bla_under_4 <- names(bla_count)[bla_count<4]
+
+families_under_four <- str_split(bla_under_4,"-",simplify = T) %>% .[,1] %>% gsub("bla","",.)  %>% str_split(.,"_",simplify=T) %>% .[,1]%>% unique %>% sort
+
+store_thes <- lapply(families_under_four,FUN=function(x,df_carb_omp,bla_under_4){
+  cols_of_family <- bla_under_4[grepl(x,bla_under_4)]
+  new_col_name <- ifelse(x == "ompK35",
+                         "Rare_ompK35_insertion",
+                         ifelse(x=="ompK36","Rare_ompK36_insertion",paste0("Rare_bla",x))) 
+  df_carb_omp[[new_col_name]] <<- df_carb_omp %>% select(all_of(cols_of_family)) %>% rowSums() %>% {ifelse(.>0,1,0)}
+},df_carb_omp,bla_under_4)  
+
+df_carb_omp <- df_carb_omp %>% select(-bla_under_4)
+```
+
+# Count datag
+```{r}
+melted_row <- df_carb_omp %>% reshape2::melt(c("study","major_STs")) %>% subset(value == 1) 
+ 
+ST_palette <- ST_scale$palette(1) 
+ST_palette <- c(ST_palette,"Other STs"='lightgray')
+ST_major_scale <- scale_fill_manual(values = ST_palette,name = "Major sequence types (STs)")
+
+isolates_1415 <- sum(grepl("PCMP",rownames(df_carb_omp)))
+isolates_2123 <- sum(grepl("INT",rownames(df_carb_omp)))
+
+melted_row<- df_carb_omp  %>% reshape2::melt(c("study","major_STs")) %>% subset(value == 1)  
+
+# Calculate proportion of isolates in study but retain the major_ST coloring
+melted_row_summary <- melted_row %>% group_by(study,major_STs,variable) %>% summarise(n=sum(value))
+melted_row_summary$proportion <- ifelse(melted_row_summary$study =='2021-23',melted_row_summary$n/isolates_2123,melted_row_summary$n/isolates_1415)
+
+# How to normalize data by count in study 
+melted_row_summary$variable <- recode(melted_row_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in OmpK36") %>% gsub("Rare_","Rare ",.)
+melted_row_summary$variable <- factor(melted_row_summary$variable,levels = melted_row_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
+
+A <- ggplot(data=melted_row_summary,aes(y=variable,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage") + ylab(NULL) + xlim(NA,1.01) +  
+  geom_text(
+  data = melted_row_summary %>% ungroup %>% select(-major_STs) %>% group_by(study,variable) %>% summarise(sumar= sum(proportion),count=sum(n)),
+  inherit.aes = F,  
+  aes(
+    label = count,
+    x = sumar+.026,
+    y= variable
+  ),
+  size = 2.5,
+) + scale_x_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1),labels = c('0','20','40','60','80','100'),limits = c(0,1.01)) + ggtitle("All isolates") 
+A
+```
+
+```{r}
+non_carbapenemase_isolates <- df %>% subset(carbapenemase=="No carbapenemase") %>% .$isolate_no
+non_carbapenemase_isolates_1415 <- sum(grepl("PCMP",non_carbapenemase_isolates))
+non_carbapenemase_isolates_2123 <- sum(grepl("INT",non_carbapenemase_isolates))
+
+melted_row_no_carb<- df_carb_omp %>% subset(rownames(.) %in% non_carbapenemase_isolates) %>% reshape2::melt(c("study","major_STs")) %>% subset(value == 1)  
+# Calculate proportion of isolates in study but retain the major_ST coloring
+ 
+melted_row_no_carb_summary <- melted_row_no_carb %>% group_by(study,major_STs,variable) %>% summarise(n=sum(value))
+melted_row_no_carb_summary$proportion <- ifelse(melted_row_no_carb_summary$study =='2021-23',melted_row_no_carb_summary$n/non_carbapenemase_isolates_2123,melted_row_no_carb_summary$n/non_carbapenemase_isolates_1415)
+
+# How to normalize data by count in study 
+melted_row_no_carb_summary$variable <- recode(melted_row_no_carb_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in OmpK36") %>% gsub("Rare_","Rare ",.)
+melted_row_no_carb_summary$variable <- factor(melted_row_no_carb_summary$variable,levels = melted_row_no_carb_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
+
+
+B <- ggplot(data=melted_row_no_carb_summary,aes(y=variable,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage") + ylab(NULL) + xlim(NA,1.01) +  
+  geom_text(
+  data = melted_row_no_carb_summary %>% ungroup %>% select(-major_STs) %>% group_by(study,variable) %>% summarise(sumar= sum(proportion),count=sum(n)),
+  inherit.aes = F,  
+  aes(
+    label = count,
+    x = sumar+.0225,
+    y= variable
+  ),
+  size = 2.5,
+) + scale_x_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1),labels = c('0','20','40','60','80','100'),limits = c(0,1.01)) + ggtitle("Non-carbapenemase-containing isolates") 
+B
+```
+
+```{r,fig.width=8,fig.height=12}
+legends <- cowplot::get_legend(A)
+AB <- cowplot::plot_grid(A + theme(legend.position = 'none'),B+ theme(legend.position = 'none'),ncol=1,labels = c("A","B"),rel_heights = c(1,0.75))
+figure <- cowplot::plot_grid(AB,legends,rel_heights = c(1,0.075),ncol=1)
+figure
+```
+
+```{r}
+ggsave(filename = "./figures/s_figure_2_carbapenem_resistance_associated_genotypes_count.png",plot=figure,width = 8,height = 12,dpi=900,bg = 'white')
+```
