@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 6: Cross-resistance"
+title: "Supplemental Figure 8: Cross-resistance"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -9,7 +9,7 @@ output: html_document
 require(knitr)
 opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
 opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
-opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
 # Environment
@@ -27,9 +27,7 @@ sessionInfo()
 
 # Load data
 ```{r}
-df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
-  
-df$study <- factor(df$study,levels = c("2014-15","2021-23"))
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123<- df%>% subset(study == "2021-23")
 ```
@@ -46,7 +44,6 @@ complete_case <- df_202123[df_202123 %>% select(resistance_vars) %>% is.na() %>%
 
 paste0("Number of considered individuals with complete resistance datafor this analysis: ", nrow(complete_case ))
 ```
-
 
 # Code for figure
 ```{r} 
@@ -88,14 +85,14 @@ fig_legend <- Legend(at = c(0, 25, 50, 75, 100),labels = c("0%", "25%", "50%", "
 fig_heatmap_image <- grid.grabExpr(draw(co_occurrence_heatmap))
 fig_legend_image <- grid.grabExpr(draw(fig_legend))
 
-figure <-plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="hv",rel_heights = c(1,.16))  
+figure <- plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="hv",rel_heights = c(1,.16))  
 ```
 
 # Print & Save
-```{r,message=F,error=F,warning=F,fig.width=8.5,fig.height=4}
+```{r,message=F,error=F,warning=F,fig.width=8.75,fig.height=4}
 figure
 ```
 
 ```{r}
-ggsave(plot = figure, filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/s_figure_6_resistance_MIC_correlations.png", width = 8.75, height = 4, bg = "white",dpi=900)
+ggsave(plot = figure, filename = "./figures/s_figure_8_cross_resistance.png", width = 8.75, height = 4, bg = "white",dpi=900)
 ```

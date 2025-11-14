@@ -1,5 +1,5 @@
 ---
-title: "Figure 3: Differences in resistance"
+title: "Figure 5: Differences in resistance"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -7,20 +7,20 @@ output: html_document
 
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
 opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
-opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
 # Environment
 
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ComplexHeatmap",'ggalluvial')
+packages <- c("tidyverse","ComplexHeatmap",'ggalluvial','ape','ggtree')
 lapply(packages,library,character.only=T)
 
 # Functions
-source("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/lib/consistent_themes.R")
+source("./lib/consistent_themes.R")
 
 # Print environment
 Sys.info()
@@ -30,19 +30,24 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
-  
-df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
-df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
-
-df$study <- factor(df$study,levels = c("2014-15","2021-23"))
-df_201415 <- df%>% subset(study == "2014-15")
-df_202123 <- df%>% subset(study == "2021-23")
-
-MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
-resistance_vars <- paste0(MIC_variables,"_dich_num")  
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
+# Coordinate ST data
+
+```{r} 
+break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
+break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
+       
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(nrow=3, title.position = "top", label.position = "right"))
+
+df$Species_ST_recode_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
+df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
+ 
+df_201415 <- df%>% subset(study == "2014-15")
+df_202123<- df%>% subset(study == "2021-23")
+```
+ 
 # Scripts
 ```{r}
 get_chisq_flag <- function(variable,df,comparitor){
@@ -154,16 +159,19 @@ ggplot(data=res_comps,aes(y=name,x=prop,fill=dataset)) +
 
 # A. Kpneumoniae 2014-15 vs. 2021-23
 ```{r}
-df_kpn <- subset(df,Species == "Klebsiella pneumoniae")
-df_kpn_201415 <-  subset(df_kpn,Species == "Klebsiella pneumoniae" & study == '2014-15')
-df_kpn_202123 <- subset(df_kpn,Species == "Klebsiella pneumoniae" & study == '2021-23')
+MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
+resistance_vars <- paste0(MIC_variables,"_dich_num")  
+
+df_kpn <- subset(df,species == "Klebsiella pneumoniae")
+df_kpn_201415 <-  subset(df_kpn,species == "Klebsiella pneumoniae" & study == '2014-15')
+df_kpn_202123 <- subset(df_kpn,species == "Klebsiella pneumoniae" & study == '2021-23')
 A <- algorithm(overall_df = df_kpn,comparitor = 'study',df1 = df_kpn_201415,df2 = df_kpn_202123,df1name = '2014-15',df2name = '2021-23',population = "All isolates")
 A
 ```
 
 # B. Kpneumoniae ST258 2014-15 vs. 2021-23
 ```{r}
-df_kpn_ST258 <- subset(df,Species == "Klebsiella pneumoniae" & ST=='258')
+df_kpn_ST258 <- subset(df,species == "Klebsiella pneumoniae" & ST=='ST258')
 df_kpn_ST258_201415 <-  subset(df_kpn_ST258,study == '2014-15')
 df_kpn_ST258_202123 <- subset(df_kpn_ST258,study == '2021-23')
 B <- algorithm(overall_df = df_kpn_ST258,comparitor = 'study',df1 = df_kpn_ST258_201415,df2 = df_kpn_ST258_202123,df1name = '2014-15',df2name = '2021-23',population = "ST258 isolates")
@@ -171,22 +179,15 @@ B
 ```
 
 # C.2021-23 Kpneumoniae ST258  vs. Non ST258
-```{r} 
-# Scale
-OLD_ST <- unique(df_201415$Species_ST) %>% sort
-new_ST <- unique(df_202123$Species_ST) %>% sort 
-ST_over_1 <- table(df$Species_ST) %>% subset(.>1) %>% names
-
-df$Species_ST_new <- ifelse(df$Species_ST %in% c(ST_over_1),df$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.)
-                                          
-break_of_sts <-  c(sort(unique(df$Species_ST_new %>% subset(.!="Singleton STs"))),"Singleton STs")
+```{r}                                    
+break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
        
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
 ST_palette <- ST_scale$palette(1) 
 ST_258_color <- ST_palette[which(break_of_sts_renamed == "ST258")]
 
-df_kpn_202123$ST258 <- ifelse(df_kpn_202123$ST == '258' & df_kpn_202123$Species == "Klebsiella pneumoniae" , T,F)
+df_kpn_202123$ST258 <- ifelse(df_kpn_202123$ST == 'ST258' & df_kpn_202123$species == "Klebsiella pneumoniae" , T,F)
 df_kpn_202123_ST258 <-  subset(df_kpn_202123,ST258 == T)
 df_kpn_202123_nonST258 <- subset(df_kpn_202123,ST258==F)
 C <- algorithm(overall_df = df_kpn_202123,comparitor = 'ST258',df1 = df_kpn_202123_ST258,df2 = df_kpn_202123_nonST258,df1name = 'ST258',df2name = 'Not ST258',population = "2021-23 study")
@@ -197,11 +198,11 @@ C
 legendA <- cowplot::get_legend(A) %>% cowplot::plot_grid() 
 legendST258 <- cowplot::get_legend(C)%>% cowplot::plot_grid() 
 legends <- cowplot::plot_grid(legendA + theme(plot.margin = margin(b =-1.5,unit='in')),legendST258 + theme(plot.margin = margin(t =-1.5,unit='in')),ncol=1)
-figure3 <- cowplot::plot_grid(A + theme(legend.position='none'),B + theme(legend.position='none'),C + theme(legend.position='none'),legends,labels = c("A", "B","C", ""))
+figure5 <- cowplot::plot_grid(A + theme(legend.position='none'),B + theme(legend.position='none'),C + theme(legend.position='none'),legends,labels = c("A", "B","C", ""))
  
-figure3
+figure5
 ```
 
 ```{r,fig.width=17,fig.height=10.5}   
-ggsave(filename = "./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/figures/figure_3_resistance_comparisons.png",plot=figure3,width = 8.5,height = 7.25,dpi=900,bg = 'white')
+ggsave(filename = "./figures/figure_5_resistance_comparisons.png",plot=figure5,width = 8.5,height = 7.25,dpi=900,bg = 'white')
 ```
