@@ -36,27 +36,18 @@ df_202123 <- df%>% subset(study == "2021-23")
 
 # Coordinate ST data
 
-```{r}
-OLD_ST <- unique(df_201415$Species_ST) %>% sort
-new_ST <- unique(df_202123$Species_ST) %>% sort 
-ST_over_1 <- table(df$Species_ST) %>% subset(.>1) %>% names
-
-df$Species_ST_new <- ifelse(df$Species_ST %in% c(ST_over_1),df$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.)
-                                          
-break_of_sts <-  c(sort(unique(df$Species_ST_new %>% subset(.!="Singleton STs"))),"Singleton STs")
+```{r} 
+break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
        
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
-
-df_201415 <- df%>% subset(study == "2014-15")
-df_202123<- df%>% subset(study == "2021-23")
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
 ``` 
 
 ## A. Species ST
 ```{r}
 ST_dist <-  df  %>%
-  count(study, Species_ST_new) %>%
-  complete(study, Species_ST_new, fill = list(n = 0)) %>%
+  count(study, Species_ST_recode) %>%
+  complete(study, Species_ST_recode, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
@@ -65,11 +56,11 @@ get_factor_order <- function(ST_dist,var){
   zero_new_order_old <- ST_dist %>% subset(study =='2014-15') %>% subset(!get(var) %in% new_order) %>% arrange(-n) %>% .[[var]]
   c(c(new_order,zero_new_order_old) %>% subset(.!="Singleton STs"),"Singleton STs")
 }
-ST_dist$Species_ST_new <-   factor(ST_dist$Species_ST_new,levels = get_factor_order(ST_dist,'Species_ST_new'))
-df$Species_ST_new <- factor(df$Species_ST_new,levels = levels(ST_dist$'Species_ST_new'))
+ST_dist$Species_ST_recode <-   factor(ST_dist$Species_ST_recode,levels = get_factor_order(ST_dist,'Species_ST_recode'))
+df$Species_ST_recode <- factor(df$Species_ST_recode,levels = levels(ST_dist$'Species_ST_recode'))
 
 A <- ggplot(data=df,
-       aes(y=Species_ST_new, fill=Species_ST_new)) +
+       aes(y=Species_ST_recode, fill=Species_ST_recode)) +
   geom_bar() +
   geom_text(stat='count',
             aes(label=..count..),
@@ -97,10 +88,10 @@ A
 ## ST level 
 
 ```{r} 
-ST_dist <- ST_dist %>% arrange(Species_ST_new)
-ST_dist$alpha_value <- ifelse(ST_dist$Species_ST_new == "Singleton STs",0,0.75)
+ST_dist <- ST_dist %>% arrange(Species_ST_recode)
+ST_dist$alpha_value <- ifelse(ST_dist$Species_ST_recode == "Singleton STs",0,0.75)
 
-B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = Species_ST_new,alluvium = Species_ST_new,y=prop,fill = Species_ST_new)) +
+B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = Species_ST_recode,alluvium = Species_ST_recode,y=prop,fill = Species_ST_recode)) +
   geom_alluvium(aes(alpha=alpha_value),width=0.66)+ scale_alpha_identity() +
   geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + ST_scale + theme(legend.position = "bottom",
                   axis.text =   element_text(hjust = 0.5, size=12, color="black"),
@@ -118,6 +109,7 @@ B
 AB <-  cowplot::plot_grid(A,B + theme(legend.position='none'),rel_widths =  c(1,.33),labels = c("A","B"),ncol=2)   
 
 figure <- cowplot::plot_grid(AB ,ncol=1)
+
 figure
 ```
 

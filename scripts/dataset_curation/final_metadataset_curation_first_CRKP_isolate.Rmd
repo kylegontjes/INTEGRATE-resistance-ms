@@ -52,6 +52,21 @@ df_metadata_all_clinical_kpn$first_isolate <- df_metadata_all_clinical_kpn$isola
 # All clinical isolates
 saveRDS(df_metadata_all_clinical_kpn,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.RDS") 
 write_csv(df_metadata_all_clinical_kpn,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.csv") 
+```
+
+# Add metadata
+```{r}
+df_201415 <- df_metadata_all_clinical_kpn_first_isolate %>% subset(study == "2014-15")
+df_202123 <- df_metadata_all_clinical_kpn_first_isolate %>% subset(study == "2021-23") 
+
+OLD_ST <- unique(df_201415$Species_ST) %>% sort
+new_ST <- unique(df_202123$Species_ST) %>% sort 
+ST_over_1 <- table(df_metadata_all_clinical_kpn_first_isolate$Species_ST) %>% subset(.>1) %>% names
+
+df_metadata_all_clinical_kpn_first_isolate$Species_ST_recode <- ifelse(df_metadata_all_clinical_kpn_first_isolate$Species_ST %in% c(ST_over_1), df_metadata_all_clinical_kpn_first_isolate$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.) 
+
+df_metadata_all_clinical_kpn_first_isolate$Species_ST_new_no_species <- gsub("Klebsiella pneumoniae ","",df_metadata_all_clinical_kpn_first_isolate$Species_ST)
+df_metadata_all_clinical_kpn_first_isolate$major_STs <- ifelse(df_metadata_all_clinical_kpn_first_isolate$ST %in% c("ST258","ST14","ST307","ST17","ST25","ST11"),df_metadata_all_clinical_kpn_first_isolate$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
 
 # First isolate + NA clinical isolates
 saveRDS(df_metadata_all_clinical_kpn_first_isolate,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS") 

@@ -31,63 +31,27 @@ sessionInfo()
 
 ```{r}
 df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
-
-df_201415 <- df%>% subset(study == "2014-15")
-df_202123 <- df%>% subset(study == "2021-23")
+ 
 ```
 
 # Coordinate ST data
 
-```{r}
-OLD_ST <- unique(df_201415$Species_ST) %>% sort
-new_ST <- unique(df_202123$Species_ST) %>% sort 
-ST_over_1 <- table(df$Species_ST) %>% subset(.>1) %>% names
-
-df$Species_ST_new <- ifelse(df$Species_ST %in% c(ST_over_1),df$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.)
-                                          
-break_of_sts <-  c(sort(unique(df$Species_ST_new %>% subset(.!="Singleton STs"))),"Singleton STs")
+```{r} 
+break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
        
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_new)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
 
-df$Species_ST_new_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
+df$Species_ST_recode_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
  
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123<- df%>% subset(study == "2021-23")
 ```
 
+# Load carbapenemase data
 ```{r}
-amrfinder <- readRDS("./data/amrfinder/amrfinder_curated.RDS")
-amrfinder <- subset(amrfinder,amrfinder$isolate_no %in% df$isolate_no) 
-amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla",element_symbol))
- 
-amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol) | grepl("KPC|NDM|VIM|IMP",element_symbol) | grepl("OXA-48 family",element_name))
-amrfinder_carb_ompK <- amrfinder %>% subset(subclass == "CARBAPENEM" & ! element_symbol %in% amrfinder_carb_bla$element_symbol)
-amrfinder_matrix <- readRDS("./data/amrfinder/amrfinder_matrix.RDS")  %>% subset(rownames(.) %in% df$isolate_no) 
-amrfinder_matrix_carb <- amrfinder_matrix %>% select(any_of(sort(c(unique(amrfinder_carb_bla$element_symbol)))))
-
-# Get an isolate's carbapenemase genes
-df$blactamase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_beta_bla %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
-}) %>% {ifelse(.=="","No blactamase",.)}
-
-df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol %>% paste0(collapse=" & ")
-}) %>% {ifelse(.=="","No carbapenemase",.)}
-
-df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
-    carbapenemase <- amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol
-     if(is_empty(carbapenemase)){
-      "No carbapenemase"
-    } else {
-      sapply(carbapenemase,FUN=function(y){
-        str_split(y,"-",simplify=T) %>% .[,1]
-    }) %>% unlist  %>% paste0(collapse=" & ") 
-    }
-})    
-
-df_201415 <- df %>% subset(study == "2014-15")
-df_202123 <- df %>% subset(study == "2021-23")
+carbapenemase_content <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
+df <- left_join(df,carbapenemase_content)
 ```
 
 # A. Fill being carbapenemase
@@ -146,15 +110,15 @@ get_factor_order <- function(ST_dist,var){
 }
  
 ST_dist <-  df  %>%
-  count(study, Species_ST_new) %>%
-  complete(study, Species_ST_new, fill = list(n = 0)) %>%
+  count(study, Species_ST_recode) %>%
+  complete(study, Species_ST_recode, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
-df$Species_ST_new <- factor(df$Species_ST_new,levels = get_factor_order(ST_dist,'Species_ST_new'))
+df$Species_ST_recode <- factor(df$Species_ST_recode,levels = get_factor_order(ST_dist,'Species_ST_recode'))
 
 C <- ggplot(data=df,
-       aes(y=Species_ST_new, fill=carbapenemase)) +
+       aes(y=Species_ST_recode, fill=carbapenemase)) +
   geom_bar() +
   xlim(NA, 310.1) +
   theme_bw_me +
@@ -222,7 +186,9 @@ D
 ```{r,fig.width=9,fig.height=7.2} 
 AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=12)  
 CD <-  cowplot::plot_grid(C + theme(legend.position = 'none'),D + theme(legend.position = 'none'),ncol=2,labels = c("C","D"),label_size = 12,rel_widths = c(1,.33))
+
 figure_3 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,1),labels = c("",""),label_size=12)  
+
 figure_3
 ``` 
 
