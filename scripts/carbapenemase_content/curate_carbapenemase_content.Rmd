@@ -166,8 +166,7 @@ saveRDS(carbapenemase_plasmid_pattern_matrix,"./data/carbapenemase_content/carba
 carbapenemase_plasmid_matrix <- df %>%
     select(isolate_no, carbapenemase_plasmid) %>%
     separate_rows(carbapenemase_plasmid, sep = " & ") %>% 
-    pivot_wider(names_from = carbapenemase_plasmid, values_from = carbapenemase_plasmid) %>% column_to_rownames("isolate_no") %>% mutate_all(as.character)  %>% {ifelse(.==
-"NULL",0,1)}  %>% as.data.frame
+    pivot_wider(names_from = carbapenemase_plasmid, values_from = carbapenemase_plasmid) %>% column_to_rownames("isolate_no") %>% mutate_all(as.character)  %>% {ifelse(is.na(.),0,1)}  %>% as.data.frame
    
 ## Save carbapenemase pattern
 saveRDS(carbapenemase_plasmid_matrix,"./data/carbapenemase_content/carbapenemase_plasmid_matrix.RDS") 
