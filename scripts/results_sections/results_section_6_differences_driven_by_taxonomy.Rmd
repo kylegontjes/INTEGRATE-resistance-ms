@@ -10,12 +10,12 @@ output: html_document
 require(knitr)
 opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
 opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
-opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
 # Environment
 ```{r}
-packages <- c("tidyverse",'ape','kableExtra','phytools','tableone','kableExtra','ggtree','phyloAMR','ggalluvial','colorRamp2',"RColorBrewer",'ComplexHeatmap',"cowplot",'gontjesr') 
+packages <- c("tidyverse",'kableExtra','tableone','gontjesr') 
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
@@ -27,15 +27,13 @@ sessionInfo()
 ```
 
 ```{r}
-df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/2025-09-18_master_kpn_first_isolate_dataset_curation/results/CA_clinical_CRKP_first_isolate_metadata_091825.RDS")  
-  
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")  
+
 df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
 df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
 
-df$study <- factor(df$study,levels = c("2014-15","2021-23"))
-df$ST258 <- ifelse(df$ST == '258' & df$Species == "Klebsiella pneumoniae" , T,F)
 df_201415 <- df%>% subset(study == "2014-15")
-df_202123 <- df%>% subset(study == "2021-23")
+df_202123 <- df%>% subset(study == "2021-23")  
 
 MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
 resistance_vars <- paste0(MIC_variables,"_dich_num")  

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-10-02" />
+<meta name="date" content="2025-11-14" />
 
 <title>Results section 6: Differences among taxonomic groups</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">Results section 6: Differences among
 taxonomic groups</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-10-02</h4>
+<h4 class="date">2025-11-14</h4>
 
 </div>
 
@@ -589,7 +589,7 @@ taxonomic groups</h1>
                                                                                                     release 
                                                                                                    &quot;24.6.0&quot; 
                                                                                                     version 
-&quot;Darwin Kernel Version 24.6.0: Mon Aug 11 21:16:05 PDT 2025; root:xnu-11417.140.69.701.11~1/RELEASE_X86_64&quot; 
+&quot;Darwin Kernel Version 24.6.0: Wed Oct 15 21:12:21 PDT 2025; root:xnu-11417.140.69.703.14~1/RELEASE_X86_64&quot; 
                                                                                                    nodename 
                                                                                            &quot;msla0572.local&quot; 
                                                                                                     machine 
@@ -600,9 +600,9 @@ taxonomic groups</h1>
                                                                                                  &quot;kgontjes&quot; 
                                                                                              effective_user 
                                                                                                  &quot;kgontjes&quot; </code></pre>
-<pre><code>R version 4.5.1 (2025-06-13)
+<pre><code>R version 4.5.2 (2025-10-31)
 Platform: x86_64-apple-darwin20
-Running under: macOS Sequoia 15.7
+Running under: macOS Sequoia 15.7.2
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.5-x86_64/Resources/lib/libRblas.0.dylib 
@@ -615,51 +615,28 @@ time zone: America/Detroit
 tzcode source: internal
 
 attached base packages:
-[1] grid      stats     graphics  grDevices utils     datasets  methods  
-[8] base     
+[1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] gontjesr_0.1.0        cowplot_1.2.0         ComplexHeatmap_2.24.1
- [4] RColorBrewer_1.1-3    colorRamp2_0.1.0      ggalluvial_0.12.5    
- [7] phyloAMR_0.1.0        ggtree_3.17.0         tableone_0.13.2      
-[10] phytools_2.5-2        maps_3.4.3            kableExtra_1.4.0     
-[13] ape_5.8-1             lubridate_1.9.4       forcats_1.0.1        
-[16] stringr_1.5.2         dplyr_1.1.4           purrr_1.1.0          
-[19] readr_2.1.5           tidyr_1.3.1           tibble_3.3.0         
-[22] ggplot2_3.5.2         tidyverse_2.0.0       knitr_1.50           
+ [1] gontjesr_0.1.0   tableone_0.13.2  kableExtra_1.4.0 lubridate_1.9.4 
+ [5] forcats_1.0.1    stringr_1.5.2    dplyr_1.1.4      purrr_1.1.0     
+ [9] readr_2.1.5      tidyr_1.3.1      tibble_3.3.0     ggplot2_3.5.2   
+[13] tidyverse_2.0.0  knitr_1.50      
 
 loaded via a namespace (and not attached):
- [1] DBI_1.2.3               mnormt_2.1.1            phangorn_2.12.1        
- [4] rlang_1.1.6             magrittr_2.0.4          clue_0.3-66            
- [7] GetoptLong_1.0.5        matrixStats_1.5.0       compiler_4.5.1         
-[10] png_0.1-8               systemfonts_1.2.3       vctrs_0.6.5            
-[13] combinat_0.0-8          quadprog_1.5-8          shape_1.4.6.1          
-[16] pkgconfig_2.0.3         crayon_1.5.3            fastmap_1.2.0          
-[19] rmarkdown_2.29          tzdb_0.5.0              xfun_0.53              
-[22] cachem_1.1.0            aplot_0.2.9             clusterGeneration_1.3.8
-[25] jsonlite_2.0.0          cluster_2.1.8.1         parallel_4.5.1         
-[28] R6_2.6.1                bslib_0.9.0             stringi_1.8.7          
-[31] jquerylib_0.1.4         numDeriv_2016.8-1.1     Rcpp_1.1.0             
-[34] iterators_1.0.14        optimParallel_1.0-2     IRanges_2.42.0         
-[37] Matrix_1.7-4            splines_4.5.1           igraph_2.1.4           
-[40] timechange_0.3.0        tidyselect_1.2.1        rstudioapi_0.17.1      
-[43] yaml_2.3.10             doParallel_1.0.17       codetools_0.2-20       
-[46] lattice_0.22-7          treeio_1.32.0           withr_3.0.2            
-[49] coda_0.19-4.1           evaluate_1.0.5          gridGraphics_0.5-1     
-[52] survival_3.8-3          survey_4.4-8            xml2_1.4.0             
-[55] circlize_0.4.16         pillar_1.11.1           stats4_4.5.1           
-[58] foreach_1.5.2           ggfun_0.2.0             generics_0.1.4         
-[61] S4Vectors_0.46.0        hms_1.1.3               scales_1.4.0           
-[64] tidytree_0.4.6          glue_1.8.0              scatterplot3d_0.3-44   
-[67] lazyeval_0.2.2          tools_4.5.1             fs_1.6.6               
-[70] fastmatch_1.1-6         mitools_2.4             colorspace_2.1-2       
-[73] nlme_3.1-168            patchwork_1.3.2         cli_3.6.5              
-[76] rappdirs_0.3.3          DEoptim_2.2-8           textshaping_1.0.3      
-[79] expm_1.0-0              viridisLite_0.4.2       svglite_2.2.1          
-[82] gtable_0.3.6            yulab.utils_0.2.1       sass_0.4.10            
-[85] digest_0.6.37           BiocGenerics_0.54.0     ggplotify_0.1.3        
-[88] rjson_0.2.23            farver_2.1.2            htmltools_0.5.8.1      
-[91] lifecycle_1.0.4         GlobalOptions_0.1.2     MASS_7.3-65            </code></pre>
+ [1] sass_0.4.10        generics_0.1.4     xml2_1.4.0         stringi_1.8.7     
+ [5] lattice_0.22-7     hms_1.1.3          digest_0.6.37      magrittr_2.0.4    
+ [9] evaluate_1.0.5     grid_4.5.2         timechange_0.3.0   RColorBrewer_1.1-3
+[13] fastmap_1.2.0      jsonlite_2.0.0     Matrix_1.7-4       DBI_1.2.3         
+[17] survival_3.8-3     viridisLite_0.4.2  scales_1.4.0       textshaping_1.0.3 
+[21] jquerylib_0.1.4    cli_3.6.5          mitools_2.4        rlang_1.1.6       
+[25] splines_4.5.2      withr_3.0.2        cachem_1.1.0       yaml_2.3.10       
+[29] tools_4.5.2        tzdb_0.5.0         vctrs_0.6.5        R6_2.6.1          
+[33] lifecycle_1.0.4    pkgconfig_2.0.3    pillar_1.11.1      bslib_0.9.0       
+[37] gtable_0.3.6       Rcpp_1.1.0         glue_1.8.0         systemfonts_1.2.3 
+[41] xfun_0.53          tidyselect_1.2.1   rstudioapi_0.17.1  farver_2.1.2      
+[45] htmltools_0.5.8.1  survey_4.4-8       rmarkdown_2.29     svglite_2.2.1     
+[49] compiler_4.5.2    </code></pre>
 </div>
 <div id="differences-across-st258-isolates" class="section level1">
 <h1>Differences across ST258 isolates</h1>
@@ -710,10 +687,10 @@ MERO_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
-297
+298
 </td>
 <td style="text-align:right;">
 96.1
@@ -722,19 +699,19 @@ MERO_dich_num
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-150
+154
 </td>
 <td style="text-align:right;">
-92.0
+92.2
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.0946756
+0.1065086
 </td>
 </tr>
 <tr>
@@ -745,10 +722,10 @@ IMI_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
-297
+298
 </td>
 <td style="text-align:right;">
 96.1
@@ -757,10 +734,10 @@ IMI_dich_num
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 100.0
@@ -769,7 +746,7 @@ IMI_dich_num
 Fisher’s Exact Test
 </td>
 <td style="text-align:right;">
-0.0103211
+0.0103609
 </td>
 </tr>
 <tr>
@@ -780,31 +757,31 @@ blbli_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
 45
 </td>
 <td style="text-align:right;">
-14.6
+14.5
 </td>
 <td style="text-align:left;">
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-21
+22
 </td>
 <td style="text-align:right;">
-12.9
+13.2
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.7182947
+0.7914857
 </td>
 </tr>
 <tr>
@@ -815,19 +792,19 @@ MVB_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
 33
 </td>
 <td style="text-align:right;">
-10.7
+10.6
 </td>
 <td style="text-align:left;">
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 2
@@ -839,7 +816,7 @@ MVB_dich_num
 Fisher’s Exact Test
 </td>
 <td style="text-align:right;">
-0.0000618
+0.0000605
 </td>
 </tr>
 <tr>
@@ -850,31 +827,31 @@ IR_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
 28
 </td>
 <td style="text-align:right;">
-9.1
+9.0
 </td>
 <td style="text-align:left;">
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-13
+14
 </td>
 <td style="text-align:right;">
-8.0
+8.4
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.8208290
+0.9447988
 </td>
 </tr>
 <tr>
@@ -885,7 +862,7 @@ CZA_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
 4
@@ -897,19 +874,19 @@ CZA_dich_num
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 11
 </td>
 <td style="text-align:right;">
-6.7
+6.6
 </td>
 <td style="text-align:left;">
 Fisher’s Exact Test
 </td>
 <td style="text-align:right;">
-0.0036954
+0.0038369
 </td>
 </tr>
 <tr>
@@ -932,13 +909,13 @@ NaN
 2021-23
 </td>
 <td style="text-align:right;">
-162
+166
 </td>
 <td style="text-align:right;">
 8
 </td>
 <td style="text-align:right;">
-4.9
+4.8
 </td>
 <td style="text-align:left;">
 Fisher’s Exact Test
@@ -967,13 +944,13 @@ NaN
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-156
+160
 </td>
 <td style="text-align:right;">
-95.7
+95.8
 </td>
 <td style="text-align:left;">
 Fisher’s Exact Test
@@ -1002,13 +979,13 @@ NaN
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-37
+38
 </td>
 <td style="text-align:right;">
-22.7
+22.8
 </td>
 <td style="text-align:left;">
 Fisher’s Exact Test
@@ -1037,13 +1014,13 @@ NaN
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-43
+45
 </td>
 <td style="text-align:right;">
-26.4
+26.9
 </td>
 <td style="text-align:left;">
 Fisher’s Exact Test
@@ -1072,10 +1049,10 @@ NaN
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-161
+165
 </td>
 <td style="text-align:right;">
 98.8
@@ -1095,31 +1072,31 @@ CST_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
-106
+107
 </td>
 <td style="text-align:right;">
-34.3
+34.5
 </td>
 <td style="text-align:left;">
 2021-23
 </td>
 <td style="text-align:right;">
-162
+166
 </td>
 <td style="text-align:right;">
-53
+55
 </td>
 <td style="text-align:right;">
-32.7
+33.1
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.8074882
+0.8398173
 </td>
 </tr>
 <tr>
@@ -1130,7 +1107,7 @@ PLZ_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
 1
@@ -1142,7 +1119,7 @@ PLZ_dich_num
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 3
@@ -1154,7 +1131,7 @@ PLZ_dich_num
 Fisher’s Exact Test
 </td>
 <td style="text-align:right;">
-0.1211101
+0.1256257
 </td>
 </tr>
 <tr>
@@ -1165,31 +1142,31 @@ FOS_dich_num
 2014-15
 </td>
 <td style="text-align:right;">
-309
+310
 </td>
 <td style="text-align:right;">
-80
+81
 </td>
 <td style="text-align:right;">
-25.9
+26.1
 </td>
 <td style="text-align:left;">
 2021-23
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 18
 </td>
 <td style="text-align:right;">
-11.0
+10.8
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.0002503
+0.0001308
 </td>
 </tr>
 </tbody>
@@ -1244,31 +1221,31 @@ MERO_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
-172
+175
 </td>
 <td style="text-align:right;">
-76.1
+75.8
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-150
+154
 </td>
 <td style="text-align:right;">
-92.0
+92.2
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.0000729
+0.0000338
 </td>
 </tr>
 <tr>
@@ -1279,25 +1256,25 @@ blbli_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
-30
+31
 </td>
 <td style="text-align:right;">
-13.3
+13.4
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-21
+22
 </td>
 <td style="text-align:right;">
-12.9
+13.2
 </td>
 <td style="text-align:left;">
 Chi-squared
@@ -1314,19 +1291,19 @@ MVB_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
 6
 </td>
 <td style="text-align:right;">
-2.7
+2.6
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 2
@@ -1338,7 +1315,7 @@ TRUE
 Fisher’s Exact Test
 </td>
 <td style="text-align:right;">
-0.4767140
+0.4766732
 </td>
 </tr>
 <tr>
@@ -1349,31 +1326,31 @@ IR_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
 15
 </td>
 <td style="text-align:right;">
-6.6
+6.5
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-13
+14
 </td>
 <td style="text-align:right;">
-8.0
+8.4
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.7602920
+0.6027817
 </td>
 </tr>
 <tr>
@@ -1384,31 +1361,31 @@ CZA_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
 24
 </td>
 <td style="text-align:right;">
-10.6
+10.4
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 11
 </td>
 <td style="text-align:right;">
-6.7
+6.6
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.2555765
+0.2531883
 </td>
 </tr>
 <tr>
@@ -1419,31 +1396,31 @@ FDC_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-225
+230
 </td>
 <td style="text-align:right;">
-14
+15
 </td>
 <td style="text-align:right;">
-6.2
+6.5
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-162
+166
 </td>
 <td style="text-align:right;">
 8
 </td>
 <td style="text-align:right;">
-4.9
+4.8
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.7522762
+0.6191944
 </td>
 </tr>
 <tr>
@@ -1454,31 +1431,31 @@ CT_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
-213
+218
 </td>
 <td style="text-align:right;">
-94.2
+94.4
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-156
+160
 </td>
 <td style="text-align:right;">
-95.7
+95.8
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.6820307
+0.6783540
 </td>
 </tr>
 <tr>
@@ -1489,31 +1466,31 @@ OMC_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
 43
 </td>
 <td style="text-align:right;">
-19.0
+18.6
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-37
+38
 </td>
 <td style="text-align:right;">
-22.7
+22.8
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.4489426
+0.3755311
 </td>
 </tr>
 <tr>
@@ -1524,31 +1501,31 @@ ERV_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
-45
+44
 </td>
 <td style="text-align:right;">
-19.9
+19.0
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-43
+45
 </td>
 <td style="text-align:right;">
-26.4
+26.9
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.1670296
+0.0810915
 </td>
 </tr>
 <tr>
@@ -1559,22 +1536,22 @@ DLX_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
-205
+209
 </td>
 <td style="text-align:right;">
-90.7
+90.5
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
-161
+165
 </td>
 <td style="text-align:right;">
 98.8
@@ -1583,7 +1560,7 @@ TRUE
 Fisher’s Exact Test
 </td>
 <td style="text-align:right;">
-0.0007070
+0.0003984
 </td>
 </tr>
 <tr>
@@ -1594,25 +1571,25 @@ CST_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
-19
+20
 </td>
 <td style="text-align:right;">
-8.4
+8.7
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-162
+166
 </td>
 <td style="text-align:right;">
-53
+55
 </td>
 <td style="text-align:right;">
-32.7
+33.1
 </td>
 <td style="text-align:left;">
 Chi-squared
@@ -1629,19 +1606,19 @@ PLZ_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
 16
 </td>
 <td style="text-align:right;">
-7.1
+6.9
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 3
@@ -1653,7 +1630,7 @@ TRUE
 Fisher’s Exact Test
 </td>
 <td style="text-align:right;">
-0.0177612
+0.0177158
 </td>
 </tr>
 <tr>
@@ -1664,31 +1641,31 @@ FOS_dich_num
 FALSE
 </td>
 <td style="text-align:right;">
-226
+231
 </td>
 <td style="text-align:right;">
-41
+42
 </td>
 <td style="text-align:right;">
-18.1
+18.2
 </td>
 <td style="text-align:left;">
 TRUE
 </td>
 <td style="text-align:right;">
-163
+167
 </td>
 <td style="text-align:right;">
 18
 </td>
 <td style="text-align:right;">
-11.0
+10.8
 </td>
 <td style="text-align:left;">
 Chi-squared
 </td>
 <td style="text-align:right;">
-0.0746548
+0.0580776
 </td>
 </tr>
 </tbody>
