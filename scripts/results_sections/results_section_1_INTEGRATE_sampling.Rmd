@@ -111,3 +111,18 @@ hospital_study_table_no_par
 hospital_study_table_no_par %>% fisher.test(simulate.p.value = T)
 ```
  
+ # Age & sex differences
+```{r}
+paste0("Total patients: ",nrow(df))
+df_w_metadata <- df %>% subset(has_metadata==T)
+paste0("Total patients with metadata: ",nrow(df_w_metadata))
+paste0("Prop patients with metadata: ",nrow(df_w_metadata) / nrow(df) * 100)
+
+convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","participant_ethnicity"), factorVars = c("participant_sex","participant_race","participant_ethnicity"),strata='study',outcome_names = c("2014-15","2021-23")) %>% favorite_kable
+                         
+old_age <- df %>% subset(study == '2014-15') %>% .$participant_age_at_first_enc
+new_age <- df %>% subset(study != '2014-15') %>% .$participant_age_at_first_enc
+
+wilcox.test(old_age,new_age)
+```
+ 

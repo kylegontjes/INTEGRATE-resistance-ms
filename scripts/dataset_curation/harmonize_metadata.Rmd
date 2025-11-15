@@ -261,6 +261,27 @@ ST_data_202123 <- lapply(df_202123$isolate_no,FUN=function(x){
 df_202123 <- left_join(df_202123,ST_data_202123) %>% rename(mlst_st=st)
 ```
 
+# Standardize metadata
+## Sex, age, race data
+```{r}
+# Age, sex, race, ethnicitiy 
+df_202123$participant_sex <- recode(df_202123$patient_sex,'F'='female',
+                                    'M'='male')
+df_201415$participant_sex <- df_201415$sex
+
+# Age
+df_202123$participant_age_at_first_enc <-   df_202123$age_at_first_enc
+df_201415$participant_age_at_first_enc <- round(df_201415$age,digits = 0)
+
+# Race
+df_202123$participant_race <- df_202123$patient_race
+df_201415$participant_race <- rep(NA,nrow(df_201415))
+
+# Ethnicity
+df_202123$participant_ethnicity <- df_202123$patient_ethnicity
+df_201415$participant_ethnicity <- rep(NA,nrow(df_201415))
+```
+
 # Merge datasets 
 
 ```{r} 
@@ -305,7 +326,7 @@ df_metadata_all$genus <- str_split(df_metadata_all$species," ",simplify = T) %>%
 df_metadata_all$rectal <-  ifelse(df_metadata_all$source_simplified == "rectal","Rectal","Clinical")
 df_metadata_all$rectal_logical <- ifelse(df_metadata_all$source_simplified == "rectal",T,F)
 df_metadata_all$extraintestinal_logical <- !df_metadata_all$rectal_logical 
-
+df_metadata_all$has_metadata <- !is.na(df_metadata_all$participant_sex)
 recode_LTACH_string <- sort(df_metadata_all$hospital_location) %>% unique %>% `names<-`(paste0("LTACH ",1:length(.))) %>% setNames(names(.), .)
 
 df_metadata_all$hospital_location_recode <- dplyr::recode(df_metadata_all$hospital_location, !!! recode_LTACH_string)   %>% factor(.,levels = paste0("LTACH ", 1:length(recode_LTACH_string)) )
