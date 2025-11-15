@@ -115,10 +115,11 @@ hospital_study_table_no_par %>% fisher.test(simulate.p.value = T)
 ```{r}
 paste0("Total patients: ",nrow(df))
 df_w_metadata <- df %>% subset(has_metadata==T)
+df_w_metadata$non_hispanic_white <- df_w_metadata$participant_race=="Caucasian" & df_w_metadata$participant_ethnicity == "Not Hispanic"
 paste0("Total patients with metadata: ",nrow(df_w_metadata))
 paste0("Prop patients with metadata: ",nrow(df_w_metadata) / nrow(df) * 100)
 
-convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","participant_ethnicity"), factorVars = c("participant_sex","participant_race","participant_ethnicity"),strata='study',outcome_names = c("2014-15","2021-23")) %>% favorite_kable
+convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","participant_ethnicity","non_hispanic_white"), factorVars = c("participant_sex","participant_race","participant_ethnicity","non_hispanic_white"),strata='study',outcome_names = c("2014-15","2021-23")) %>% favorite_kable
                          
 old_age <- df %>% subset(study == '2014-15') %>% .$participant_age_at_first_enc
 new_age <- df %>% subset(study != '2014-15') %>% .$participant_age_at_first_enc
