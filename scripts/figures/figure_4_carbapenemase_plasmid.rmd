@@ -84,7 +84,7 @@ A <- ggplot(data=df ,aes(y=carbapenemase_plasmid,fill=carbapenemase_plasmid)) + 
   geom_text(stat='count',
             aes(label=..count..),
             hjust=-0.05, 
-            size=3.5)  + xlim(NA,95.1) +
+            size=3.5)  + xlim(NA,100.1) +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
