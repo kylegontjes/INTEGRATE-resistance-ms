@@ -85,7 +85,7 @@ source_table <- table(df_w_metadata$study,df_w_metadata$source_simplified)
 source_table  
 source_table %>% fisher.test(simulate.p.value = T)
 
-convert_tableone_into_df(dataset=df %>% subset(is.na(hospital_location) == F),vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c("2021-23",'2014-15'),factorVars = c("source_simplified","blood","other","resp","urine","wound")) %>% favorite_kable()
+convert_tableone_into_df(dataset=df %>% subset(is.na(hospital_location) == F),vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c('2014-15',"2021-23"),factorVars = c("source_simplified","blood","other","resp","urine","wound")) %>% favorite_kable()
 
 paste0("No paramount")
 no_paramount <- df %>% subset(is.na(hospital_location) == F & hospital_location != "Paramount")
@@ -93,7 +93,7 @@ source_table_no_par <- table(no_paramount$study,no_paramount$source_simplified)
 source_table_no_par  
 source_table_no_par %>% fisher.test(simulate.p.value = T)
 
-convert_tableone_into_df(dataset=df %>% subset(is.na(hospital_location) == F & hospital_location != "Paramount"),vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c("2021-23",'2014-15'),factorVars = c("source_simplified","blood","other","resp","urine","wound")) %>% favorite_kable()
+convert_tableone_into_df(dataset=df %>% subset(is.na(hospital_location) == F & hospital_location != "Paramount"),vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c('2014-15',"2021-23"),factorVars = c("source_simplified","blood","other","resp","urine","wound")) %>% favorite_kable()
 ```
 
 # Frequency differences
