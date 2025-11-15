@@ -38,20 +38,22 @@ df_w_metadata$non_hispanic_white <- df_w_metadata$participant_race=="Caucasian" 
 ```
 
 ```{r}
-table <-  convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","participant_ethnicity","non_hispanic_white",'source_simplified'), factorVars = c("participant_sex","participant_race","participant_ethnicity","non_hispanic_white",'source_simplified'),strata='study',outcome_names = c("2014-15","2021-23"))
+table <-  convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","non_hispanic_white",'source_simplified'), factorVars = c("participant_sex","participant_race","non_hispanic_white",'source_simplified'),strata='study',outcome_names = c("2014-15","2021-23"))
 
 table$Variable <- recode(table$Variable,
                          "participant_age_at_first_enc (mean (SD))" = "Age in years, mean (SD)",
                          "participant_sex = male (%)" = "Male sex",
                          "participant_race (%)" = "Race",
-                         "participant_ethnicity = Not Hispanic (%)"= "Non-Hispanic white",
+                         "participant_ethnicity = Not Hispanic (%)"= "Non-Hispanic White",
                          "source_simplified (%)" = "Site of infection",
                          "   blood" = '   Blood',
                          '   other'='   Other',
                          '   urine'='   Urine',
                          '   respiratory'='   Respiratory',
                          '   wound'='   Wound',
-                         "   more than one race"="   More than one race")  
+                         "   more than one race"="   More than one race",
+                         "non_hispanic_white = TRUE (%)" = "Non-Hispanic white")  
+table %>% favorite_kable
 
 saveRDS(table,"./tables/table_1_demographics.RDS")
 write_csv(table,"./tables/table_1_demographics.csv")

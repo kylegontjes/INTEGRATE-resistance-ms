@@ -8,8 +8,7 @@ Race,,,,NaN
    Caucasian,200 (52.2),0 (NaN),200 (52.2),
    More than one race,17 (4.4),0 (NaN),17 (4.4),
    Other,70 (18.3),0 (NaN),70 (18.3),
-Non-Hispanic white,319 (83.3),0 (NaN),319 (83.3),NaN
-non_hispanic_white = TRUE (%),136 (35.5),0 (NaN),136 (35.5),NaN
+Non-Hispanic white,136 (35.5),0 (NaN),136 (35.5),NaN
 Site of infection,,,,<0.001
    Blood,77 (10.8),27 (8.2),50 (13.1),
    Other,10 (1.4),0 (0.0),10 (2.6),
