@@ -27,7 +27,7 @@ sessionInfo()
 
 # Load data
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123<- df%>% subset(study == "2021-23")
 ```
@@ -89,10 +89,10 @@ figure <- plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="h
 ```
 
 # Print & Save
-```{r,message=F,error=F,warning=F,fig.width=8.75,fig.height=4}
+```{r,message=F,error=F,warning=F,fig.width=9,fig.height=4}
 figure
 ```
 
 ```{r}
-ggsave(plot = figure, filename = "./figures/s_figure_8_cross_resistance.png", width = 8.75, height = 4, bg = "white",dpi=900)
+ggsave(plot = figure, filename = "./figures/s_figure_8_cross_resistance.png", width = 9, height = 4, bg = "white",dpi=900)
 ```

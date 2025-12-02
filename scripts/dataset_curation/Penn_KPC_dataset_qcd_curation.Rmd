@@ -1,5 +1,5 @@
 ---
-title: "Penn_KPC_dataset_qcd_curation"
+title: "PENN blaKPC 2014-15 CA LTACH isolate collection curation"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -16,7 +16,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/')
 # Environment
 
 #Packages
-packages <- c("tidyverse") 
+packages <- c("tidyverse",'kableExtra','gontjesr') 
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
@@ -26,7 +26,7 @@ set.seed(45)
 Sys.info()
 sessionInfo()
 
-# Functoins
+# Functions
 source("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/scripts/dataset_curation/metadata_curation_functions.R")
 ```
 
@@ -39,9 +39,29 @@ df_2014_15$isolate_no <-  paste0("PCMP_H",df_2014_15$isolate_no)
 df_2014_15$participant_id <- as.character(df_2014_15$Patient_ID)
 ```
 
-# Resitance
-## Old
-### Load data
+# Recoded participant 13's initial entry due to incorrect admit and discharge date
+## Participant 13 had >1 isolate. Although the age was accurate (i.e., age different correlated with collection date difference), the two isolates had the same admit date, which suggests a possible issue with admit and discharge data
+```{r}
+wrong_Cx_data <- df_2014_15 %>% subset(LOSbeforeCx <0) %>% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx)
+paste0("Incorrect isolate with bad admit and discharge data: ")
+wrong_Cx_data %>% gontjesr::favorite_kable()
+
+# Recode df when LOSbeforeCx variable is less than 0, make the admit_date, discharge_date, LOSbeforeCx, and LOS_after_cx variables all NA
+df_2014_15 <- df_2014_15 %>%
+  mutate(
+    across(c(admit_date, discharge_date, LOSbeforeCx, LOS_after_cx),
+           ~ if_else(LOSbeforeCx < 0, NA, .))
+  ) 
+
+paste0("Recoded the initial isolate to have NA admit date: ")
+df_2014_15%>% subset(participant_id %in% wrong_Cx_data$Patient_ID) %>% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx)  %>% gontjesr::favorite_kable()
+
+# Create a flag
+df_2014_15$has_full_metadata <- !df_2014_15$isolate_no %in% wrong_Cx_data$isolate_no
+```
+
+# Resitance 
+## Load data
 ```{r}
 SENSITITRE <- readxl::read_excel("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Antibiotic_resistance/data/SENSITITRE MICs.xlsx", range = "B1:N460") %>% as.data.frame
 SENSITITRE <- SENSITITRE %>% mutate(isolate_no = paste0("PCMP_H",str_remove(gsub('CRKP_','',SENSITITRE$ISOLATES),"^0+"))) %>% `rownames<-`(.$isolate_no)
@@ -50,12 +70,13 @@ SENSITITRE <- SENSITITRE %>% mutate(isolate_no = paste0("PCMP_H",str_remove(gsub
 SENSITITRE <- subset(SENSITITRE,!isolate_no %in% c("PCMP_H472","PCMP_H473"))
 ```
 
-### Clean variables
+## Clean variables
 ```{r}
 ## Convert names
 SENSITITRE <-  dplyr::rename(SENSITITRE,MVB = "MEV",IR = "IMK", CST = "COL", AMK = "AMI", FOS = "FOS+",PT = "P/T4")
 
 ## Fix MVB data due to miscoding (vaborbactom is a constant 8 µg/mL not 4 µg/mL)
+paste0("MVB has some issues that needed recoding: ")
 table(SENSITITRE$MVB)
 SENSITITRE <- SENSITITRE %>% mutate(MVB = dplyr::recode(MVB,"2/4" = "2/8"))
 
@@ -79,8 +100,11 @@ for(i in MIC_variables){
 ```
 
 ## Convert Raw MIC data to phenotypic resistance categories
+
 Select references:
+
 1. https://academic.oup.com/cid/article/72/8/1484/5868454?login=true
+
 2. https://www.sciencedirect.com/science/article/pii/S0255085721041062
 ```{r}
 SENSITITRE <- SENSITITRE %>% mutate(
@@ -133,18 +157,19 @@ for(i in MIC_variables_dich){
 }
 ```
 
-### Create BL/BLI combination therapy outcome
+## Create BL/BLI combination therapy outcome
 ```{r}
 SENSITITRE$blbli_dich <- ifelse(SENSITITRE$MVB_dich=="Non-Susceptible" | SENSITITRE$IR_dich=="Non-Susceptible"  | SENSITITRE$CZA_dich == "Non-Susceptible","Non-Susceptible","Susceptible")  %>% factor(.,levels = c("Susceptible","Non-Susceptible"),labels = c("Susceptible","Non-Susceptible"))
 SENSITITRE$blbli_dich_num <- ifelse(SENSITITRE$blbli_dich == "Non-Susceptible",1,0) 
 ```
 
-### Merge
+## Merge resistance data
 ```{r}
 df_2014_15 <- left_join(SENSITITRE,df_2014_15) %>% subset(state=='CA')
 ```
 
-### Merge with QCD data
+
+# Merge with QCD data
 ## Load and curate
 ```{r}
 escre_list <- read.csv("./Project_INTEGRATE/Analysis/data/INTEGRATE_MERLIN_WGS_Species_calls_030925_LLC.csv")
@@ -157,10 +182,26 @@ qcd_201415$CRE <- qcd_201415$species %in% escre_species
 qcd_201415$isolate_no <- qcd_201415$sample
 
 df_2014_15 <- left_join(df_2014_15,qcd_201415) 
+```
 
+# Prioritize ST data via kleborate
+```{r}
+kleborate_kpsc_penn <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt")  %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
+
+ST_data_201415 <- lapply(df_2014_15$isolate_no,FUN=function(x){
+  kleb_sub <- kleborate_kpsc_penn %>% subset(isolate_no ==x)
+  kleb_sub %>% select(isolate_no,ST)
+}) %>% do.call(rbind,.)
+
+df_2014_15 <- left_join(df_2014_15,ST_data_201415) %>% rename(mlst_st=st)
+```
+
+# Overall summary
+```{r}
 paste0("Number of isolates: ",nrow(df_2014_15))
 paste0("Number of qc_passing isolates: ",sum(df_2014_15$qc_pass==TRUE))
 paste0("Number of qc_passing CRE isolates: ",sum(df_2014_15$qc_pass==TRUE & df_2014_15$CRE==TRUE))
+paste0("Number of qc_passing CRE isolates & full metadata: ",sum(df_2014_15$qc_pass==TRUE & df_2014_15$CRE==TRUE & df_2014_15$has_full_metadata==T))
 ```
 
 # Save

@@ -28,7 +28,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
    
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23") 
@@ -55,7 +55,6 @@ df <- left_join(df,carbapenemase_content)
 df$blaKPC_presence <- grepl("KPC",df$carbapenemase_family) 
 df$blaKPC_2 <- grepl("KPC-2",df$carbapenemase)  & !grepl("KPC-29",df$carbapenemase)
 df$no_carbapenemase <- grepl("No carbapenemase",df$carbapenemase_family) 
-
 ```
 
 # Load omp matrix
@@ -70,18 +69,18 @@ df$porin_mutation <-  df$OmpK36_mutation  == 1 | df$OmpK35_mutation ==1
 
 # Differences across study periods in carbapenemase
 ```{r}
-convert_tableone_into_df(dataset = df,vars = c('blaKPC_presence','carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation"),strata = 'study',outcome_names = c("2014-15","2021-23"),factorVars = c('carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation")) %>% favorite_kable()
+convert_tableone_into_df(dataset = df,vars = c('blaKPC_presence','carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation"),strata = 'study',outcome_names = c("2014-15","2021-23"),argsNormal = "carbapenemase",factorVars = c('carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation")) %>% favorite_kable()
 ```
 
 # Differences among noncarbepenmase genomes
 ```{r}
 df_nocarb <- df %>% subset(carbapenemase == 'No carbapenemase')
-convert_tableone_into_df(dataset = df_nocarb,vars = c('blaKPC_presence','carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation"),strata = 'study',outcome_names = c("2014-15","2021-23"),factorVars = c('carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation")) %>% favorite_kable()
+convert_tableone_into_df(dataset = df_nocarb,vars = c('blaKPC_presence','carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation"),strata = 'study',outcome_names = c("2014-15","2021-23"),argsNormal = "carbapenemase",factorVars = c('carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation")) %>% favorite_kable()
 ```
 
 # Data across ST258
 ```{r}
 df_ST258 <- subset(df,df$ST == "ST258")
 df_ST258$GD_KPC2 <- df_ST258$ompK36_D135DGD==1 & df_ST258$`blaKPC-2` ==1
-convert_tableone_into_df(dataset = df_ST258,vars = c('blaKPC_presence','carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation","ompK36_D135DD","ompK36_D135DGD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP","GD_KPC2"),strata = 'study',outcome_names = c("2014-15","2021-23"),factorVars = c('carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation","ompK36_D135DD","ompK36_D135DGD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP","GD_KPC2")) %>% favorite_kable()
+convert_tableone_into_df(dataset = df_ST258,vars = c('blaKPC_presence','carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation","ompK36_D135DD","ompK36_D135DGD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP","GD_KPC2"),strata = 'study',outcome_names = c("2014-15","2021-23"),argsNormal = "carbapenemase",factorVars = c('carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation","ompK36_D135DD","ompK36_D135DGD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP","GD_KPC2")) %>% favorite_kable()
 ```

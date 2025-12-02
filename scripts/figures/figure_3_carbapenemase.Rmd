@@ -30,8 +30,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
- 
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
 # Coordinate ST data
@@ -83,7 +82,7 @@ A <- ggplot(data=df,
             aes(label=..count..),
             hjust=-0.05, # push slightly to the right
             size=3.5)  +
-  xlim(NA, 330.1) +
+  xlim(NA, 420.1) +
   theme_bw_me +
   xlab("Isolates") + ylab("") +
   theme(
@@ -120,7 +119,7 @@ df$Species_ST_recode <- factor(df$Species_ST_recode,levels = get_factor_order(ST
 C <- ggplot(data=df,
        aes(y=Species_ST_recode, fill=carbapenemase)) +
   geom_bar() +
-  xlim(NA, 310.1) +
+  xlim(NA, 220.1) +
   theme_bw_me +
   xlab("Isolates") + ylab("") +
   theme(

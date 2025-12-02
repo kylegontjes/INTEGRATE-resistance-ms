@@ -27,13 +27,13 @@ sessionInfo()
 ```
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")  
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")  
 
 df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
 df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
 
-df_201415 <- df%>% subset(study == "2014-15")
-df_202123 <- df%>% subset(study == "2021-23")  
+df_201415 <- df %>% subset(study == "2014-15")
+df_202123 <- df %>% subset(study == "2021-23")  
 
 MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
 resistance_vars <- paste0(MIC_variables,"_dich_num")  
@@ -41,6 +41,7 @@ resistance_vars <- paste0(MIC_variables,"_dich_num")
 
 ```{r} 
 get_frequency_stats_compare <- function(variable,df,comparitor){
+  print(variable)
  data_table <- table(df[[variable]],df[[comparitor]],useNA = 'no')  
  test <- if(sum(unlist(data_table) <5)>0){
     fisher.test(data_table,simulate.p.value = T)

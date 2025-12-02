@@ -28,7 +28,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")  
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")  
 
 df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
 df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
@@ -58,5 +58,5 @@ gontjesr::convert_tableone_into_df(dataset=df_201415,vars='Species_ST')
 
 # Did differences exist
 ```{r}
-convert_tableone_into_df(dataset = df,vars = c("ST258","ST17"),factorVars = c("ST258","ST17"),strata='study',outcome_names = c("2014-15","2021-23"))
+convert_tableone_into_df(dataset = df,vars = c("ST258","ST17"),factorVars = c("ST258","ST17"),strata='study',argsNormal = "ST17",outcome_names = c("2014-15","2021-23"))
 ```

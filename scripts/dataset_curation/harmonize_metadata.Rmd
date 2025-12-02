@@ -27,10 +27,9 @@ set.seed(45)
 Sys.info()
 sessionInfo()
 
-# Functoins
+# Functions
 source("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/scripts/dataset_curation/metadata_curation_functions.R")
 ```
-
 
 ```{r}
 ## Old
@@ -47,7 +46,7 @@ table(df_201415$source)
 df_201415$source_site <- df_201415$source
 df_201415$source_simplified <- recode(df_201415$source,"blood"='blood','resp'='respiratory','urine'='urine','wound'='wound','Wound'='wound')
 
-# New
+# INTEGRATE
 table(df_202123$source_site)
 
 df_202123$source_simplified <- ifelse(df_202123$source_site %in% c("Wound","Wound Right Posterior Dorsal Hand","Sacrum","Buttock"),"wound",ifelse(df_202123$source_site %in% c("Bronchial","Bronchial Wash","Bronchial Washing","Bronchoalveolar Lavage","Trachael Aspirate","Tracheal Aspirate","Sputum","Pleural Fluid"),"respiratory",ifelse(df_202123$source_site %in% c("Urine","Urine Catheterized"),"urine",ifelse(df_202123$source_site %in% c("Rectal","Recal"),"rectal",ifelse(df_202123$source_site %in% c("Blood"),"blood",ifelse(is.na(df_202123$source_site),NA,"other"))))))
@@ -58,12 +57,13 @@ df_202123$source_simplified <- ifelse(df_202123$source_site %in% c("Wound","Woun
 # Old
 df_201415$date <- lubridate::date(df_201415$Cx_date)
 df_201415$year <- lubridate::year(df_201415$Cx_date)
+df_201415$year_quarter <- paste0(df_201415$year,"_",lubridate::quarter(df_201415$date),"Q")
 
-# Integate
+# INTEGRATE
 df_202123$date <- lubridate::date(df_202123$collect_date)
 df_202123$year <- lubridate::year(df_202123$collect_date)
+df_202123$year_quarter <- paste0(df_201415$year,"_",lubridate::quarter(df_202123$date),"Q")
 ```
-
 
 # Location
 ```{r}
@@ -71,196 +71,17 @@ df_202123$year <- lubridate::year(df_202123$collect_date)
 df_201415$hospital_location <- df_201415$LTACH2 %>% gsub(" CA","",.)
 ```
 
-# Resistance
-## New dataset
+# Culture date data
 ```{r}
-factorize_mic_null <- function(dataset,resistance){ 
-  values <- unique(na.omit(as.character(dataset[[resistance]])))
-  combination <- ifelse(length(grep("/",values))>0,"yes","no")
-  if(combination == "no"){
-    level <- c(
-      #Endpoint 
-      values[grep("≤|<|<=",values)], 
-      #if non endpoint included 
-      #non-endpoint sorted
-      as.character(sort(as.numeric(values[!grepl("≤|<|>|>=|≥", values)]))),
-      #Endpoint
-      values[grep(">|>=|≥",values)])
-  }
-  if(combination == "yes"){
-    values_no_in <- gsub("/.*","",values)
-    in_value <- gsub(".*\\/","",values)
-    level <- c(
-      #Endpoint 
-      values_no_in[grep("≤",values_no_in)], 
-      #if non endpoint included 
-      #non-endpoint sorted
-      as.character(sort(as.numeric(values_no_in[!grepl("≤|>", values_no_in)]))),
-      #Endpoint
-      values_no_in[grep(">",values_no_in)])
-    level <- paste0(level,"/",in_value)
-  }    
-  factorized <- factor(as.vector(dataset[,resistance]),levels = level)
-  return(factorized)
-}
+#  Old
+df_201415$los_before_culture <-  as.numeric(df_201415$LOSbeforeCx)
+df_201415$los_after_culture <-  as.numeric(df_201415$LOS_after_cx)
+
+# INTEGRATE
+df_202123$los_before_culture <- as.numeric(df_202123$collect_date - df_202123$admit_date)
+df_202123$los_after_culture <- as.numeric(df_202123$discharge_date - df_202123$collect_date)
 ```
-
-```{r}
-df_202123 <- df_202123 |> 
-  mutate_at(vars(mev:fdc_kb_zoi_mm), ~ str_replace_all(., ">|<|=", "")) |>  # remove < > = from strings
-  mutate(fdc_kb_zoi_mm = as.numeric(fdc_kb_zoi_mm)) |> 
-  mutate(mev_int = case_when(
-    mev %in% c('0.008/8', '0.015/8', '0.03/8', 
-               '0.06/8', '0.12/8', '0.25/8', '0.5/8',
-               '1/8', '2/8', '4/8', 'S') ~ 'S',
-    mev %in% c('8/8', 'I') ~ 'I',
-    mev %in% c('16/8', 'R') ~ 'R',
-    TRUE ~ 'ERROR'),
-    omc_int = case_when(
-      omc %in% c('0.12', '0,12', '0.12', '0.25', '0.5', '1', 
-                 '2', '4', 'S') ~ 'S',
-      omc %in% c('8', 'I') ~ 'I',
-      omc %in% c('16', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    col_int = case_when(
-      col %in% c('0.25', '0.5', '1', '2', 'S') ~ 'S',   # these values would normally be Intermediate, 
-      col %in% c('4', 'R') ~ 'R',                       # but Laurel said to code them as Susceptible
-      TRUE ~ 'ERROR'),
-    plz_int = case_when(
-      plz %in% c('0.12', '0.25', '0.5', '1', '2', '0.12', 'S') ~ 'S',
-      plz %in% c('4', 'I') ~ 'I',
-      plz %in% c('8', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    imi_int = case_when(
-      imi %in% c('1', 'S') ~ 'S',
-      imi %in% c('2', 'I') ~ 'I',
-      imi %in% c('4', '8', '16', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    fos_int = case_when(
-      fos %in% c('64', 'S') ~ 'S',
-      fos %in% c('128', 'I') ~ 'I',
-      fos %in% c('256', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    ct_int = case_when(
-      c_t %in% c('0.06/4', '0.12/4', '0.25/4', '0.5/4',
-                 '1/4', '2/4', 'S') ~ 'S',
-      c_t %in% c('4/4', 'I') ~ 'I',
-      c_t %in% c('8/4', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    dlx_int = case_when(
-      dlx %in% c('0.12', 'S') ~ 'S',
-      dlx %in% c('0.25', '0.5', '1', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    cza_int = case_when(
-      cza %in% c('0.12/4', '0.25/4', '0.5/4', '1/4', '2/4', '4/4',
-                 '8/4', 'S') ~ 'S',
-      cza %in% c('16/4', '32/4', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    mero_int = case_when(
-      mero %in% c('0.25', '0.5', '1', 'S') ~ 'S',
-      mero %in% c('2', 'I') ~ 'I',
-      mero %in% c('4', '8', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    erv_int = case_when(
-      erv %in% c('0.03', '0.06', '0.12', '0.25', '0.5', 'S') ~ 'S',
-      erv %in% c('1', '2', '4', '8', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    imr_int = case_when(
-      imr %in% c('0.03/4', '0.06/4', '0.12/4', '0.25/4', '0.5/4', 
-                 '1/4', 'S') ~ 'S',
-      imr %in% c('2/4', 'I') ~ 'I',
-      imr %in% c('4/4', '8/4', '16/4', 'R') ~ 'R',
-      TRUE ~ 'ERROR'),
-    fdc_int = case_when(
-      fdc_kb_zoi_mm >= 16 ~ 'S',
-      fdc_kb_zoi_mm >= 9 & fdc_kb_zoi_mm < 16 ~ 'I',
-      fdc_kb_zoi_mm < 9 ~ 'R',
-      TRUE ~ 'ERROR'
-    )
-  )
-```
-
-```{r}  
-## Convert names
-df_202123 <-  dplyr::rename(df_202123,MERO='mero',IMI='imi',CZA='cza',MVB = "mev",IR = "imr", PLZ = "plz", CST='col',OMC='omc',DLX='dlx',ERV='erv',CT ='c_t',FDC = 'fdc_kb_zoi_mm',FOS ='fos') 
-df_202123 <-  dplyr::rename(df_202123,MERO_cat='mero_int',IMI_cat='imi_int',CZA_cat='cza_int',MVB_cat = "mev_int",IR_cat = "imr_int", PLZ_cat = "plz_int", CST_cat='col_int',OMC_cat='omc_int',DLX_cat='dlx_int',ERV_cat='erv_int',CT_cat ='ct_int',FDC_cat = 'fdc_int',FOS_cat = 'fos_int') 
- 
-# Recode a few
-df_202123$CZA <- ifelse(df_202123$CZA %in% c("R","S"),NA,df_202123$CZA)
-df_202123$MVB <- ifelse(df_202123$MVB %in% c("R","S"),NA,df_202123$MVB)
-df_202123$CT <- ifelse(df_202123$CT %in% c("R","S"),NA,df_202123$CT)
-
-## Create MIC Variable
-MIC_variables <- c('MERO',"IMI",'MVB','IR','PLZ','CST','OMC','DLX','ERV','CZA',"FDC","CT","FOS")
-
-## Numerize MIC Data
-for(i in MIC_variables){
-  df_202123[,paste0(i,"_num")] <- df_202123[,paste0(i)]  %>% gsub("≤","",.) %>% gsub(">","",.) %>% gsub("/.","",.) %>% trimws(.,'both') %>% as.numeric
-}
-
-## Factorize Raw MIC Data
-for(i in MIC_variables){
-  df_202123[,i] <- factorize_mic_null(df_202123,i)
-}
-
-## Log-2 Transform Data
-for(i in MIC_variables){
-  df_202123[,paste0(i,"_log_2")] <- log2(df_202123[,paste0(i,"_num")])
-}
-
-# Dich
-for(i in MIC_variables){
-  df_202123[,paste0(i,"_dich_num")] <- ifelse(  df_202123[,paste0(i,"_cat")] %in% c("ERROR",NA),NA,ifelse(df_202123[,paste0(i,"_cat")] %in% c("I","R"),1,0))
-} 
-
-df_202123$blbli_dich_num <- ifelse(is.na(df_202123$MVB_dich_num) & is.na(df_202123$IR_dich_num) & is.na(df_202123$CZA_dich_num),NA,ifelse( df_202123$MVB_dich_num==1| df_202123$IR_dich_num==1 | df_202123$CZA_dich_num == 1,1,0))
-```
-
-# Taxonomic data
-## Species
-```{r}
-kleborate_Ecoli <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/escherichia_INTEGRATE/escherichia_output.txt") %>% `colnames<-`(recode(colnames(.), "ST...10"="ST_Pasteur",  "ST...19"="ST_Achtman")) %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
-kleborate_kosc <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kosc_INTEGRATE/klebsiella_oxytoca_complex_output.txt") %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
-kleborate_kpsc_integrate <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_INTEGRATE/klebsiella_pneumo_complex_output.txt") %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
-kleborate_kpsc_penn <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt")  %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
-
-# old
-ST_data_201415 <- lapply(df_201415$isolate_no,FUN=function(x){
-  kleb_sub <- kleborate_kpsc_penn %>% subset(isolate_no ==x)
-  kleb_sub %>% select(isolate_no,ST)
-}) %>% do.call(rbind,.)
-
-df_201415 <- left_join(df_201415,ST_data_201415) %>% rename(mlst_st=st)
-
-# New - preferentially use Kleborate!
-ST_data_202123 <- lapply(df_202123$isolate_no,FUN=function(x){ 
-  ecoli_isolate <- x %in% kleborate_Ecoli$isolate_no
-  kosc_isolate <- x %in% kleborate_kosc$isolate_no
-  kpsc_isolate <- x %in% kleborate_kpsc_integrate$isolate_no
-  has_kleborate_run <- sum(ecoli_isolate,kosc_isolate,kpsc_isolate) >0
-  if(has_kleborate_run==F){
-    print(paste0(x," has no kleborate run"))
-    df_sub <- df_202123 %>% subset(isolate_no==x)
-    ST <- paste0(unique(df_sub[['st']]),collapse=";")
-  } 
-  if(ecoli_isolate==T){
-    kleborate_Ecoli_sub <- subset(kleborate_Ecoli,isolate_no==x)
-    ST <- paste0(unique(kleborate_Ecoli_sub[['ST_Achtman']]),collapse=";") 
-  }
-  if(kosc_isolate==T){
-    kleborate_kosc_sub <- subset(kleborate_kosc,isolate_no==x)
-    ST <- paste0(unique(kleborate_kosc_sub[['ST']]),collapse=";")  
-  }
-  if(kpsc_isolate==T){
-    kpsc_isolate_sub <- subset(kleborate_kpsc_integrate,isolate_no==x)
-    ST <- paste0(unique(kpsc_isolate_sub[['ST']]),collapse=";")   
-  }
-  cbind.data.frame(isolate_no = x,ST=ST)
-}) %>% do.call(rbind,.)
-
-df_202123 <- left_join(df_202123,ST_data_202123) %>% rename(mlst_st=st)
-```
-
+  
 # Standardize metadata
 ## Sex, age, race data
 ```{r}
@@ -285,6 +106,7 @@ df_201415$participant_ethnicity <- rep(NA,nrow(df_201415))
 # Merge datasets 
 
 ```{r} 
+MIC_variables <- c('MERO',"IMI",'MVB','IR','PLZ','CST','OMC','DLX','ERV','CZA',"FDC","CT","FOS")
 resistance_variables <- sort(c(MIC_variables,paste0(MIC_variables,"_num"),paste0(MIC_variables,"_log_2"),paste0(MIC_variables,"_cat"),paste0(MIC_variables,"_dich_num"),"blbli_dich_num"))
 shared_new_variables_w_old_not_res <- colnames(df_202123)[colnames(df_202123) %in% colnames(df_201415)] %>% subset(!. %in% resistance_variables) 
 
@@ -325,8 +147,7 @@ df_metadata_all$study <- ifelse(grepl("PCMP_H",df_metadata_all$isolate_no),"2014
 df_metadata_all$genus <- str_split(df_metadata_all$species," ",simplify = T) %>% .[,1] 
 df_metadata_all$rectal <-  ifelse(df_metadata_all$source_simplified == "rectal","Rectal","Clinical")
 df_metadata_all$rectal_logical <- ifelse(df_metadata_all$source_simplified == "rectal",T,F)
-df_metadata_all$extraintestinal_logical <- !df_metadata_all$rectal_logical 
-df_metadata_all$has_metadata <- !is.na(df_metadata_all$participant_sex)
+df_metadata_all$extraintestinal_logical <- !df_metadata_all$rectal_logical  
 recode_LTACH_string <- sort(df_metadata_all$hospital_location) %>% unique %>% `names<-`(paste0("LTACH ",1:length(.))) %>% setNames(names(.), .)
 
 df_metadata_all$hospital_location_recode <- dplyr::recode(df_metadata_all$hospital_location, !!! recode_LTACH_string)   %>% factor(.,levels = paste0("LTACH ", 1:length(recode_LTACH_string)) )
@@ -334,7 +155,9 @@ df_metadata_all$hospital_location_recode <- dplyr::recode(df_metadata_all$hospit
 rownames(df_metadata_all) <- df_metadata_all$isolate_no
 
 paste0("Number of final rows: ", nrow(df_metadata_all))
-paste0("Number of final columns: ", nrow(df_metadata_all))
+paste0("Number of final columns: ", ncol(df_metadata_all))
+paste0("Columns in dataset: ")
+colnames(df_metadata_all)
 ```
 
 # Save dataset

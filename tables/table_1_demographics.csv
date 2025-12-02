@@ -1,17 +1,18 @@
-Variable,Overall (n=712),2014-15 (n=329),2021-23 (n=383),p-value
-"Age in years, mean (SD)",68.96 (14.50),71.14 (14.82),67.09 (13.98),<0.001
-Male sex,369 (51.8),170 (51.7),199 (52.0),0.999
+Variable,Overall (n=707),2014-15 (n=328),2021-23 (n=379),p-value
+"Age in years, mean (SD)",69.04 (14.51),71.14 (14.84),67.19 (13.99),<0.001
+Male sex,367 (51.9),170 (51.8),197 (52.0),1.000
 Race,,,,NaN
-   African American,62 (16.2),0 (NaN),62 (16.2),
+   African American,61 (16.1),0 (NaN),61 (16.1),
    American Indian,1 (0.3),0 (NaN),1 (0.3),
-   Asian,33 (8.6),0 (NaN),33 (8.6),
-   Caucasian,200 (52.2),0 (NaN),200 (52.2),
-   More than one race,17 (4.4),0 (NaN),17 (4.4),
-   Other,70 (18.3),0 (NaN),70 (18.3),
-Non-Hispanic white,136 (35.5),0 (NaN),136 (35.5),NaN
+   Asian,34 (9.0),0 (NaN),34 (9.0),
+   Caucasian,208 (54.9),0 (NaN),208 (54.9),
+   More than one race,4 (1.1),0 (NaN),4 (1.1),
+   Other,71 (18.7),0 (NaN),71 (18.7),
+Non-Hispanic white,140 (36.9),0 (NaN),140 (36.9),NaN
 Site of infection,,,,<0.001
-   Blood,77 (10.8),27 (8.2),50 (13.1),
+   Blood,76 (10.7),27 (8.2),49 (12.9),
    Other,10 (1.4),0 (0.0),10 (2.6),
-   Respiratory,366 (51.4),185 (56.2),181 (47.3),
-   Urine,192 (27.0),111 (33.7),81 (21.1),
-   Wound,67 (9.4),6 (1.8),61 (15.9),
+   Respiratory,364 (51.5),184 (56.1),180 (47.5),
+   Urine,191 (27.0),111 (33.8),80 (21.1),
+   Wound,66 (9.3),6 (1.8),60 (15.8),
+"Length of stay before culture, mean (SD)",48.59 (95.42),40.23 (110.97),55.83 (78.98),0.034

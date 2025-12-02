@@ -31,8 +31,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
- 
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
 # Coordinate ST data
@@ -117,7 +116,7 @@ df$Species_ST_recode <- factor(df$Species_ST_recode,levels = get_factor_order(ST
 C <- ggplot(data=df,
        aes(y=Species_ST_recode, fill=carbapenemase_plasmid)) +
   geom_bar() +
-  xlim(NA, 310.1) +
+  xlim(NA, 220.1) +
   theme_bw_me +
   xlab("Isolates") + ylab("") +
   theme(
@@ -179,4 +178,3 @@ figure_3
 ```{r}
 ggsave(filename = "./figures/figure_4_carbapenemase_plasmids.png",plot=figure_3,width = 9,height = 9,dpi=900,bg = 'white')
 ```
-

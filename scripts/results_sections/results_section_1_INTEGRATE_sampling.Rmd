@@ -29,7 +29,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")  
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
 
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23") 
@@ -102,28 +102,55 @@ convert_tableone_into_df(dataset=df %>% subset(is.na(hospital_location) == F & h
 paste0("Differences by study")
 hospital_study_table <- table(df_w_metadata$study,df_w_metadata$hospital_location) 
 hospital_study_table
+hospital_study_table %>% prop.table() *100
 hospital_study_table %>% fisher.test(simulate.p.value = T)
 
 paste0("Differences by study w/o Paramount")
 df_no_par <- subset(df_w_metadata,hospital_location != "Paramount")
 hospital_study_table_no_par <- table(df_no_par$study,df_no_par$hospital_location) 
 hospital_study_table_no_par
+hospital_study_table_no_par %>% prop.table() *100
 hospital_study_table_no_par %>% fisher.test(simulate.p.value = T)
 ```
  
- # Age & sex differences
+# Age & sex differences
+1. Preferentially select first isolate with metadata
 ```{r}
-paste0("Total patients: ",nrow(df))
-df_w_metadata <- df %>% subset(has_metadata==T)
+paste0("Total isolates: ",nrow(df))
+df_w_metadata <- df %>% subset(has_full_metadata==T | participant_id == "13") %>% group_by(participant_id) %>% arrange(date) %>% slice(1)
+
 df_w_metadata$non_hispanic_white <- df_w_metadata$participant_race=="Caucasian" & df_w_metadata$participant_ethnicity == "Not Hispanic"
 paste0("Total patients with metadata: ",nrow(df_w_metadata))
 paste0("Prop patients with metadata: ",nrow(df_w_metadata) / nrow(df) * 100)
 
 convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","participant_ethnicity","non_hispanic_white"), factorVars = c("participant_sex","participant_race","participant_ethnicity","non_hispanic_white"),strata='study',outcome_names = c("2014-15","2021-23")) %>% favorite_kable
-                         
-old_age <- df %>% subset(study == '2014-15') %>% .$participant_age_at_first_enc
-new_age <- df %>% subset(study != '2014-15') %>% .$participant_age_at_first_enc
+         
+paste0("Wilcox test for age")                  
+median_IQR <- function(variable,df){
+  df_los_201415 <- subset(df,study =="2014-15") %>% .[[variable]]
+  df_los_202123 <-  subset(df,study =="2021-23" ) %>% .[[variable]]
+  median_overall <- median(df[[variable]],na.rm = T)
+  median_201415 <- median(df_los_201415,na.rm=T)
+  median_202123 <- median(df_los_202123,na.rm=T)
+  IQR_overall <- IQR(df[[variable]],na.rm=T)
+  IQR_201415 <- IQR(df_los_201415,na.rm=T)
+  IQR_202123 <- IQR(df_los_202123,na.rm=T)
+  form <- as.formula(paste0(variable, "~study"))
+  pval <- wilcox.test(form,data=df) %>% .$p.value
+  cbind.data.frame(Variable = variable,overall = paste0(median_overall," (",IQR_overall,")"), study_201415 = paste0(median_201415," (",IQR_201415,")"), study_202123 = paste0(median_202123," (",IQR_202123,")"), pvalue = pval)
+}
 
-wilcox.test(old_age,new_age)
+median_IQR("participant_age_at_first_enc",df_w_metadata)
 ```
+
+# Length of stay data
+1. Preferentially select first isolate with metadata
+```{r}
+df_w_los_metadata <- df %>% subset(has_full_metadata==T) %>% group_by(participant_id) %>% arrange(date) %>% slice(1)
+
+paste0("Number of participants with LOS data: ",nrow(df_w_los_metadata))
+table(df_w_los_metadata$study)
  
+paste0("Wilcox test for length of stay")
+median_IQR("los_before_culture",df_w_los_metadata)
+```

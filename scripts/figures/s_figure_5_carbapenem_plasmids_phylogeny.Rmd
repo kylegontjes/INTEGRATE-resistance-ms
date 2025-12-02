@@ -30,7 +30,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
 # Coordinate ST data
@@ -78,7 +78,7 @@ genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,
 ```
 
 ## Phylogeny
-```{r,fig.width=10,fig.height=10}  
+```{r,fig.width=9.75,fig.height=9.75}  
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
 p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale  + theme(legend.key = element_rect(colour = c('black')))
@@ -86,11 +86,11 @@ p01 <- p0 + ggnewscale::new_scale_fill()
 p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.003,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale + theme( legend.key = element_rect(colour = c('black')))
 p11 <- p1 + ggnewscale::new_scale_fill()
 
-figure <- gheatmap(p11,KPC_plasmid_matrix %>% select(genotype@column_names_param$labels[ComplexHeatmap::column_order(genotype)]) %>% mutate_all(as.factor)  %>% `colnames<-`(recode(colnames(.),"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation') %>% trimws(.,"both")),color = NULL,width=0.05*length(geno_vars),offset=0.006,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,460) + theme(legend.position = 'bottom', legend.key = element_rect(colour = c('black')))
+figure <- gheatmap(p11,KPC_plasmid_matrix %>% select(genotype@column_names_param$labels[ComplexHeatmap::column_order(genotype)]) %>% mutate_all(as.factor)  %>% `colnames<-`(recode(colnames(.),"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation') %>% trimws(.,"both")),color = NULL,width=0.05*length(geno_vars),offset=0.006,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,575) + theme(legend.position = 'bottom', legend.key = element_rect(colour = c('black')))  + geom_treescale(y = -10)
 
 figure
 ```
 
 ```{r}
-ggsave(filename = "./figures/s_figure_5_carbapenem_plasmids_phylogeny.png",plot=figure,width = 10,height =10 ,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_5_carbapenem_plasmids_phylogeny.png",plot=figure,width = 9.75,height =9.75 ,dpi=900,bg = 'white')
 ```

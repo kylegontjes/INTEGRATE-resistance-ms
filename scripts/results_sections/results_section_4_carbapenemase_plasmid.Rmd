@@ -29,7 +29,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
 # Coordinate ST data
@@ -70,10 +70,10 @@ ggVennDiagram::ggVennDiagram(list(Old = old_plasmids, New = new_plasmids))
 
 shared_kpc_plasmids <- intersect(old_plasmids,new_plasmids)
 variables <-  c("carbapenemase_plasmid",shared_kpc_plasmids,'Chromosome')
-gontjesr::convert_tableone_into_df(dataset=df %>% subset(carbapenemase_plasmid != "No carbapenemase"),vars =variables,strata='study',outcome_names = c("2014-15",'2021-23'),factorVars =variables) %>% favorite_kable()
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(carbapenemase_plasmid != "No carbapenemase"),vars =variables,strata='study',outcome_names = c("2014-15",'2021-23'),argsNormal = "carbapenemase_plasmid",factorVars =variables) %>% favorite_kable()
 ```
 
-### ST258
+## ST258
 ```{r}
 paste0("Total KPC plasmids: ",length(unique(df %>% subset(ST=='ST258') %>% .$carbapenemase_plasmid %>% subset(!. %in% c("Chromosome","No carbapenemase")))))
 
@@ -83,6 +83,5 @@ ST258_plasmids_new <- KPC_plasmid_matrix %>% subset(rownames(.) %in% c(df %>% su
 
 ggVennDiagram::ggVennDiagram(list(Old = ST258_plasmids_old, New = ST258_plasmids_new))
 
-gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='ST258' & carbapenemase_plasmid != "No carbapenemase"),vars = variables,strata='study',outcome_names = c("2014-15",'2021-23'),argsNormal = 'KPC_plasmid',factorVars = variables) %>% favorite_kable()
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='ST258' & carbapenemase_plasmid != "No carbapenemase"),vars = variables,strata='study',outcome_names = c("2014-15",'2021-23'),argsNormal = 'carbapenemase_plasmid',factorVars = variables) %>% favorite_kable()
 ```
-

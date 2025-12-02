@@ -30,7 +30,7 @@ sessionInfo()
 # Load data
 ```{r}
 df <- readRDS("./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")   
-df_first <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
+df_first <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
 # Load amrfinder
@@ -42,13 +42,13 @@ amrfinder <- subset(amrfinder,amrfinder$isolate_no %in% df$isolate_no)
 # Get list of blactamases
 ```{r}
 amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
-amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla",element_symbol))
+amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla",element_symbol_renamed))
  
-amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol) | grepl("KPC|NDM|VIM|IMP",element_symbol) | grepl("OXA-48 family",element_name))
-amrfinder_carb_ompK <- amrfinder %>% subset(subclass == "CARBAPENEM" & ! element_symbol %in% amrfinder_carb_bla$element_symbol)
+amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol_renamed) | grepl("KPC|NDM|VIM|IMP",element_symbol_renamed) | grepl("OXA-48 family",element_symbol_renamed))
+amrfinder_carb_ompK <- amrfinder %>% subset(subclass == "CARBAPENEM" & ! element_symbol_renamed %in% amrfinder_carb_bla$element_symbol_renamed)
 amrfinder_matrix <- readRDS("./data/amrfinder/amrfinder_matrix.RDS")  %>% subset(rownames(.) %in% df$isolate_no) 
-amrfinder_matrix_beta <- amrfinder_matrix %>% select(any_of(sort(c(unique(amrfinder_beta$element_symbol)))))
-amrfinder_matrix_carb <- amrfinder_matrix %>% select(any_of(sort(c(unique(amrfinder_carb_bla$element_symbol)))))
+amrfinder_matrix_beta <- amrfinder_matrix %>% select(any_of(sort(c(unique(amrfinder_beta$element_symbol_renamed)))))
+amrfinder_matrix_carb <- amrfinder_matrix %>% select(any_of(sort(c(unique(amrfinder_carb_bla$element_symbol_renamed)))))
 ```
 
 # Load kleborate
@@ -103,5 +103,5 @@ df_carb_omp_first <- df_carb_omp_first %>% select(-bla_under_4)
 ```
 
 ```{r}
-saveRDS(df_carb_omp_first,"./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_datasets.RDS")
+saveRDS(df_carb_omp_first,"./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.RDS")
 ```

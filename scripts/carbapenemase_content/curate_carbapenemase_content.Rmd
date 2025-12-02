@@ -84,23 +84,23 @@ amrfinder_mat <- readRDS("./data/amrfinder/amrfinder_matrix.RDS")
 amrfinder_mat <- subset(amrfinder_mat,rownames(amrfinder_mat) %in% df$isolate_no)
 amrfinder <- readRDS("./data/amrfinder/amrfinder_curated.RDS") 
 amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
-amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla",element_symbol))
-amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol) | grepl("carbapenemase|NDM|VIM|IMP",element_symbol) | grepl("OXA-48 family",element_name))
+amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla",element_symbol_renamed))
+amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol_renamed) | grepl("carbapenemase|NDM|VIM|IMP",element_symbol_renamed) | grepl("OXA-48 family",element_name))
 ``` 
 
 # Create carbapenemase data
 ```{r} 
 # Get an isolate's carbapenemase genes
 df$blactamase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_beta_bla %>% subset(isolate_no == x) %>% .$element_symbol %>% unique %>% paste0(collapse=" & ")
+  amrfinder_beta_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% unique %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No blactamase",.)}
 
 df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol %>% unique %>%  paste0(collapse=" & ")
+  amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% unique %>%  paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No carbapenemase",.)}
 
 df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
-    carbapenemase <- amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol
+    carbapenemase <- amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed
      if(is_empty(carbapenemase)){
       "No carbapenemase"
     } else {

@@ -14,7 +14,6 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 # Environment
 ```{r}
-
 packages <- c("tidyverse",'kableExtra','tableone','gontjesr') 
 
 #Load Packages
@@ -28,7 +27,7 @@ sessionInfo()
 
 # Load data
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")  
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")  
 
 df$ST258 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST258",T,F)
 df$ST17 <- ifelse(df$Species_ST == "Klebsiella pneumoniae ST17",T,F)
@@ -49,7 +48,7 @@ na_data <- lapply(isolates_2123,FUN=function(x){
   df_202123 %>% subset(isolate_no == x) %>% select(shared_antibiotics,novel_antibiotics) %>% is.na() %>% rowSums() %>% `names<-`(x)
 }) %>% unlist
 
-at_least_one_missing <- df_202123 %>% subset(isolate_no %in% c(na_data %>% subset(.>0) %>% names()))
+at_least_one_missing <- df_202123 %>% subset(isolate_no %in% c(na_data %>% subset(.>0) %>% names())) %>% select(isolate_no,shared_antibiotics,novel_antibiotics)
  
 at_least_one_missing %>% favorite_kable() 
 ```

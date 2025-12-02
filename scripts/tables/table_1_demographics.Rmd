@@ -29,16 +29,16 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")  
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")  
 ``` 
 
 ```{r}
-df_w_metadata <- df %>% subset(has_metadata==T)
+df_w_metadata <- df %>% subset(has_full_metadata==T & first_isolate==T) 
 df_w_metadata$non_hispanic_white <- df_w_metadata$participant_race=="Caucasian" & df_w_metadata$participant_ethnicity == "Not Hispanic"
 ```
 
 ```{r}
-table <-  convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","non_hispanic_white",'source_simplified'), factorVars = c("participant_sex","participant_race","non_hispanic_white",'source_simplified'),strata='study',outcome_names = c("2014-15","2021-23"))
+table <-  convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","non_hispanic_white",'source_simplified',"los_before_culture"), factorVars = c("participant_sex","participant_race","non_hispanic_white",'source_simplified'),strata='study',outcome_names = c("2014-15","2021-23"))
 
 table$Variable <- recode(table$Variable,
                          "participant_age_at_first_enc (mean (SD))" = "Age in years, mean (SD)",
@@ -52,11 +52,11 @@ table$Variable <- recode(table$Variable,
                          '   respiratory'='   Respiratory',
                          '   wound'='   Wound',
                          "   more than one race"="   More than one race",
-                         "non_hispanic_white = TRUE (%)" = "Non-Hispanic white")  
-table %>% favorite_kable
+                         "non_hispanic_white = TRUE (%)" = "Non-Hispanic white",
+                         "los_before_culture (mean (SD))" = "Length of stay before culture, mean (SD)")
+
+table %>% favorite_kable 
 
 saveRDS(table,"./tables/table_1_demographics.RDS")
 write_csv(table,"./tables/table_1_demographics.csv")
 ```
-
-

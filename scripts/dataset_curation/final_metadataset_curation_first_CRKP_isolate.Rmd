@@ -27,17 +27,25 @@ Sys.info()
 sessionInfo()
 ```
 
+# Load merged dataset
 ```{r}
 df_metadata_all <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")
+paste0("Total number of isolates: ",nrow(df_metadata_all))
+paste0("Breakdown by study: ")
+table(df_metadata_all$study)
 ```
 
 # Clinical CRE
 ```{r} 
-df_metadata_all_clinical <- subset(df_metadata_all,rectal_logical==F)
+df_metadata_all_clinical <- subset(df_metadata_all, rectal_logical==F)
 saveRDS(df_metadata_all_clinical,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.RDS")
 write_csv(df_metadata_all_clinical,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.csv")
-```
 
+# Summary
+paste0("Total number of clinical CRE isolates: ",nrow(df_metadata_all_clinical))
+paste0("Breakdown by study: ")
+table(df_metadata_all_clinical$study)
+```
 
 # Clinical CRKP
 ```{r} 
@@ -46,29 +54,54 @@ df_metadata_all_clinical_kpn <- subset(df_metadata_all_clinical,species == "Kleb
 # Get first clinical CRKP isolate using participant and date variable, but retain those with participant_id as unique entries 
 df_metadata_all_clinical_kpn_first_isolate <- df_metadata_all_clinical_kpn %>% group_by(participant_id) %>% arrange(date) %>% slice(1) %>% ungroup() 
 
-# Create flag for in final dataset (i.e., first isolate)
+# First per quarter
+df_metadata_all_clinical_kpn_first_isolate_per_Q <- df_metadata_all_clinical_kpn %>% group_by(participant_id,year_quarter) %>% arrange(date) %>% slice(1) %>% ungroup() 
+
+# Create flag for in final dataset (i.e., first isolate or first quarter dataset)
+df_metadata_all_clinical_kpn_first_isolate_per_Q$first_isolate <- df_metadata_all_clinical_kpn_first_isolate_per_Q$isolate_no %in% df_metadata_all_clinical_kpn_first_isolate$isolate_no
 df_metadata_all_clinical_kpn$first_isolate <- df_metadata_all_clinical_kpn$isolate_no %in% df_metadata_all_clinical_kpn_first_isolate$isolate_no
+df_metadata_all_clinical_kpn$first_isolate_per_quarter <- df_metadata_all_clinical_kpn$isolate_no %in% df_metadata_all_clinical_kpn_first_isolate_per_Q$isolate_no
 
 # All clinical isolates
 saveRDS(df_metadata_all_clinical_kpn,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.RDS") 
 write_csv(df_metadata_all_clinical_kpn,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.csv") 
+
+# Summary
+paste0("Total number of clinical CRKP isolates: ",nrow(df_metadata_all_clinical_kpn))
+paste0("Breakdown by study: ")
+table(df_metadata_all_clinical_kpn$study)
 ```
 
 # Add metadata
 ```{r}
-df_201415 <- df_metadata_all_clinical_kpn_first_isolate %>% subset(study == "2014-15")
-df_202123 <- df_metadata_all_clinical_kpn_first_isolate %>% subset(study == "2021-23") 
+create_Kpn_Species_ST_variable <- function(dataset){
+  df_201415 <- dataset %>% subset(study == "2014-15")
+  df_202123 <- dataset %>% subset(study == "2021-23")
+  ST_over_1 <- table(dataset$Species_ST) %>% subset(.>1) %>% names
+  Species_ST_recode <- ifelse(dataset$Species_ST %in% c(ST_over_1), dataset$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.)  
+  data.frame(Species_ST_recode)
+}
 
-OLD_ST <- unique(df_201415$Species_ST) %>% sort
-new_ST <- unique(df_202123$Species_ST) %>% sort 
-ST_over_1 <- table(df_metadata_all_clinical_kpn_first_isolate$Species_ST) %>% subset(.>1) %>% names
+df_metadata_all_clinical_kpn_first_isolate <- df_metadata_all_clinical_kpn_first_isolate %>% 
+  cbind(create_Kpn_Species_ST_variable(df_metadata_all_clinical_kpn_first_isolate) )
 
-df_metadata_all_clinical_kpn_first_isolate$Species_ST_recode <- ifelse(df_metadata_all_clinical_kpn_first_isolate$Species_ST %in% c(ST_over_1), df_metadata_all_clinical_kpn_first_isolate$Species_ST,"Singleton STs") %>% gsub("Klebsiella pneumoniae ","",.) 
-
-df_metadata_all_clinical_kpn_first_isolate$Species_ST_new_no_species <- gsub("Klebsiella pneumoniae ","",df_metadata_all_clinical_kpn_first_isolate$Species_ST)
-df_metadata_all_clinical_kpn_first_isolate$major_STs <- ifelse(df_metadata_all_clinical_kpn_first_isolate$ST %in% c("ST258","ST14","ST307","ST17","ST25","ST11"),df_metadata_all_clinical_kpn_first_isolate$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
+df_metadata_all_clinical_kpn_first_isolate_per_Q <- df_metadata_all_clinical_kpn_first_isolate_per_Q %>% 
+  cbind(create_Kpn_Species_ST_variable(df_metadata_all_clinical_kpn_first_isolate_per_Q) )
+ 
+df_metadata_all_clinical_kpn_first_isolate$major_STs <- ifelse(df_metadata_all_clinical_kpn_first_isolate$ST %in% c("ST11","ST15","ST25","ST35","ST987","ST17","ST307","ST14","ST258"),df_metadata_all_clinical_kpn_first_isolate$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
+df_metadata_all_clinical_kpn_first_isolate_per_Q$major_STs <- ifelse(df_metadata_all_clinical_kpn_first_isolate_per_Q$ST %in% c("ST11","ST15","ST25","ST35","ST987","ST17","ST307","ST14","ST258"),df_metadata_all_clinical_kpn_first_isolate_per_Q$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
 
 # First isolate + NA clinical isolates
 saveRDS(df_metadata_all_clinical_kpn_first_isolate,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS") 
 write_csv(df_metadata_all_clinical_kpn_first_isolate,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.csv") 
+
+# First isolate + NA clinical isolates
+saveRDS(df_metadata_all_clinical_kpn_first_isolate_per_Q,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS") 
+write_csv(df_metadata_all_clinical_kpn_first_isolate_per_Q,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.csv") 
+
+# Summary
+paste0("Total number of first-quarter clinical CRKP isolates: ",nrow(df_metadata_all_clinical_kpn_first_isolate_per_Q))
+paste0("Breakdown by study and follow-up status: ")
+table(df_metadata_all_clinical_kpn_first_isolate_per_Q$study,df_metadata_all_clinical_kpn_first_isolate_per_Q$first_isolate,dnn = c("Study","First isolate"))
 ```
+ 

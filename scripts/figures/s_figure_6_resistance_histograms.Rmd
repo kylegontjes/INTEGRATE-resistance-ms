@@ -30,7 +30,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123<- df%>% subset(study == "2021-23")
 ```
@@ -82,16 +82,14 @@ create_MIC_histogram <- function(phenotype_cont, phenotype_log, phenotype_cat = 
   histogram <- ggplot(data, aes(x = phenotype_cont,fill=phenotype_cat)) +
     geom_histogram(bins = 33)  +
     ylab("Isolates") +
-    xlab(x_axis_name)  + theme_bw_me + resistance_cat_scale+ theme(axis.text = element_text(size=12))
+    xlab(x_axis_name)  + theme_bw_me + resistance_cat_scale+ theme(axis.text = element_text(size=12),axis.title = element_text(size=12))
     
   } else {
   histogram <- ggplot(data, aes(x = phenotype_log,fill=phenotype_cat)) +
     geom_bar()  +
     ylab("Isolates") +
-    xlab(x_axis_name) + scale_x_continuous(breaks=as.numeric(names(renaming_vector)), labels=renaming_vector)  + theme_bw_me + resistance_cat_scale + theme(axis.text = element_text(size=12))
+    xlab(x_axis_name) + scale_x_continuous(breaks=as.numeric(names(renaming_vector)), labels=renaming_vector)  + theme_bw_me + resistance_cat_scale + theme(axis.text = element_text(size=12),axis.title = element_text(size=12))
   }
-  
-  
   return(histogram)
 }
 
@@ -106,11 +104,11 @@ figures[["legend"]] <- fig_legend
 ``` 
 
 ## Figure
-```{r,message=F,error=F,warning=F,fig.width=13.5,fig.height=10.8} 
+```{r,message=F,error=F,warning=F,fig.width=16.5,fig.height=13.2} 
 histogram_figs <- cowplot::plot_grid(plotlist=figures,ncol=3,labels=c(LETTERS[1:length(figures) - 1],""))
 histogram_figs
 ```
 
 ```{r}
-ggsave(plot = histogram_figs, filename = "./figures/s_figure_6_resistance_histograms.png", width = 13.5, height = 10.8, bg = "white",dpi=900)
+ggsave(plot = histogram_figs, filename = "./figures/s_figure_6_resistance_histograms.png", width = 16.5, height = 13.2, bg = "white",dpi=900)
 ```

@@ -1,5 +1,5 @@
 ---
-title: "Phylogeny"
+title: "Phylogeny in 2021-23 study"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -30,7 +30,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")     %>% subset(study == "2021-23")  
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS") %>% subset(study == "2021-23")  
 
 MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
 resistance_vars <- paste0(MIC_variables,"_dich_num")  
@@ -91,8 +91,8 @@ A <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.012,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,432.5) + theme(legend.position = 'bottom',legend.key = element_rect(colour = c('black')))
-A 
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.012,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,545.1) + theme(legend.position = 'bottom',legend.key = element_rect(colour = c('black'))) + geom_treescale(y = -5)
+A  
 ```
 
 # ST258
@@ -120,8 +120,8 @@ B <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00008,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,222.5) + ggtitle("ST258") + theme(legend.position = 'none')
-B
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00008,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,275) + ggtitle("ST258") + theme(legend.position = 'none') + geom_treescale(y = -5)
+B  
 ```
 
 
@@ -150,7 +150,7 @@ C <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00011,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,128.5) + ggtitle("ST14") + theme(legend.position = 'none')
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00011,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,172.5) + ggtitle("ST14") + theme(legend.position = 'none') + geom_treescale(y = -3)
 C
 ```
 
@@ -179,7 +179,7 @@ D <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00003,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,42.5)+ ggtitle("ST17") + theme(legend.position = 'none')
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00003,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,48.1)+ ggtitle("ST17") + theme(legend.position = 'none') + geom_treescale(y = -0.5)
 D
 ```
 
@@ -208,7 +208,7 @@ E <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00004,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,42.5)+ ggtitle("ST307") + theme(legend.position = 'none') 
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00004,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,48.1)+ ggtitle("ST307") + theme(legend.position = 'none')  + geom_treescale(y = -0.5)
 E
 ```
 
@@ -223,6 +223,6 @@ figure <- cowplot::plot_grid(merged,A_legend,rel_heights = c(1,0.075),ncol=1)
 figure
 ```
 
-```{r,fig.width=17,fig.height=10.5}   
+```{r,fig.width=13,fig.height=16}   
 ggsave(filename = "./figures/s_figure_11_resistance_phylogeny.png",plot=figure,width = 13,height = 16,dpi=900,bg = 'white')
 ```

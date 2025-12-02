@@ -30,7 +30,7 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS")   
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
    
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23") 
@@ -57,7 +57,7 @@ df <- left_join(df,carbapenemase_content)
 
 # Load omp matrix
 ```{r}
-carb_omp <-  readRDS("./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_datasets.RDS")
+carb_omp <-  readRDS("./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.RDS")
 ``` 
 
 # Supplemental Figure:

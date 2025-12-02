@@ -5,6 +5,13 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+Update: 
+1. 12/01/25: 
+a. New metadata with LoS data (11/24/25 dataset update)
+b. Removed 24 due to ouside patient's LoS (12/01/25 dataset update)
+c. Dnsured dropped isoaltes were removed
+d. Dropped one INT_1259 entry as it was a duplicate!
+
 ```{r setup, include=FALSE}
 require(knitr)
 opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
@@ -12,11 +19,10 @@ opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
 ```
 
-# Environment
-
 ```{r environment, echo=F, message=FALSE, include=F, results=F}
+# Environment
 #Packages
-packages <- c("tidyverse",'ape','kableExtra','phytools','igraph','ggraph','tableone','kableExtra','ComplexHeatmap','regentrans') 
+packages <- c("tidyverse",'kableExtra','gontjesr') 
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
@@ -73,14 +79,6 @@ to_drop_isolates <- mismatches %>% subset(`Keep/Drop`=="drop") %>% .$sample_id
 paste0("Number of isolates to drop: ", length(to_drop_isolates)) 
 ```
 
-# Remove QCD isolates
-```{r}
-qcd <- qcd %>% subset(sample !='INT_CRE_1168')
-
-paste0("Final qcd genomes: ",nrow(qcd))
-```
-
-
 # Get sample ID from qcd entry
 ```{r}
 get_sample_id = function(isolate,sample_lookup){
@@ -90,21 +88,41 @@ get_sample_id = function(isolate,sample_lookup){
 qcd$sample_id <- sapply(qcd$sample,get_sample_id,sample_lookup) %>% as.character() 
 ```
 
+## Filtering #3: Duplicates
+1. See ./data/
+```{r}
+duplicated_metadata_entries <- read_csv("../../data/INTEGRATE_duplicated_metadata_entries_120125.csv")
+duplicated_metadata_entries %>% gontjesr::favorite_kable()
+
+drop_worst_duplicated_entry <- duplicated_metadata_entries$drop_isolates %>% str_split(pattern = ";") %>% unlist
+paste0("Drop the following genomes from qcd file: ",paste0(drop_worst_duplicated_entry,collapse=";"))
+
+qcd <- qcd %>% subset(!sample %in%drop_worst_duplicated_entry)
+```
+
 # Merge QCD data with the dataset
 ```{r}
 # Load
-df <- read_delim("../../data/integrate_metadata_20251114.txt")
-df <- df %>%  rename(lab_species = species )
+df <- read_delim("../../data/integrate_metadata_20251201.txt")
+df <- df %>%  rename(lab_species = species)
+
+# Has metadata
+df$has_full_metadata <- ifelse(is.na(df$patient_sex),F,T)
+paste0("Number of isolates with metadata: ",sum(df$has_full_metadata))
+paste0("Number of isolates without metadata: ",nrow(df) - sum(df$has_full_metadata))
 
 # Remove 
 ## Remove their "Drop" isolates
-paste0("Initial isolates in metadata: ",nrow(df))
-df <- df %>% subset(status !="Drop")
+paste0("Initial isolates in metadata: ", nrow(df))
+df <- df %>% subset(status == "Keep") 
 
-## Drop INT_1259 cause it had a duplicate??
-df <- df %>% subset(sample_id != 'INT_1259')
-paste0("Retained isolate count: ",nrow(df))
+## Drop due to mismatch OR out of participant stay
+df <- df %>% subset(!sample_id %in% to_drop_isolates) 
+paste0("Total isolates after dropping using status and mismatch variables: ",nrow(df))
+``` 
 
+# Get genomic ID for isolates
+```{r}
 # Get genome IDS
 get_genomic_id <- function(sample_id,sample_lookup){
    subset(sample_lookup,`Sample ID` == sample_id) %>% .$`Genome ID` %>% as.character() %>% paste0(collapse=";") %>% trimws(.,whitespace = ";")
@@ -137,12 +155,7 @@ df$genome_ids_qc_passing_CRE <- sapply(df$genome_ids_qc_passing,function(x){
   } else {
     return(paste0(CRE,collapse=";"))
   }
-}) 
-
-paste0("Metadata without QC-passing CRE genomes: ",sum(df$genome_ids_qc_passing_CRE==''))
-paste0("Percentage of metadata without QC-passing CRE genomes: ",round(sum(df$genome_ids_qc_passing_CRE=='') / nrow(df) *100,2),"%")
-paste0("Metadata with duplicate CRE QC genomes: ",grepl(';', df$genome_ids_qc_passing_CRE ) %>% sum)
-paste0("Final CRE qc-passing genome data: ",grepl('INT', df$genome_ids_qc_passing_CRE ) %>% sum)
+})
 
 df$isolate_no <- sapply(df$sample_id,FUN=function(x){
   df_sub <- subset(df,sample_id==x)
@@ -158,6 +171,14 @@ df$isolate_no <- sapply(df$sample_id,FUN=function(x){
 }) %>% unlist(use.names = F) %>% `names<-`(NULL)
 ```
 
+
+```{r}
+paste0("Metadata without QC-passing CRE genomes: ",sum(df$genome_ids_qc_passing_CRE==''))
+paste0("Percentage of metadata without QC-passing CRE genomes: ",round(sum(df$genome_ids_qc_passing_CRE=='') / nrow(df) *100,2),"%")
+paste0("Metadata with duplicate CRE QC genomes: ",grepl(';', df$genome_ids_qc_passing_CRE ) %>% sum)
+paste0("Final CRE qc-passing genome data: ",grepl('INT', df$genome_ids_qc_passing_CRE ) %>% sum)
+```
+
 # Merge QCD with metadata
 ```{r}
 qcd$isolate_no <- qcd$sample  
@@ -168,19 +189,129 @@ df_merged <- lapply(df$isolate_no,FUN=function(x){
   df_sub <- subset(df,isolate_no ==x)
   qcd_sub <- subset(qcd,isolate_no %in% isolates)
   if(grepl(";",x)==F ){
-    left_join(df_sub,qcd_sub)
+    suppressMessages(left_join(df_sub,qcd_sub))
   } else {
     qcd_sub_merged <- qcd_sub %>% summarise(across(everything(), ~ paste(unique(.), collapse = ";"))) 
-    left_join(df_sub,qcd_sub_merged)
+    suppressMessages(left_join(df_sub,qcd_sub_merged))
   }
 }) %>% do.call(rbind,.)
 
 paste0("Number of isolates: ",nrow(df_merged))
 paste0("Number of qc_passing isolates: ",sum(df_merged$qc_pass==TRUE))
 paste0("Number of qc_passing CRE isolates: ",sum(df_merged$qc_pass==TRUE & df_merged$CRE==TRUE))
+paste0("Number of qc_passing CRE isolates with metadata: ",sum(df_merged$qc_pass==TRUE & df_merged$CRE==TRUE & df_merged$has_full_metadata == T))
+paste0("Number of qc_passing CRE isolates without metadata: ",sum(df_merged$qc_pass==TRUE & df_merged$CRE==TRUE & df_merged$has_full_metadata == F))
+```
+  
+# Curate metadata
+## Resistance  
+```{r}
+factorize_mic_null <- function(dataset,resistance){ 
+  values <- unique(na.omit(as.character(dataset[[resistance]])))
+  combination <- ifelse(length(grep("/",values))>0,"yes","no")
+  if(combination == "no"){
+    level <- c(
+      #Endpoint 
+      values[grep("≤|<|<=",values)], 
+      #if non endpoint included 
+      #non-endpoint sorted
+      as.character(sort(as.numeric(values[!grepl("≤|<|>|>=|≥", values)]))),
+      #Endpoint
+      values[grep(">|>=|≥",values)])
+  }
+  if(combination == "yes"){
+    values_no_in <- gsub("/.*","",values)
+    in_value <- gsub(".*\\/","",values)
+    level <- c(
+      #Endpoint 
+      values_no_in[grep("≤",values_no_in)], 
+      #if non endpoint included 
+      #non-endpoint sorted
+      as.character(sort(as.numeric(values_no_in[!grepl("≤|>", values_no_in)]))),
+      #Endpoint
+      values_no_in[grep(">",values_no_in)])
+    level <- paste0(level,"/",in_value)
+  }    
+  factorized <- factor(as.vector(dataset[[resistance]]),levels = level)
+  return(factorized)
+}
 ```
 
-# Save
+```{r}  
+## Convert names
+df_merged <-  dplyr::rename(df_merged,MERO='mero',IMI='imi',CZA='cza',MVB = "mev",IR = "imr", PLZ = "plz", CST='col',OMC='omc',DLX='dlx',ERV='erv',CT ='c_t',FDC = 'fdc_kb_zoi_mm',FOS ='fos') 
+df_merged <-  dplyr::rename(df_merged,MERO_cat='mero_int',IMI_cat='imi_int',CZA_cat='cza_int',MVB_cat = "mev_int",IR_cat = "imr_int", PLZ_cat = "plz_int", CST_cat='col_int',OMC_cat='omc_int',DLX_cat='dlx_int',ERV_cat='erv_int',CT_cat ='ct_int',FDC_cat = 'fdc_int',FOS_cat = 'fos_int') 
+
+## Create MIC Variable
+MIC_variables <- c('MERO',"IMI",'MVB','IR','PLZ','CST','OMC','DLX','ERV','CZA',"FDC","CT","FOS")
+
+## Recode numeric values if found in category if numeric is NA
+for(i in MIC_variables){
+  df_merged[,paste0(i)] <- ifelse(df_merged[[paste0(i)]] %in% c("S","I","R"),NA, df_merged[[paste0(i)]])
+}
+
+## Numerize MIC Data
+for(i in MIC_variables){
+  df_merged[,paste0(i,"_num")] <- df_merged[[paste0(i)]] %>% gsub("≤","",.) %>% gsub(">","",.) %>% gsub("/.","",.) %>% trimws(.,'both') %>% as.numeric
+}
+
+## Factorize Raw MIC Data
+for(i in MIC_variables){
+  df_merged[,i] <- factorize_mic_null(df_merged,i)
+}
+
+## Log-2 Transform Data
+for(i in MIC_variables){
+  df_merged[,paste0(i,"_log_2")] <- log2(df_merged[paste0(i,"_num")])
+}
+
+# Dich
+for(i in MIC_variables){
+  df_merged[,paste0(i,"_dich_num")] <- sapply(df_merged[paste0(i,"_cat")],FUN=function(x){
+      ifelse(x %in% c("ERROR",NA),NA,ifelse(x %in% c("I","R"),1,0))
+  })
+}
+
+df_merged$blbli_dich_num <- ifelse(is.na(df_merged$MVB_dich_num) & is.na(df_merged$IR_dich_num) & is.na(df_merged$CZA_dich_num),NA,ifelse( df_merged$MVB_dich_num==1| df_merged$IR_dich_num==1 | df_merged$CZA_dich_num == 1,1,0))
+``` 
+  
+## Prioritize kleborate's ST data 
+```{r}
+kleborate_Ecoli <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/escherichia_INTEGRATE/escherichia_output.txt") %>% `colnames<-`(recode(colnames(.), "ST...10"="ST_Pasteur",  "ST...19"="ST_Achtman")) %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
+kleborate_kosc <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kosc_INTEGRATE/klebsiella_oxytoca_complex_output.txt") %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
+kleborate_kpsc_integrate <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_INTEGRATE/klebsiella_pneumo_complex_output.txt") %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
+
+# New - preferentially use Kleborate!
+ST_data_202123 <- lapply(df_merged$isolate_no,FUN=function(x){ 
+  ecoli_isolate <- x %in% kleborate_Ecoli$isolate_no
+  kosc_isolate <- x %in% kleborate_kosc$isolate_no
+  kpsc_isolate <- x %in% kleborate_kpsc_integrate$isolate_no
+  has_kleborate_run <- sum(ecoli_isolate,kosc_isolate,kpsc_isolate) >0
+  if(has_kleborate_run==F){
+    print(paste0(x," has no kleborate run due to being from different species OR multiple specimens provided"))
+    df_sub <- df_merged %>% subset(isolate_no==x)
+    ST <- paste0(unique(df_sub[['st']]),collapse=";")
+  } 
+  if(ecoli_isolate==T){
+    kleborate_Ecoli_sub <- subset(kleborate_Ecoli,isolate_no==x)
+    ST <- paste0(unique(kleborate_Ecoli_sub[['ST_Achtman']]),collapse=";") 
+  }
+  if(kosc_isolate==T){
+    kleborate_kosc_sub <- subset(kleborate_kosc,isolate_no==x)
+    ST <- paste0(unique(kleborate_kosc_sub[['ST']]),collapse=";")  
+  }
+  if(kpsc_isolate==T){
+    kpsc_isolate_sub <- subset(kleborate_kpsc_integrate,isolate_no==x)
+    ST <- paste0(unique(kpsc_isolate_sub[['ST']]),collapse=";")   
+  }
+  cbind.data.frame(isolate_no = x,ST=ST)
+}) %>% do.call(rbind,.)
+
+df_merged <- left_join(df_merged,ST_data_202123) %>% rename(mlst_st=st)
+```
+
+# Save file
 ```{r}
 saveRDS(df_merged,"./data/dataset/INTEGRATE_metadata_qcd_merged.RDS")
+write_csv(df_merged,"./data/dataset/INTEGRATE_metadata_qcd_merged.csv")
 ```
