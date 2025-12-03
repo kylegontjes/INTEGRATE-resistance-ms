@@ -81,19 +81,14 @@ df$urine<- ifelse(df$source_simplified == "urine",1,0)
 df$wound <- ifelse(df$source_simplified == "wound",1,0)
 
 paste0("Overall")
-source_table <- table(df_w_metadata$study,df_w_metadata$source_simplified) 
+source_table <- table(df$study,df$source_simplified) 
 source_table  
 source_table %>% fisher.test(simulate.p.value = T)
 
-convert_tableone_into_df(dataset=df %>% subset(is.na(hospital_location) == F),vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c('2014-15',"2021-23"),factorVars = c("source_simplified","blood","other","resp","urine","wound")) %>% favorite_kable()
+convert_tableone_into_df(dataset=df ,vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c('2014-15',"2021-23"),factorVars = c("source_simplified","blood","other","resp","urine","wound")) %>% favorite_kable()
 
-paste0("No paramount")
-no_paramount <- df %>% subset(is.na(hospital_location) == F & hospital_location != "Paramount")
-source_table_no_par <- table(no_paramount$study,no_paramount$source_simplified) 
-source_table_no_par  
-source_table_no_par %>% fisher.test(simulate.p.value = T)
-
-convert_tableone_into_df(dataset=df %>% subset(is.na(hospital_location) == F & hospital_location != "Paramount"),vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c('2014-15',"2021-23"),factorVars = c("source_simplified","blood","other","resp","urine","wound")) %>% favorite_kable()
+paste0("Isolates with other source declaration: ")
+df %>% subset(source_simplified == "other") %>% .$source
 ```
 
 # Frequency differences
@@ -146,11 +141,9 @@ median_IQR("participant_age_at_first_enc",df_w_metadata)
 # Length of stay data
 1. Preferentially select first isolate with metadata
 ```{r}
-df_w_los_metadata <- df %>% subset(has_full_metadata==T) %>% group_by(participant_id) %>% arrange(date) %>% slice(1)
-
-paste0("Number of participants with LOS data: ",nrow(df_w_los_metadata))
-table(df_w_los_metadata$study)
+paste0("Number of participants with LOS data: ",nrow(df_w_metadata))
+table(df_w_metadata$study)
  
 paste0("Wilcox test for length of stay")
-median_IQR("los_before_culture",df_w_los_metadata)
+median_IQR("los_before_culture",df_w_metadata)
 ```
