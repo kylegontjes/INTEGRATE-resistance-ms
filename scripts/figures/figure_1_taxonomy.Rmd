@@ -1,5 +1,5 @@
 ---
-title: "Figure 2: ST differences across studies"
+title: "Figure 1: ST differences across studies"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document

@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 3: Carbapenem resistance-associated genotype matrix"
+title: "Supplemental Figure 2: Carbapenem resistance-associated genotype matrix"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -67,8 +67,8 @@ rownames(df_carb_omp) <- df_carb_omp$isolate_no
 ```
 
 # Get matrix 
-
-```{r,fig.width=8.5,height=8.5}
+  
+```{r,fig.width=8.5,height=10.2}
 # Carb
 df_melt <- df  %>% select(Species_ST,carbapenemase)  %>%
   separate_rows(carbapenemase, sep = " & ") %>%  # split the genotypes
@@ -78,8 +78,9 @@ df_melt <- df  %>% select(Species_ST,carbapenemase)  %>%
     ungroup()
  
 # Scales 
-genotypes <- unique(df$carbapenemase) %>% sort
-genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes) 
+genotypes <- c(table(df$carbapenemase %>% subset(.!="No carbapenemase")) %>% sort(decreasing = T) %>% names,"No carbapenemase")
+genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
+genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(ncol=4, title.position = "top", label.position = "right")) 
  
 #ST
 ST_palette <- ST_scale$palette(1) 
@@ -87,9 +88,9 @@ ST_palette <- c(ST_palette,"Other STs"='lightgray')
 
 row_annots <- rowAnnotation(Study = df$study,`Major STs` = df$major_STs,
                             Carbapenemase = df$carbapenemase,
-                            col = list(Study = c('2014-15'='blue','2021-23'='red'),Carbapenemase = genotype_colors ,`Major STs`=ST_palette %>% subset(names(.) %in% c(unique(df$major_STs)))), annotation_name_gp = gpar(fontsize = 9),annotation_legend_param = list(
-    title_gp = gpar(fontsize = 9),
-    labels_gp = gpar(fontsize = 9),
+                            col = list(Study = c('2014-15'='blue','2021-23'='red'),Carbapenemase = genotype_colors ,`Major STs`=ST_palette %>% subset(names(.) %in% c(unique(df$major_STs)))), annotation_name_gp = gpar(fontsize = 8),annotation_legend_param = list(
+    title_gp = gpar(fontsize = 8),
+    labels_gp = gpar(fontsize = 8),
     grid_width = unit(0.25, "cm"),
     grid_height = unit(0.25, "cm")
   ))
@@ -111,5 +112,5 @@ gghtmp <- cowplot::plot_grid(ht_draw)
 
 # Save
 ```{r}
-ggsave(filename = "./figures/s_figure_3_carbapenem_resistance_associated_genotypes_matrix.png",plot=gghtmp,width = 8.5,height = 8.5,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_2_carbapenem_resistance_associated_genotypes_matrix.png",plot=gghtmp,width = 8.5,height = 10.2,dpi=900,bg = 'white')
 ```

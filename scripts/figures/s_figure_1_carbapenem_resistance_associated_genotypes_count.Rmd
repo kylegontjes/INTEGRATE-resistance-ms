@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 2: Carbapenemase resistance mutations"
+title: "Supplemental Figure 1: Carbapenemase resistance mutations"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -102,8 +102,7 @@ non_carbapenemase_isolates_1415 <- sum(grepl("PCMP",non_carbapenemase_isolates))
 non_carbapenemase_isolates_2123 <- sum(grepl("INT",non_carbapenemase_isolates))
 
 melted_row_no_carb<- df_carb_omp %>% select(-isolate_no) %>% subset(rownames(.) %in% non_carbapenemase_isolates) %>% reshape2::melt(c("study","major_STs")) %>% subset(value == 1)  
-# Calculate proportion of isolates in study but retain the major_ST coloring
- 
+
 melted_row_no_carb_summary <- melted_row_no_carb %>% group_by(study,major_STs,variable) %>% summarise(n=sum(value))
 melted_row_no_carb_summary$proportion <- ifelse(melted_row_no_carb_summary$study =='2021-23',melted_row_no_carb_summary$n/non_carbapenemase_isolates_2123,melted_row_no_carb_summary$n/non_carbapenemase_isolates_1415)
 
@@ -134,5 +133,5 @@ figure
 ```
 
 ```{r}
-ggsave(filename = "./figures/s_figure_2_carbapenem_resistance_associated_genotypes_count.png",plot=figure,width = 8,height = 12,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_1_carbapenem_resistance_associated_genotypes_count.png",plot=figure,width = 8,height = 12,dpi=900,bg = 'white')
 ```
