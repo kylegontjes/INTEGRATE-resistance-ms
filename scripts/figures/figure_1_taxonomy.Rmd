@@ -27,6 +27,7 @@ sessionInfo()
 ```
 
 # Load data
+
 ```{r}
 df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")  
  
@@ -114,5 +115,5 @@ figure
 ```
 
 ```{r,fig.width=6,fig.height=4}   
-ggsave(filename = "./figures/figure_2_taxonomy.png",plot=figure,width = 9,height = 4.5,dpi=900,bg = 'white')
+ggsave(filename = "./figures/figure_1_taxonomy.png",plot=figure,width = 9,height = 4.5,dpi=900,bg = 'white')
 ```
