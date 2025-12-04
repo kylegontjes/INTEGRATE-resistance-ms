@@ -89,8 +89,8 @@ ST_palette <- c(ST_palette,"Other STs"='lightgray')
 row_annots <- rowAnnotation(Study = df$study,`Major STs` = df$major_STs,
                             Carbapenemase = df$carbapenemase,
                             col = list(Study = c('2014-15'='blue','2021-23'='red'),Carbapenemase = genotype_colors ,`Major STs`=ST_palette %>% subset(names(.) %in% c(unique(df$major_STs)))), annotation_name_gp = gpar(fontsize = 8),annotation_legend_param = list(
-    title_gp = gpar(fontsize = 8),
-    labels_gp = gpar(fontsize = 8),
+    title_gp = gpar(fontsize = 8.5),
+    labels_gp = gpar(fontsize = 8.5),
     grid_width = unit(0.25, "cm"),
     grid_height = unit(0.25, "cm")
   ))
@@ -104,10 +104,9 @@ porin_bla_genotype <- ComplexHeatmap::Heatmap(df_carb_omp %>%  select(-carbapene
     column_names_gp = gpar(fontsize = 9),row_split = df$major_STs,row_title = NULL,cluster_row_slices = T,cluster_column_slices = T
       ) 
 
-porin_bla_genotype
-
 ht_draw <- grid.grabExpr(draw((porin_bla_genotype)))
 gghtmp <- cowplot::plot_grid(ht_draw)
+gghtmp
 ```
 
 # Save
