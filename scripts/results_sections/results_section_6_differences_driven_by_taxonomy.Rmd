@@ -5,7 +5,6 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-
 ```{r setup, include=FALSE}
 require(knitr)
 opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
@@ -68,14 +67,14 @@ get_frequency_stats_compare <- function(variable,df,comparitor){
 }
 ```
 
-# Differences across ST258 isolates
+# Differences in resistance across ST258 isolates
 ```{r}
 df_kpn_ST258 <-  subset(df,ST258 == T)
 #Comparisons
 lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_kpn_ST258,comparitor='study') %>% do.call(rbind,.)%>% favorite_kable() 
 ```
 
-# 2021-23 ST258 vs not ST258
+#  Differences in resistance across 2021-23 ST258 vs 2021-23 not ST258
 ```{r}   
 #Comparisons
 resistance_vars_no_perfect <- subset(resistance_vars,resistance_vars!="IMI_dich_num")
