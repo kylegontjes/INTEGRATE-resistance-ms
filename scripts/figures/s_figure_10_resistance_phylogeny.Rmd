@@ -1,5 +1,5 @@
 ---
-title: "Phylogeny in 2021-23 study"
+title: "Supplemental Figure 10: 2021-23 phylogeny with resistance"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -52,7 +52,7 @@ tree_new_final <- tree_new %>% keep.tip(df$isolate_no %>% subset(. %in% tree_new
 break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
        
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right",order=1))
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type (ST)", guide = guide_legend(ncol=7, title.position = "top", label.position = "right",order=1))
 
 # Carbapenemase scale
 genotypes <- unique(df$carbapenemase) %>% sort
@@ -72,7 +72,7 @@ resistance_clustering <-df %>% subset(isolate_no %in% tree_new_final$tip.label) 
 ```{r,fig.width=13,fig.height=15} 
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
-p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale + theme(legend.key = element_rect(colour = c('black')))
+p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale + theme(legend.key = element_rect(colour = c('black')))
 p01 <- p0 + ggnewscale::new_scale_fill()
 p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.006,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale + theme(legend.key = element_rect(colour = c('black')))
 p11 <- p1 + ggnewscale::new_scale_fill()
@@ -101,7 +101,7 @@ st258_df <- df %>% subset(ST=='ST258')
 st258_df <- as.data.frame(st258_df)
 rownames(st258_df) <- st258_df$isolate_no
 tree_new_final_258 <- tree_new_final %>% keep.tip(subset(st258_df$isolate_no,st258_df$isolate_no %in% tree_new_final$tip.label) )%>% phytools::midpoint.root()
-p0 <- gheatmap(ggtree(tree_new_final_258),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+p0 <- gheatmap(ggtree(tree_new_final_258),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
 p01 <- p0 + ggnewscale::new_scale_fill()
 p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.00004,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
@@ -131,7 +131,7 @@ st14_df <- df %>% subset(ST=='ST14')
 st14_df <- as.data.frame(st14_df)
 rownames(st14_df) <- st14_df$isolate_no
 tree_new_final_14 <- tree_new_final %>% keep.tip(subset(st14_df$isolate_no,st14_df$isolate_no %in% tree_new_final$tip.label) )%>% phytools::midpoint.root()
-p0 <- gheatmap(ggtree(tree_new_final_14),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+p0 <- gheatmap(ggtree(tree_new_final_14),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
 p01 <- p0 + ggnewscale::new_scale_fill()
 p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.000055,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
@@ -160,7 +160,7 @@ st17_df <- df %>% subset(ST=='ST17')
 st17_df <- as.data.frame(st17_df)
 rownames(st17_df) <- st17_df$isolate_no
 tree_new_final_17 <- tree_new_final %>% keep.tip(subset(st17_df$isolate_no,st17_df$isolate_no %in% tree_new_final$tip.label) )%>% phytools::midpoint.root()
-p0 <- gheatmap(ggtree(tree_new_final_17),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+p0 <- gheatmap(ggtree(tree_new_final_17),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
 p01 <- p0 + ggnewscale::new_scale_fill()
 p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.000015,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
@@ -189,7 +189,7 @@ st307_df <- df %>% subset(ST=='ST307')
 st307_df <- as.data.frame(st307_df)
 rownames(st307_df) <- st307_df$isolate_no
 tree_new_final_307 <- tree_new_final %>% keep.tip(subset(st307_df$isolate_no,st307_df$isolate_no %in% tree_new_final$tip.label) )%>% phytools::midpoint.root()
-p0 <- gheatmap(ggtree(tree_new_final_307),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+p0 <- gheatmap(ggtree(tree_new_final_307),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
 p01 <- p0 + ggnewscale::new_scale_fill()
 p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.00002,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
@@ -224,5 +224,5 @@ figure
 ```
 
 ```{r,fig.width=13,fig.height=16}   
-ggsave(filename = "./figures/s_figure_11_resistance_phylogeny.png",plot=figure,width = 13,height = 16,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_10_resistance_phylogeny.png", plot=figure, width = 13, height = 16, dpi=900,bg = 'white')
 ```

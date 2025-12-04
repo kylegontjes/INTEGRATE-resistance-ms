@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 8: Cross-resistance"
+title: "Supplemental Figure 7: Cross-resistance"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -94,5 +94,5 @@ figure
 ```
 
 ```{r}
-ggsave(plot = figure, filename = "./figures/s_figure_8_cross_resistance.png", width = 9, height = 4, bg = "white",dpi=900)
+ggsave(plot = figure, filename = "./figures/s_figure_7_cross_resistance.png", width = 9, height = 4, bg = "white",dpi=900)
 ```

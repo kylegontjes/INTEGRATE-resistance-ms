@@ -1,5 +1,5 @@
 ---
-title: "S Figure X: Resistance by taxonom in 2014-15 studyy"
+title: "Supplemental Figure 8: Resistance by taxonomy in 2014-15 studyy"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -116,5 +116,5 @@ fig_ht <- grid.grabExpr(draw(fig))
 ```
 
 ```{r}
-ggsave(filename = "./figures/s_figure_9_resistance_by_taxonomy_201415.png",plot=fig_ht,width = 4,height = 4,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_8_resistance_by_taxonomy_201415.png",plot=fig_ht,width = 4,height = 4,dpi=900,bg = 'white')
 ```

@@ -1,5 +1,5 @@
 ---
-title: "Figure 5: Differences in resistance"
+title: "Figure 4: Differences in resistance"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -115,7 +115,6 @@ res_comps$name <- recode(res_comps$variable,
                          "CT_dich_num" = "Ceftolozane-tazobactam",
                          "FDC_dich_num"="Cefiderocol")
  
-
 res_comps$name <- factor(res_comps$name,levels = resistance_order)
 
 if(comparitor == 'study'){
@@ -198,11 +197,11 @@ C
 legendA <- cowplot::get_legend(A) %>% cowplot::plot_grid() 
 legendST258 <- cowplot::get_legend(C)%>% cowplot::plot_grid() 
 legends <- cowplot::plot_grid(legendA + theme(plot.margin = margin(b =-1.5,unit='in')),legendST258 + theme(plot.margin = margin(t =-1.5,unit='in')),ncol=1)
-figure5 <- cowplot::plot_grid(A + theme(legend.position='none'),B + theme(legend.position='none'),C + theme(legend.position='none'),legends,labels = c("A", "B","C", ""))
+figure4 <- cowplot::plot_grid(A + theme(legend.position='none'),B + theme(legend.position='none'),C + theme(legend.position='none'),legends,labels = c("A", "B","C", ""))
  
-figure5
+figure4
 ```
 
-```{r,fig.width=17,fig.height=10.5}   
-ggsave(filename = "./figures/figure_5_resistance_comparisons.png",plot=figure5,width = 8.5,height = 7.25,dpi=900,bg = 'white')
+```{r,fig.width=8.5,fig.height=7.25}
+ggsave(filename = "./figures/figure_4_resistance_comparisons.png", plot=figure4, width = 8.5, height = 7.25, dpi=900, bg = 'white')
 ```
