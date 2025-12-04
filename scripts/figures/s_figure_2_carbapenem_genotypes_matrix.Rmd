@@ -115,5 +115,5 @@ gghtmp
 # Save
   
 ```{r,fig.width=8.5,height=10.2}
-ggsave(filename = "./figures/s_figure_2_carbapenem_resistance_associated_genotypes_matrix.png",plot=gghtmp,width = 8.5,height = 10.625,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_2_carbapenem_resistance_associated_genotypes_matrix.png",plot=gghtmp,width = 8.5,height = 8.5,dpi=900,bg = 'white')
 ```
