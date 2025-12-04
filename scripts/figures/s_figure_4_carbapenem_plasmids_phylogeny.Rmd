@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 5: Plasmids on phylogeny"
+title: "Supplemental Figure 4: Plasmids on phylogeny"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -39,7 +39,7 @@ df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_m
 break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
        
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(nrow=3, title.position = "top", label.position = "right"))
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(nrow=4, title.position = "top", label.position = "right",order=1))
 
 df$Species_ST_recode_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
  
@@ -68,20 +68,20 @@ tree_new_final <- tree_new %>% keep.tip(df$isolate_no %>% subset(. %in% tree_new
 ## Scale
 ```{r}
 feature_colors <- c(`1` = "black",`0`="white")
-feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Presence", guide = guide_legend(nrow=2, title.position = "top", label.position = "right",order=3))
+feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Plasmid", guide = guide_legend(nrow=2, title.position = "top", label.position = "right",order=3))
 geno_vars <- colnames(KPC_plasmid_matrix %>% select_if(colSums(.)>0)) %>% subset(!.%in% c("study","major_STs","No carbapenemase"))
 genotype <- KPC_plasmid_matrix %>% subset(rownames(.) %in% tree_new_final$tip.label) %>% select(geno_vars) %>% drop_na()  %>% select_if(colSums(.) >0) %>% ComplexHeatmap::Heatmap()
 
 genotypes <- unique(df$carbapenemase) %>% sort
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
-genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=3, title.position = "top", label.position = "right",order=2))   
+genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(nrow=4, title.position = "top", label.position = "right",order=2)) 
 ```
 
 ## Phylogeny
-```{r,fig.width=9.75,fig.height=9.75}  
+```{r,fig.width=8.75,fig.height=8.75}  
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
-p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence Type (ST)"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale  + theme(legend.key = element_rect(colour = c('black')))
+p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence Type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale  + theme(legend.key = element_rect(colour = c('black')))
 p01 <- p0 + ggnewscale::new_scale_fill()
 p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.003,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale + theme( legend.key = element_rect(colour = c('black')))
 p11 <- p1 + ggnewscale::new_scale_fill()
@@ -92,5 +92,5 @@ figure
 ```
 
 ```{r}
-ggsave(filename = "./figures/s_figure_5_carbapenem_plasmids_phylogeny.png",plot=figure,width = 9.75,height =9.75 ,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_4_carbapenem_plasmids_phylogeny.png",plot=figure,width = 8.75, height = 8.75 ,dpi=900,bg = 'white')
 ```

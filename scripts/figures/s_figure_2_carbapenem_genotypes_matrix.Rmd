@@ -68,7 +68,7 @@ rownames(df_carb_omp) <- df_carb_omp$isolate_no
 
 # Get matrix 
   
-```{r,fig.width=8.5,height=10.625}
+```{r,fig.width=8.5,height=11}
 # Carb
 df_melt <- df  %>% select(Species_ST,carbapenemase)  %>%
   separate_rows(carbapenemase, sep = " & ") %>%  # split the genotypes
