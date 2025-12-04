@@ -128,7 +128,7 @@ if(comparitor == 'study'){
 ggplot(data=res_comps,aes(y=name,x=prop,fill=dataset)) + 
   geom_bar(stat='identity', position=position_dodge()) + 
   ylab("") + 
-  xlab("Percentage")  + 
+  xlab("Percentage (%)")  + 
   theme_bw_me + 
   theme(legend.position = "bottom",
         axis.text =   element_text(size=9, color="black"),
