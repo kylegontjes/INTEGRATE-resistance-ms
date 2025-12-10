@@ -1,0 +1,628 @@
+IQ-TREE version 3.0.1 for Linux x86 64-bit built Jul  9 2025
+Developed by Bui Quang Minh, Thomas Wong, Nhan Ly-Trong, Huaiyan Ren
+Contributed by Lam-Tung Nguyen, Dominik Schrempf, Chris Bielow,
+Olga Chernomor, Michael Woodhams, Diep Thi Hoang, Heiko Schmidt
+
+Host:    gl3065.arc-ts.umich.edu (AVX512, FMA3, 186 GB RAM)
+Command: iqtree3 -s /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_cognac_SNP_sites.fa -T AUTO -B 5000 -o INT_CRE_1243 -nstop 200 -pre /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_CRKP
+Seed:    360917 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Fri Dec  5 21:16:34 2025
+Kernel:  AVX+FMA - auto-detect threads (11 CPU cores detected)
+
+Reading alignment file /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_cognac_SNP_sites.fa ... Fasta format detected
+Reading fasta file: done in 0.818648 secs using 82.22% CPU
+Alignment most likely contains DNA/RNA sequences
+Constructing alignment: done in 0.664268 secs using 84.02% CPU
+Alignment has 507 sequences with 134774 columns, 65510 distinct patterns
+82497 parsimony-informative, 52277 singleton sites, 0 constant sites
+              Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 0.0512691 secs using 1098% CPU
+   1  INT_CRE_10      0.16%    passed     93.91%
+   2  INT_CRE_1009    0.12%    passed     99.72%
+   3  INT_CRE_1010    0.13%    passed     96.99%
+   4  INT_CRE_1012    0.14%    passed     89.87%
+   5  INT_CRE_1015    0.13%    passed     76.13%
+   6  INT_CRE_1018    0.06%    passed     99.49%
+   7  INT_CRE_1021    0.10%    passed     97.16%
+   8  INT_CRE_1024    0.12%    passed     96.86%
+   9  INT_CRE_1025    0.13%    passed     98.43%
+  10  INT_CRE_103     0.10%    passed     92.97%
+  11  INT_CRE_1030    0.08%    passed     89.63%
+  12  INT_CRE_1032    0.13%    passed     96.98%
+  13  INT_CRE_1034    0.10%    passed     97.33%
+  14  INT_CRE_1035    1.14%    passed     96.11%
+  15  INT_CRE_1037    0.19%    passed     99.50%
+  16  INT_CRE_1039    0.06%    passed     90.94%
+  17  INT_CRE_104     0.23%    passed     98.91%
+  18  INT_CRE_1040    0.10%    passed     97.21%
+  19  INT_CRE_1041    0.45%    passed     97.41%
+  20  INT_CRE_1042    0.10%    passed     93.08%
+  21  INT_CRE_1046    0.10%    passed     97.11%
+  22  INT_CRE_1048    0.22%    passed     99.56%
+  23  INT_CRE_1063    0.40%    passed     97.00%
+  24  INT_CRE_1065    0.16%    passed     92.91%
+  25  INT_CRE_1066    0.13%    passed     90.31%
+  26  INT_CRE_1068    0.10%    passed     96.72%
+  27  INT_CRE_1069    0.09%    passed     97.12%
+  28  INT_CRE_107     0.47%    passed     75.36%
+  29  INT_CRE_1081    0.07%    passed     99.30%
+  30  INT_CRE_1082    0.09%    passed     96.57%
+  31  INT_CRE_1083    0.31%    passed     97.22%
+  32  INT_CRE_1089    0.10%    passed     97.47%
+  33  INT_CRE_1090    0.13%    passed     99.24%
+  34  INT_CRE_1091    0.39%    passed     63.89%
+  35  INT_CRE_1092    0.09%    passed     99.44%
+  36  INT_CRE_1093    0.16%    passed     99.15%
+  37  INT_CRE_1094    0.06%    passed     99.80%
+  38  INT_CRE_1095    0.31%    passed     81.31%
+  39  INT_CRE_1096    0.10%    passed     97.18%
+  40  INT_CRE_1099    0.17%    passed     84.96%
+  41  INT_CRE_11      0.11%    passed     96.33%
+  42  INT_CRE_1101    0.06%    passed     96.28%
+  43  INT_CRE_1102    0.08%    passed     99.56%
+  44  INT_CRE_1103    0.07%    passed     98.88%
+  45  INT_CRE_1104    0.31%    passed     88.18%
+  46  INT_CRE_1109    0.10%    passed     97.10%
+  47  INT_CRE_1111    0.06%    passed     88.92%
+  48  INT_CRE_1115    0.08%    passed     98.99%
+  49  INT_CRE_1118    0.13%    passed     98.48%
+  50  INT_CRE_112     0.07%    passed     99.13%
+  51  INT_CRE_1121    0.09%    passed     96.71%
+  52  INT_CRE_1124    0.07%    passed     99.33%
+  53  INT_CRE_1127    0.06%    passed     96.36%
+  54  INT_CRE_1129    0.10%    passed     97.19%
+  55  INT_CRE_1130    0.06%    passed     99.44%
+  56  INT_CRE_1134    0.10%    passed     96.96%
+  57  INT_CRE_114     0.10%    passed     92.57%
+  58  INT_CRE_115     0.07%    passed     98.90%
+  59  INT_CRE_1151    0.15%    passed     78.83%
+  60  INT_CRE_1152    0.22%    passed     99.05%
+  61  INT_CRE_1157    0.09%    passed     86.25%
+  62  INT_CRE_1158    0.10%    passed     97.23%
+  63  INT_CRE_116     0.15%    passed     94.42%
+  64  INT_CRE_1161    0.06%    passed     92.31%
+  65  INT_CRE_1162    0.05%    passed     78.18%
+  66  INT_CRE_1163    0.16%    passed     88.67%
+  67  INT_CRE_1164    0.53%    passed     98.59%
+  68  INT_CRE_117     0.10%    passed     92.91%
+  69  INT_CRE_1173    0.07%    passed     96.58%
+  70  INT_CRE_1176    0.29%    passed     97.90%
+  71  INT_CRE_1178    0.10%    passed     97.12%
+  72  INT_CRE_119     0.18%    passed     99.21%
+  73  INT_CRE_1190    0.06%    passed     88.81%
+  74  INT_CRE_1191    0.38%    passed     64.44%
+  75  INT_CRE_1192    0.10%    passed     97.15%
+  76  INT_CRE_1194    0.13%    passed     96.95%
+  77  INT_CRE_12      0.10%    passed     93.27%
+  78  INT_CRE_1202    0.15%    passed     94.14%
+  79  INT_CRE_1206    0.10%    passed     96.89%
+  80  INT_CRE_1210    0.17%    passed     88.42%
+  81  INT_CRE_1214    0.19%    passed     99.67%
+  82  INT_CRE_1216    0.41%    passed     17.40%
+  83  INT_CRE_1223    0.15%    passed     91.71%
+  84  INT_CRE_1230    0.07%    passed     98.83%
+  85  INT_CRE_124     0.11%    passed     99.10%
+  86  INT_CRE_1241    0.06%    passed     89.54%
+  87  INT_CRE_1243    1.06%    passed     91.57%
+  88  INT_CRE_1253    0.14%    passed     97.11%
+  89  INT_CRE_1258    0.06%    passed     96.41%
+  90  INT_CRE_1264    0.10%    passed     96.72%
+  91  INT_CRE_1271    0.09%    passed     99.20%
+  92  INT_CRE_1274    0.54%    passed     91.46%
+  93  INT_CRE_1276    0.17%    passed     98.59%
+  94  INT_CRE_128     0.07%    passed     98.97%
+  95  INT_CRE_1281    0.10%    passed     96.26%
+  96  INT_CRE_1283    0.14%    passed     97.40%
+  97  INT_CRE_129     0.09%    passed     93.23%
+  98  INT_CRE_1291    0.34%    passed     97.02%
+  99  INT_CRE_13      0.09%    passed     99.15%
+ 100  INT_CRE_130     0.10%    passed     96.50%
+ 101  INT_CRE_1305    0.10%    passed     96.79%
+ 102  INT_CRE_1306    0.22%    passed     99.52%
+ 103  INT_CRE_1307    0.11%    passed     98.80%
+ 104  INT_CRE_1308    0.10%    passed     97.18%
+ 105  INT_CRE_131     0.05%    passed     76.85%
+ 106  INT_CRE_1322    0.05%    passed     78.23%
+ 107  INT_CRE_1323    0.37%    passed     94.75%
+ 108  INT_CRE_1330    0.10%    passed     97.24%
+ 109  INT_CRE_1341    0.54%    passed     90.41%
+ 110  INT_CRE_1344    0.06%    passed     89.23%
+ 111  INT_CRE_1345    0.06%    passed     88.99%
+ 112  INT_CRE_1346    0.10%    passed     97.23%
+ 113  INT_CRE_1347    0.51%    passed     91.30%
+ 114  INT_CRE_1349    0.09%    passed     86.84%
+ 115  INT_CRE_1350    0.07%    passed     99.10%
+ 116  INT_CRE_1351    0.30%    passed     24.93%
+ 117  INT_CRE_1354    0.21%    passed     97.73%
+ 118  INT_CRE_1355    0.07%    passed     98.93%
+ 119  INT_CRE_1359    0.37%    passed     94.87%
+ 120  INT_CRE_136     0.23%    passed     94.24%
+ 121  INT_CRE_1361    0.27%    passed     99.17%
+ 122  INT_CRE_1363    0.10%    passed     97.16%
+ 123  INT_CRE_1367    0.80%    passed     66.68%
+ 124  INT_CRE_1368    0.10%    passed     96.54%
+ 125  INT_CRE_1370    0.25%    passed     99.49%
+ 126  INT_CRE_1375    0.06%    passed     99.56%
+ 127  INT_CRE_1377    0.24%    passed     96.81%
+ 128  INT_CRE_138     0.05%    passed     77.25%
+ 129  INT_CRE_1382    0.13%    passed     96.14%
+ 130  INT_CRE_1383    0.07%    passed     99.87%
+ 131  INT_CRE_1389    0.37%    passed     65.23%
+ 132  INT_CRE_1390    1.12%    passed     71.79%
+ 133  INT_CRE_1393    0.61%    passed     90.83%
+ 134  INT_CRE_1394    0.80%    passed     96.62%
+ 135  INT_CRE_1396    0.63%    passed     34.55%
+ 136  INT_CRE_1399    0.25%    passed     98.31%
+ 137  INT_CRE_140     0.10%    passed     97.08%
+ 138  INT_CRE_1414    0.72%    passed     67.11%
+ 139  INT_CRE_1416    0.06%    passed     99.80%
+ 140  INT_CRE_1418    0.52%    passed     86.76%
+ 141  INT_CRE_1419    0.07%    passed     95.57%
+ 142  INT_CRE_1424    0.15%    passed     93.01%
+ 143  INT_CRE_1428    0.17%    passed     99.33%
+ 144  INT_CRE_1429    0.12%    passed     98.87%
+ 145  INT_CRE_143     0.11%    passed     98.91%
+ 146  INT_CRE_1434    0.15%    passed     97.74%
+ 147  INT_CRE_1439    0.24%    passed     98.12%
+ 148  INT_CRE_1446    0.09%    passed     99.26%
+ 149  INT_CRE_1447    0.25%    passed     99.34%
+ 150  INT_CRE_145     0.14%    passed     98.66%
+ 151  INT_CRE_1451    0.20%    passed     89.76%
+ 152  INT_CRE_1455    0.17%    passed     97.70%
+ 153  INT_CRE_146     0.10%    passed     96.65%
+ 154  INT_CRE_1460    0.09%    passed     96.53%
+ 155  INT_CRE_1463    0.09%    passed     99.07%
+ 156  INT_CRE_1464    0.10%    passed     96.70%
+ 157  INT_CRE_1465    0.35%    passed     95.18%
+ 158  INT_CRE_1466    0.12%    passed     90.59%
+ 159  INT_CRE_147     0.11%    passed     92.77%
+ 160  INT_CRE_1475    0.14%    passed     91.42%
+ 161  INT_CRE_1476    0.23%    passed     95.87%
+ 162  INT_CRE_148     0.32%    passed     98.40%
+ 163  INT_CRE_1480    0.08%    passed     99.23%
+ 164  INT_CRE_1486    0.14%    passed     98.69%
+ 165  INT_CRE_1489    0.50%    passed     73.77%
+ 166  INT_CRE_149     0.25%    passed     99.85%
+ 167  INT_CRE_1490    0.09%    passed     99.04%
+ 168  INT_CRE_1492    0.34%    passed     81.22%
+ 169  INT_CRE_1495    0.12%    passed     99.21%
+ 170  INT_CRE_1498    0.09%    passed     98.97%
+ 171  INT_CRE_1499    0.31%    passed     98.09%
+ 172  INT_CRE_1502    0.44%    passed     95.49%
+ 173  INT_CRE_151     0.06%    passed     90.51%
+ 174  INT_CRE_1513    0.16%    passed     96.64%
+ 175  INT_CRE_152     0.06%    passed     92.14%
+ 176  INT_CRE_153     0.07%    passed     98.84%
+ 177  INT_CRE_154     0.09%    passed     98.83%
+ 178  INT_CRE_155     0.26%    passed     99.52%
+ 179  INT_CRE_156     0.10%    passed     97.02%
+ 180  INT_CRE_157     0.10%    passed     96.97%
+ 181  INT_CRE_1578    1.08%    passed     96.35%
+ 182  INT_CRE_158     0.10%    passed     96.98%
+ 183  INT_CRE_1580    0.07%    passed     99.26%
+ 184  INT_CRE_1582    0.10%    passed     96.83%
+ 185  INT_CRE_1583    0.06%    passed     99.57%
+ 186  INT_CRE_159     0.10%    passed     92.13%
+ 187  INT_CRE_1591    0.10%    passed     98.75%
+ 188  INT_CRE_161     0.10%    passed     97.08%
+ 189  INT_CRE_165     0.09%    passed     96.66%
+ 190  INT_CRE_168     0.17%    passed     99.48%
+ 191  INT_CRE_17      0.10%    passed     91.80%
+ 192  INT_CRE_172     1.08%    passed     93.06%
+ 193  INT_CRE_175     0.11%    passed     93.00%
+ 194  INT_CRE_176     0.10%    passed     92.07%
+ 195  INT_CRE_177     0.14%    passed     96.58%
+ 196  INT_CRE_178     0.09%    passed     96.54%
+ 197  INT_CRE_179     0.07%    passed     98.99%
+ 198  INT_CRE_180     0.06%    passed     99.77%
+ 199  INT_CRE_181     0.11%    passed     99.88%
+ 200  INT_CRE_188     0.93%    passed     91.60%
+ 201  INT_CRE_190     0.18%    passed     99.61%
+ 202  INT_CRE_192     0.17%    passed     95.91%
+ 203  INT_CRE_193     0.12%    passed     99.51%
+ 204  INT_CRE_195     0.18%    passed     99.24%
+ 205  INT_CRE_196     0.06%    passed     99.46%
+ 206  INT_CRE_197     0.27%    passed     87.89%
+ 207  INT_CRE_199     0.11%    passed     99.17%
+ 208  INT_CRE_2       0.10%    passed     92.88%
+ 209  INT_CRE_20      0.10%    passed     98.76%
+ 210  INT_CRE_200     0.07%    passed     98.85%
+ 211  INT_CRE_201     0.10%    passed     91.08%
+ 212  INT_CRE_202     0.06%    passed     99.72%
+ 213  INT_CRE_203     0.10%    passed     96.56%
+ 214  INT_CRE_204     0.07%    passed     99.10%
+ 215  INT_CRE_205     0.19%    passed     96.54%
+ 216  INT_CRE_209     0.15%    passed     99.04%
+ 217  INT_CRE_21      0.08%    passed     98.91%
+ 218  INT_CRE_213     0.09%    passed     96.43%
+ 219  INT_CRE_216     0.11%    passed     99.24%
+ 220  INT_CRE_217     0.10%    passed     99.40%
+ 221  INT_CRE_218     0.09%    passed     96.96%
+ 222  INT_CRE_219     0.07%    passed     99.11%
+ 223  INT_CRE_226     0.10%    passed     99.64%
+ 224  INT_CRE_227     0.07%    passed     98.98%
+ 225  INT_CRE_228     0.07%    passed     98.91%
+ 226  INT_CRE_231     0.10%    passed     97.17%
+ 227  INT_CRE_237     0.10%    passed     99.01%
+ 228  INT_CRE_238     0.61%    passed     93.23%
+ 229  INT_CRE_239     0.09%    passed     96.74%
+ 230  INT_CRE_25      0.08%    passed     99.78%
+ 231  INT_CRE_252     0.10%    passed     96.81%
+ 232  INT_CRE_259     0.07%    passed     90.39%
+ 233  INT_CRE_26      0.09%    passed     99.27%
+ 234  INT_CRE_262     0.34%    passed     86.89%
+ 235  INT_CRE_263     0.08%    passed     98.87%
+ 236  INT_CRE_264     0.07%    passed     98.96%
+ 237  INT_CRE_266     0.09%    passed     99.06%
+ 238  INT_CRE_268     0.09%    passed     98.99%
+ 239  INT_CRE_27      0.06%    passed     99.83%
+ 240  INT_CRE_273     0.13%    passed     96.97%
+ 241  INT_CRE_275     0.09%    passed     96.86%
+ 242  INT_CRE_276     0.07%    passed     98.97%
+ 243  INT_CRE_278     0.26%    passed     99.77%
+ 244  INT_CRE_280     0.52%    passed     91.85%
+ 245  INT_CRE_283     0.07%    passed     98.88%
+ 246  INT_CRE_286     0.10%    passed     95.82%
+ 247  INT_CRE_289     0.06%    passed     90.56%
+ 248  INT_CRE_29      0.10%    passed     96.75%
+ 249  INT_CRE_294     0.04%    passed     89.94%
+ 250  INT_CRE_295     0.07%    passed     99.05%
+ 251  INT_CRE_296     0.12%    passed     99.33%
+ 252  INT_CRE_297     0.10%    passed     99.37%
+ 253  INT_CRE_298     0.06%    passed     92.06%
+ 254  INT_CRE_3       0.15%    passed     92.67%
+ 255  INT_CRE_302     0.06%    passed     99.71%
+ 256  INT_CRE_303     0.29%    passed     89.02%
+ 257  INT_CRE_304     0.10%    passed     91.59%
+ 258  INT_CRE_305     0.06%    passed     78.81%
+ 259  INT_CRE_306     0.08%    passed     99.54%
+ 260  INT_CRE_31      0.16%    passed     98.32%
+ 261  INT_CRE_314     0.07%    passed     99.18%
+ 262  INT_CRE_316     0.08%    passed     99.11%
+ 263  INT_CRE_318     0.06%    passed     90.42%
+ 264  INT_CRE_32      0.10%    passed     99.66%
+ 265  INT_CRE_325     0.48%    passed     44.61%
+ 266  INT_CRE_326     0.06%    passed     89.78%
+ 267  INT_CRE_328     0.18%    passed     99.83%
+ 268  INT_CRE_33      0.27%    passed     99.00%
+ 269  INT_CRE_334     0.13%    passed     96.61%
+ 270  INT_CRE_336     0.06%    passed     99.75%
+ 271  INT_CRE_340     0.15%    passed     98.75%
+ 272  INT_CRE_341     0.24%    passed     99.84%
+ 273  INT_CRE_342     0.13%    passed     99.51%
+ 274  INT_CRE_343     0.12%    passed     96.57%
+ 275  INT_CRE_345     0.06%    passed     99.54%
+ 276  INT_CRE_35      1.41%    passed     99.03%
+ 277  INT_CRE_351     0.15%    passed     94.37%
+ 278  INT_CRE_352     0.11%    passed     97.14%
+ 279  INT_CRE_353     0.06%    passed     90.90%
+ 280  INT_CRE_354     0.48%    passed     99.55%
+ 281  INT_CRE_356     0.09%    passed     98.86%
+ 282  INT_CRE_358     0.09%    passed     96.76%
+ 283  INT_CRE_359     0.07%    passed     99.06%
+ 284  INT_CRE_36      0.15%    passed     64.75%
+ 285  INT_CRE_360     0.11%    passed     96.89%
+ 286  INT_CRE_363     0.52%    passed     99.02%
+ 287  INT_CRE_364     0.11%    passed     98.86%
+ 288  INT_CRE_368     0.10%    passed     91.34%
+ 289  INT_CRE_369     0.06%    passed     99.84%
+ 290  INT_CRE_378     0.15%    passed     94.17%
+ 291  INT_CRE_38      0.24%    passed     98.90%
+ 292  INT_CRE_380     0.11%    passed     99.45%
+ 293  INT_CRE_382     0.14%    passed     97.08%
+ 294  INT_CRE_383     0.09%    passed     95.85%
+ 295  INT_CRE_387     0.13%    passed     91.53%
+ 296  INT_CRE_39      0.09%    passed     96.64%
+ 297  INT_CRE_4       0.09%    passed     99.29%
+ 298  INT_CRE_40      0.06%    passed     99.55%
+ 299  INT_CRE_407     0.15%    passed     90.64%
+ 300  INT_CRE_408     0.10%    passed     93.29%
+ 301  INT_CRE_41      0.10%    passed     99.67%
+ 302  INT_CRE_410     0.27%    passed     98.87%
+ 303  INT_CRE_413     0.24%    passed     99.84%
+ 304  INT_CRE_415     0.10%    passed     96.93%
+ 305  INT_CRE_417     0.17%    passed     93.19%
+ 306  INT_CRE_42      0.10%    passed     99.37%
+ 307  INT_CRE_420     0.07%    passed     99.04%
+ 308  INT_CRE_421     0.04%    passed     90.71%
+ 309  INT_CRE_429     0.07%    passed     98.91%
+ 310  INT_CRE_43      0.06%    passed     99.55%
+ 311  INT_CRE_431     0.75%    passed     99.70%
+ 312  INT_CRE_433     0.13%    passed     96.67%
+ 313  INT_CRE_435     0.07%    passed     98.87%
+ 314  INT_CRE_436     0.10%    passed     98.94%
+ 315  INT_CRE_438     0.06%    passed     91.59%
+ 316  INT_CRE_439     0.08%    passed     98.92%
+ 317  INT_CRE_441     0.10%    passed     97.12%
+ 318  INT_CRE_442     0.14%    passed     89.83%
+ 319  INT_CRE_443     0.10%    passed     92.94%
+ 320  INT_CRE_449     0.04%    passed     90.20%
+ 321  INT_CRE_457     0.05%    passed     90.24%
+ 322  INT_CRE_462     0.10%    passed     91.46%
+ 323  INT_CRE_464     0.08%    passed     99.01%
+ 324  INT_CRE_469     0.40%    passed     98.52%
+ 325  INT_CRE_470     0.10%    passed     96.78%
+ 326  INT_CRE_471     0.14%    passed     89.38%
+ 327  INT_CRE_472     0.06%    passed     91.70%
+ 328  INT_CRE_474     0.40%    passed     98.50%
+ 329  INT_CRE_476     0.12%    passed     99.85%
+ 330  INT_CRE_480     0.10%    passed     98.92%
+ 331  INT_CRE_481     0.20%    passed     98.49%
+ 332  INT_CRE_482     0.06%    passed     99.71%
+ 333  INT_CRE_484     0.09%    passed     96.65%
+ 334  INT_CRE_485     0.12%    passed     99.21%
+ 335  INT_CRE_492     0.10%    passed     99.31%
+ 336  INT_CRE_493     0.07%    passed     98.97%
+ 337  INT_CRE_497     0.17%    passed     98.99%
+ 338  INT_CRE_498     0.06%    passed     99.53%
+ 339  INT_CRE_499     0.11%    passed     99.50%
+ 340  INT_CRE_5       0.07%    passed     98.96%
+ 341  INT_CRE_507     0.12%    passed     95.93%
+ 342  INT_CRE_514     0.20%    passed     99.66%
+ 343  INT_CRE_516     0.10%    passed     96.98%
+ 344  INT_CRE_517     0.11%    passed     99.71%
+ 345  INT_CRE_519     0.06%    passed     90.37%
+ 346  INT_CRE_521     0.87%    passed     91.90%
+ 347  INT_CRE_524     0.06%    passed     99.75%
+ 348  INT_CRE_528     0.06%    passed     99.53%
+ 349  INT_CRE_532     0.68%    passed     98.36%
+ 350  INT_CRE_535     0.14%    passed     97.15%
+ 351  INT_CRE_544     0.08%    passed     98.89%
+ 352  INT_CRE_546     0.10%    passed     96.65%
+ 353  INT_CRE_547     0.11%    passed     98.42%
+ 354  INT_CRE_548     0.13%    passed     96.78%
+ 355  INT_CRE_552     0.06%    passed     99.51%
+ 356  INT_CRE_553     0.64%    passed     97.39%
+ 357  INT_CRE_555     0.12%    passed     96.47%
+ 358  INT_CRE_557     0.17%    passed     95.95%
+ 359  INT_CRE_558     0.10%    passed     96.72%
+ 360  INT_CRE_56      0.06%    passed     91.88%
+ 361  INT_CRE_562     0.10%    passed     96.35%
+ 362  INT_CRE_571     0.10%    passed     96.51%
+ 363  INT_CRE_572     0.14%    passed     90.69%
+ 364  INT_CRE_574     0.12%    passed     96.92%
+ 365  INT_CRE_576     0.15%    passed     97.02%
+ 366  INT_CRE_577     0.13%    passed     98.97%
+ 367  INT_CRE_58      0.11%    passed     91.77%
+ 368  INT_CRE_584     0.10%    passed     97.03%
+ 369  INT_CRE_587     0.10%    passed     96.73%
+ 370  INT_CRE_589     0.13%    passed     99.74%
+ 371  INT_CRE_59      0.11%    passed     96.36%
+ 372  INT_CRE_594     0.06%    passed     99.55%
+ 373  INT_CRE_598     0.34%    passed     88.45%
+ 374  INT_CRE_6       0.08%    passed     76.17%
+ 375  INT_CRE_60      0.11%    passed     99.25%
+ 376  INT_CRE_605     1.19%    passed     27.51%
+ 377  INT_CRE_608     0.12%    passed     99.03%
+ 378  INT_CRE_609     0.68%    passed     52.36%
+ 379  INT_CRE_615     0.12%    passed     96.21%
+ 380  INT_CRE_617     0.16%    passed     96.23%
+ 381  INT_CRE_618     0.14%    passed     99.12%
+ 382  INT_CRE_619     0.11%    passed     99.19%
+ 383  INT_CRE_62      0.10%    passed     96.86%
+ 384  INT_CRE_622     0.10%    passed     96.79%
+ 385  INT_CRE_625     0.53%    passed     66.06%
+ 386  INT_CRE_627     0.10%    passed     96.37%
+ 387  INT_CRE_628     0.12%    passed     99.46%
+ 388  INT_CRE_633     0.11%    passed     91.57%
+ 389  INT_CRE_634     0.07%    passed     88.83%
+ 390  INT_CRE_638     0.10%    passed     91.76%
+ 391  INT_CRE_639     0.14%    passed     99.55%
+ 392  INT_CRE_641     0.11%    passed     99.53%
+ 393  INT_CRE_644     0.06%    passed     91.62%
+ 394  INT_CRE_645     0.10%    passed     96.27%
+ 395  INT_CRE_646     0.14%    passed     98.81%
+ 396  INT_CRE_647     0.06%    passed     76.62%
+ 397  INT_CRE_648     0.15%    passed     91.50%
+ 398  INT_CRE_651     0.12%    passed     99.15%
+ 399  INT_CRE_654     0.10%    passed     97.16%
+ 400  INT_CRE_655     0.06%    passed     99.51%
+ 401  INT_CRE_657     0.06%    passed     88.76%
+ 402  INT_CRE_658     0.09%    passed     97.38%
+ 403  INT_CRE_663     0.18%    passed     97.80%
+ 404  INT_CRE_666     0.12%    passed     91.68%
+ 405  INT_CRE_667     3.40%    passed     99.70%
+ 406  INT_CRE_668     0.38%    passed     96.86%
+ 407  INT_CRE_670     0.06%    passed     99.54%
+ 408  INT_CRE_679     0.05%    passed     89.88%
+ 409  INT_CRE_681     0.11%    passed     96.20%
+ 410  INT_CRE_690     0.09%    passed     96.47%
+ 411  INT_CRE_693     0.10%    passed     96.66%
+ 412  INT_CRE_698     0.06%    passed     99.51%
+ 413  INT_CRE_699     0.14%    passed     99.48%
+ 414  INT_CRE_700     0.11%    passed     99.81%
+ 415  INT_CRE_703     0.06%    passed     89.57%
+ 416  INT_CRE_705     0.10%    passed     96.85%
+ 417  INT_CRE_707     0.10%    passed     96.83%
+ 418  INT_CRE_710     1.37%    passed     63.97%
+ 419  INT_CRE_711     0.10%    passed     96.64%
+ 420  INT_CRE_712     0.12%    passed     99.23%
+ 421  INT_CRE_713     0.10%    passed     96.69%
+ 422  INT_CRE_716     0.16%    passed     99.89%
+ 423  INT_CRE_717     0.10%    passed     96.18%
+ 424  INT_CRE_728     0.10%    passed     96.75%
+ 425  INT_CRE_732     0.06%    passed     92.65%
+ 426  INT_CRE_733     1.36%    passed     89.94%
+ 427  INT_CRE_734     0.09%    passed     97.20%
+ 428  INT_CRE_737     0.10%    passed     96.85%
+ 429  INT_CRE_739     0.09%    passed     96.61%
+ 430  INT_CRE_743     0.09%    passed     97.25%
+ 431  INT_CRE_747     0.06%    passed     78.81%
+ 432  INT_CRE_752     0.36%    passed     95.50%
+ 433  INT_CRE_761     0.19%    passed     99.68%
+ 434  INT_CRE_764     0.10%    passed     97.14%
+ 435  INT_CRE_765     0.09%    passed     99.05%
+ 436  INT_CRE_766     0.06%    passed     99.54%
+ 437  INT_CRE_768     0.10%    passed     96.71%
+ 438  INT_CRE_769     0.15%    passed     98.66%
+ 439  INT_CRE_775     0.10%    passed     96.49%
+ 440  INT_CRE_778     0.34%    passed     87.49%
+ 441  INT_CRE_780     0.13%    passed     96.31%
+ 442  INT_CRE_785     0.08%    passed     99.25%
+ 443  INT_CRE_787     0.43%    passed     99.50%
+ 444  INT_CRE_79      0.16%    passed     98.25%
+ 445  INT_CRE_792     0.10%    passed     96.65%
+ 446  INT_CRE_796     0.08%    passed     99.52%
+ 447  INT_CRE_8       0.21%    passed     99.94%
+ 448  INT_CRE_804     0.06%    passed     90.44%
+ 449  INT_CRE_806     0.06%    passed     99.72%
+ 450  INT_CRE_812     0.51%    passed     99.61%
+ 451  INT_CRE_824     0.12%    passed     91.68%
+ 452  INT_CRE_837     0.09%    passed     79.12%
+ 453  INT_CRE_845     0.70%    passed     92.91%
+ 454  INT_CRE_848     0.07%    passed     92.97%
+ 455  INT_CRE_849     0.13%    passed     89.36%
+ 456  INT_CRE_853     0.16%    passed     84.81%
+ 457  INT_CRE_854     0.09%    passed     96.42%
+ 458  INT_CRE_859     0.08%    passed     99.75%
+ 459  INT_CRE_863     0.10%    passed     99.67%
+ 460  INT_CRE_868     0.10%    passed     97.17%
+ 461  INT_CRE_871     0.06%    passed     96.35%
+ 462  INT_CRE_881     0.08%    passed     99.14%
+ 463  INT_CRE_882     0.19%    passed     88.68%
+ 464  INT_CRE_888     0.16%    passed     77.79%
+ 465  INT_CRE_893     0.76%    passed     95.64%
+ 466  INT_CRE_895     0.06%    passed     99.51%
+ 467  INT_CRE_9       0.13%    passed     99.39%
+ 468  INT_CRE_901     0.21%    passed     89.51%
+ 469  INT_CRE_907     0.13%    passed     97.72%
+ 470  INT_CRE_911     0.05%    passed     77.44%
+ 471  INT_CRE_912     0.19%    passed     99.65%
+ 472  INT_CRE_913     0.06%    passed     78.24%
+ 473  INT_CRE_914     0.06%    passed     99.57%
+ 474  INT_CRE_915     0.08%    passed     99.28%
+ 475  INT_CRE_916     0.06%    passed     99.54%
+ 476  INT_CRE_917     0.10%    passed     92.94%
+ 477  INT_CRE_922     0.07%    passed     98.96%
+ 478  INT_CRE_923     0.06%    passed     99.53%
+ 479  INT_CRE_924     0.15%    passed     97.77%
+ 480  INT_CRE_926     0.07%    passed     99.83%
+ 481  INT_CRE_931     0.10%    passed     97.11%
+ 482  INT_CRE_937     0.16%    passed     98.88%
+ 483  INT_CRE_941     0.06%    passed     78.39%
+ 484  INT_CRE_943     0.06%    passed     99.51%
+ 485  INT_CRE_946     0.32%    passed     98.26%
+ 486  INT_CRE_948     0.13%    passed     98.50%
+ 487  INT_CRE_950     0.05%    passed     77.27%
+ 488  INT_CRE_951     0.26%    passed     91.38%
+ 489  INT_CRE_952     0.06%    passed     96.44%
+ 490  INT_CRE_954     0.09%    passed     96.68%
+ 491  INT_CRE_957     0.08%    passed     98.90%
+ 492  INT_CRE_960     0.10%    passed     99.65%
+ 493  INT_CRE_962     0.09%    passed     96.77%
+ 494  INT_CRE_965     1.38%    passed     90.84%
+ 495  INT_CRE_966     0.43%    passed     98.33%
+ 496  INT_CRE_969     0.07%    passed     99.14%
+ 497  INT_CRE_972     0.31%    passed     99.92%
+ 498  INT_CRE_974     0.15%    passed     99.19%
+ 499  INT_CRE_982     0.08%    passed     99.02%
+ 500  INT_CRE_983     0.15%    passed     99.09%
+ 501  INT_CRE_984     0.15%    passed     99.15%
+ 502  INT_CRE_986     0.12%    passed     98.62%
+ 503  INT_CRE_988     0.14%    passed     99.36%
+ 504  INT_CRE_989     0.94%    passed     98.17%
+ 505  INT_CRE_99      1.09%    passed     99.01%
+ 506  INT_CRE_991     0.08%    passed     99.22%
+ 507  INT_CRE_992     0.10%    passed     96.55%
+****  TOTAL           0.18%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+NOTE: minimal branch length is reduced to 0.000000741983 for long alignment
+NOTE: INT_CRE_524 is identical to INT_CRE_336 but kept for subsequent analysis
+NOTE: INT_CRE_43 is identical to INT_CRE_40 but kept for subsequent analysis
+NOTE: INT_CRE_528 is identical to INT_CRE_498 but kept for subsequent analysis
+NOTE: INT_CRE_737 is identical to INT_CRE_705 but kept for subsequent analysis
+Checking for duplicate sequences: done in 0.107448 secs using 594.7% CPU
+
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 15.033 seconds
+Measuring multi-threading efficiency up to 11 CPU cores
+2 trees examined
+Threads: 1 / Time: 38.982 sec / Speedup: 1.000 / Efficiency: 100% / LogL: -16031241
+Threads: 2 / Time: 18.380 sec / Speedup: 2.121 / Efficiency: 106% / LogL: -16031241
+Threads: 3 / Time: 12.982 sec / Speedup: 3.003 / Efficiency: 100% / LogL: -16031241
+Threads: 4 / Time: 11.181 sec / Speedup: 3.487 / Efficiency: 87% / LogL: -16031241
+Threads: 5 / Time: 8.536 sec / Speedup: 4.567 / Efficiency: 91% / LogL: -16031241
+Threads: 6 / Time: 6.676 sec / Speedup: 5.839 / Efficiency: 97% / LogL: -16031241
+Threads: 7 / Time: 5.721 sec / Speedup: 6.814 / Efficiency: 97% / LogL: -16031241
+Threads: 8 / Time: 5.278 sec / Speedup: 7.386 / Efficiency: 92% / LogL: -16031241
+Threads: 9 / Time: 5.680 sec / Speedup: 6.863 / Efficiency: 76% / LogL: -16031241
+Threads: 10 / Time: 5.263 sec / Speedup: 7.407 / Efficiency: 74% / LogL: -16031241
+Threads: 11 / Time: 5.114 sec / Speedup: 7.622 / Efficiency: 69% / LogL: -16031241
+Determining AUTO threadcount: done in 126.948 secs using 350.8% CPU
+BEST NUMBER OF THREADS: 8
+
+Perform fast likelihood tree search using GTR+ASC+G model...
+Estimate model parameters (epsilon = 5.000)
+Perform nearest neighbor interchange...
+Optimizing NNI: done in 43.6794 secs using 739.6% CPU
+Estimate model parameters (epsilon = 1.000)
+1. Initial log-likelihood: -1779980.227
+Optimal log-likelihood: -1779979.948
+Rate parameters:  A-C: 1.03191  A-G: 6.02771  A-T: 1.64016  C-G: 0.44864  C-T: 5.87492  G-T: 1.00000
+Base frequencies:  A: 0.132  C: 0.386  G: 0.315  T: 0.167
+Gamma shape alpha: 0.437
+Parameters optimization took 1 rounds (9.368 sec)
+Time for fast ML tree search: 262.478 seconds
+
+NOTE: ModelFinder requires 12020 MB RAM!
+ModelFinder will test up to 968 DNA models (sample size: 134774 epsilon: 0.100) ...
+ No. Model         -LnL         df  AIC          AICc         BIC
+  1  JC            2010722.486  1011 4023466.973  4023482.270  4033386.252
+  2  JC+ASC        2002041.156  1011 4006104.312  4006119.610  4016023.592
+  3  JC+G4         1961816.430  1012 3925656.861  3925672.189  3935585.952
+  4  JC+ASC+G4     1922961.445  1012 3847946.890  3847962.218  3857875.981
+  5  JC+R2         1940905.934  1013 3883837.868  3883853.227  3893776.770
++R3 reinitialized from +R2 with factor 0.500
++R3 reinitialized from +R2 with factor 0.250
++R3 reinitialized from +R2 with factor 0.125
++R3 reinitialized from +R2 with factor 0.062
++R3 reinitialized from +R2 with factor 0.031
+WARNING: Log-likelihood -1.94092e+06 of JC+R3 worse than JC+R2 -1.94091e+06
+  6  JC+R3         1940920.226  1015 3883870.452  3883885.872  3893828.977
+ 14  JC+ASC+R2     1903045.088  1013 3808116.177  3808131.535  3818055.079
+ 15  JC+ASC+R3     1899374.202  1015 3800778.404  3800793.823  3810736.929
+ 16  JC+ASC+R4     1899372.738  1017 3800779.477  3800794.957  3810757.624
+ 26  JC+ASC+G4     1922961.445  1012 3847946.890  3847962.218  3857875.981
+ 27  JC+R2         1940905.934  1013 3883837.868  3883853.227  3893776.770
+ 36  JC+ASC+R2     1903045.088  1013 3808116.176  3808131.535  3818055.078
+ 37  JC+ASC+R3     1899374.202  1015 3800778.404  3800793.823  3810736.929
+ 38  JC+ASC+R4     1899372.738  1017 3800779.476  3800794.957  3810757.624
+ 48  F81+ASC+G4    1922960.134  1012 3847944.269  3847959.597  3857873.360
+ 49  F81+R2        1940915.186  1013 3883856.372  3883871.730  3893795.274
+ 58  F81+ASC+R2    1903038.514  1013 3808103.027  3808118.386  3818041.929
+ 59  F81+ASC+R3    1899421.153  1015 3800872.306  3800887.726  3810830.831
++R4 reinitialized from +R3 with factor 0.500
++R4 reinitialized from +R3 with factor 0.250
++R4 reinitialized from +R3 with factor 0.125
++R4 reinitialized from +R3 with factor 0.062
++R4 reinitialized from +R3 with factor 0.031
+WARNING: Log-likelihood -1.89942e+06 of F81+ASC+R4 worse than F81+ASC+R3 -1.89942e+06
+ 60  F81+ASC+R4    1899422.575  1017 3800879.150  3800894.630  3810857.297
+ 70  F81+F+ASC+G4  1940846.267  1015 3883722.535  3883737.954  3893681.060
+ 71  F81+F+R2      1960055.251  1016 3922142.501  3922157.951  3932110.837
+ 80  F81+F+ASC+R2  1922345.831  1016 3846723.662  3846739.112  3856691.999
+ 81  F81+F+ASC+R3  1918652.998  1018 3839341.997  3839357.508  3849329.956
++R4 reinitialized from +R3 with factor 0.500
+ 82  F81+F+ASC+R4  1918652.326  1020 3839344.651  3839360.223  3849352.233
+ERROR: modelfactory.cpp:1131: virtual bool ModelFactory::initFromNestedModel(std::map<std::__cxx11::basic_string<char>, std::vector<std::__cxx11::basic_string<char> > >): Assertion `itr != checkpoint->end()' failed.
+ERROR: STACK TRACE FOR DEBUGGING:
+ERROR: 1   funcAbort()
+ERROR: 2   ()
+ERROR: 3   gsignal()
+ERROR: 4   abort()
+ERROR: 5   ()
+ERROR: 6   ModelFactory::initFromNestedModel(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > >)
+ERROR: 7   CandidateModel::evaluate[abi:cxx11](Params&, ModelCheckpoint&, ModelCheckpoint&, ModelsBlock*, int&, int)
+ERROR: 8   CandidateModelSet::test(Params&, PhyloTree*, ModelCheckpoint&, ModelsBlock*, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, bool, bool, bool)
+ERROR: 9   runModelFinder(Params&, IQTree&, ModelCheckpoint&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > >, bool)
+ERROR: 10   startTreeReconstruction(Params&, IQTree*&, ModelCheckpoint&)
+ERROR: 11   runPhyloAnalysis(Params&, Checkpoint*, IQTree*&, Alignment*&)
+ERROR: 12   runPhyloAnalysis(Params&, Checkpoint*)
+ERROR: 13   main()
+ERROR: 14   __libc_start_main()
+ERROR: 15   ()
+ERROR: 
+ERROR: *** IQ-TREE CRASHES WITH SIGNAL ABORTED
+ERROR: *** For bug report please send to developers:
+ERROR: ***    Log file: /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_CRKP.log
+ERROR: ***    Alignment files (if possible)
+/var/spool/slurmd.spool/job37391975/slurm_script: line 11: 2642671 Aborted                 (core dumped) iqtree3 -s /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_cognac_SNP_sites.fa -T AUTO -B 5000 -o INT_CRE_1243 -nstop 200 -pre /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_CRKP

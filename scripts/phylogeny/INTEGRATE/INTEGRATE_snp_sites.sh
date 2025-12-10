@@ -1,0 +1,1 @@
+snp-sites /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/concatenated_gene_nt_alignment.fasta -o /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_cognac_SNP_sites.fa

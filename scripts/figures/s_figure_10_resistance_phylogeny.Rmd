@@ -43,8 +43,7 @@ df <- left_join(df,carbapenemase_content)
 
 # Tree
 ```{r}
-tree_new <- read.tree("~/Desktop/gl_nfs/Project_INTEGRATE/Sequence_data/variant_calling/2025-04-29_SNPKIT/kpneumoniae/snpkit_rfmt_results/phylo_analysis/IQtree/INTEGRATE_kpneumoniae.treefile")
-tree_new_final <- tree_new %>% keep.tip(df$isolate_no %>% subset(. %in% tree_new$tip.label)) %>% phytools::midpoint.root() 
+tr <- read.tree("./data/phylogeny/INTEGRATE/INTEGRATE_CRKP.treefile") 
 ```
 
 ```{r} 
@@ -52,29 +51,29 @@ tree_new_final <- tree_new %>% keep.tip(df$isolate_no %>% subset(. %in% tree_new
 break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
        
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type (ST)", guide = guide_legend(ncol=7, title.position = "top", label.position = "right",order=1))
+ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type (ST)", guide = guide_legend(ncol=4, title.position = "top", label.position = "right",order=1))
 
 # Carbapenemase scale
 genotypes <- unique(df$carbapenemase) %>% sort
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
 
-genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=4, title.position = "top", label.position = "right",order=2))   
+genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=3, title.position = "top", label.position = "right",order=2))   
 ``` 
 
 # Fill scales 
 ```{r,fig.width=13,fig.height=15} 
 feature_colors <- c(`1` = "black",`0`="white")
 feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Resistant","Susceptible"),name="Resistance", guide = guide_legend(ncol=1, title.position = "top", label.position = "right",order=3))
-resistance_clustering <-df %>% subset(isolate_no %in% tree_new_final$tip.label) %>% select(resistance_vars) %>% drop_na() %>% pheatmap()
+resistance_clustering <-df %>% subset(isolate_no %in% tr$tip.label) %>% select(resistance_vars) %>% drop_na() %>% pheatmap()
 ```
 
 # Phylogeny
-```{r,fig.width=13,fig.height=15} 
+```{r,fig.width=8.5,fig.height=10.625} 
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
-p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale + theme(legend.key = element_rect(colour = c('black')))
+p0 <- gheatmap(ggtree(tr),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25,font.size = 3) + ST_scale + theme(legend.key = element_rect(colour = c('black')))
 p01 <- p0 + ggnewscale::new_scale_fill()
-p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.006,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale + theme(legend.key = element_rect(colour = c('black')))
+p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.0065,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25,font.size = 3)  + genotype_scale + theme(legend.key = element_rect(colour = c('black')))
 p11 <- p1 + ggnewscale::new_scale_fill()
 A <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(resistance_clustering)]) %>% mutate_all(as.factor) %>% `colnames<-`(recode(colnames(.),
                          "CZA_dich_num"='Ceftazidime-avibactam',
@@ -91,19 +90,26 @@ A <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.012,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,545.1) + theme(legend.position = 'bottom',legend.key = element_rect(colour = c('black'))) + geom_treescale(y = -5)
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.013,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25,font.size = 3)  + feature_scale + ylim(NA,570) + theme(legend.position = 'bottom',
+                               legend.justification = "center", legend.key = element_rect(colour = c('black')),
+                               legend.box.spacing = unit(.00001, "cm"),
+                               legend.key.size = unit(0.275, "cm"),legend.key.width = unit(0.275, "cm") ,
+                               legend.title = element_text(size=14),legend.text = element_text(size=12),
+                               legend.title.align=0.5,legend.text.align = 0,
+                               legend.margin=margin(t=-0.5,r=0,b=0,l=0,unit="cm"),legend.spacing.x=unit(.25, "cm")
+                               ) + geom_treescale(y = -9,offset=2)
 A  
 ```
 
 # ST258
-```{r,fig.width=12.5,fig.height=7.5}
+```{r,fig.width=3.75,fig.height=5}
 st258_df <- df %>% subset(ST=='ST258')
 st258_df <- as.data.frame(st258_df)
 rownames(st258_df) <- st258_df$isolate_no
-tree_new_final_258 <- tree_new_final %>% keep.tip(subset(st258_df$isolate_no,st258_df$isolate_no %in% tree_new_final$tip.label) )%>% phytools::midpoint.root()
-p0 <- gheatmap(ggtree(tree_new_final_258),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+tr_ST258 <- tr %>% keep.tip(subset(st258_df$isolate_no,st258_df$isolate_no %in% tr$tip.label) ) %>% phytools::midpoint.root()
+p0 <- gheatmap(ggtree(tr_ST258),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25,font.size = 2.5) + ST_scale
 p01 <- p0 + ggnewscale::new_scale_fill()
-p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.00004,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
+p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0000725,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25,font.size = 2.5)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
 B <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(resistance_clustering)]) %>% mutate_all(as.factor) %>% `colnames<-`(recode(colnames(.),
                          "CZA_dich_num"='Ceftazidime-avibactam',
@@ -120,20 +126,20 @@ B <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00008,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,275) + ggtitle("ST258") + theme(legend.position = 'none') + geom_treescale(y = -5)
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.05*length(resistance_vars),offset=0.00015,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25,font.size = 2.5)  + feature_scale + ylim(NA,275) + ggtitle("ST258") + theme(legend.position = 'none') + geom_treescale(y = -5,offset=1.33) 
 B  
 ```
 
 
 # 14
-```{r,fig.width=9,fig.height=7.5}
+```{r,fig.width=3.75,fig.height=5}
 st14_df <- df %>% subset(ST=='ST14')
 st14_df <- as.data.frame(st14_df)
 rownames(st14_df) <- st14_df$isolate_no
-tree_new_final_14 <- tree_new_final %>% keep.tip(subset(st14_df$isolate_no,st14_df$isolate_no %in% tree_new_final$tip.label) )%>% phytools::midpoint.root()
-p0 <- gheatmap(ggtree(tree_new_final_14),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+tr_ST14 <- tr %>% keep.tip(subset(st14_df$isolate_no,st14_df$isolate_no %in% tr$tip.label) )%>% phytools::midpoint.root()
+p0 <- gheatmap(ggtree(tr_ST14),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25,font.size = 2.5) + ST_scale
 p01 <- p0 + ggnewscale::new_scale_fill()
-p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.000055,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
+p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.00002,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25,font.size = 2.5)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
 C <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(resistance_clustering)]) %>% mutate_all(as.factor) %>% `colnames<-`(recode(colnames(.),
                          "CZA_dich_num"='Ceftazidime-avibactam',
@@ -150,19 +156,19 @@ C <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00011,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,172.5) + ggtitle("ST14") + theme(legend.position = 'none') + geom_treescale(y = -3)
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.05*length(resistance_vars),offset=0.00004,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.2,font.size = 2.5)  + feature_scale + ylim(NA,182.5) + ggtitle("ST14") + theme(legend.position = 'none') + geom_treescale(y = -6,offset=1.2)
 C
 ```
 
-# ST17
-```{r,fig.width=9,fig.height=7.5}
-st17_df <- df %>% subset(ST=='ST17')
-st17_df <- as.data.frame(st17_df)
-rownames(st17_df) <- st17_df$isolate_no
-tree_new_final_17 <- tree_new_final %>% keep.tip(subset(st17_df$isolate_no,st17_df$isolate_no %in% tree_new_final$tip.label) )%>% phytools::midpoint.root()
-p0 <- gheatmap(ggtree(tree_new_final_17),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+# ST307
+```{r,fig.width=3.75,fig.height=5}
+st307_df <- df %>% subset(ST=='ST307')
+st307_df <- as.data.frame(st307_df)
+rownames(st307_df) <- st307_df$isolate_no
+tr_ST307 <- tr %>% keep.tip(subset(st307_df$isolate_no,st307_df$isolate_no %in% tr$tip.label) )%>% phytools::midpoint.root()
+p0 <- gheatmap(ggtree(tr_ST307),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.000005,font.size = 2.5) + ST_scale
 p01 <- p0 + ggnewscale::new_scale_fill()
-p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.000015,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
+p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.000022,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.0000005,font.size = 2.5)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
 D <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(resistance_clustering)]) %>% mutate_all(as.factor) %>% `colnames<-`(recode(colnames(.),
                          "CZA_dich_num"='Ceftazidime-avibactam',
@@ -179,19 +185,19 @@ D <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00003,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,48.1)+ ggtitle("ST17") + theme(legend.position = 'none') + geom_treescale(y = -0.5)
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.05*length(resistance_vars),offset=0.000044,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.0000005,font.size = 2.5)  + feature_scale + ylim(NA,46.5)+ ggtitle("ST307") + theme(legend.position = 'none')  + geom_treescale(y = -0.75,offset=0.3)
 D
 ```
 
-# ST307
-```{r,fig.width=9,fig.height=7.5}
-st307_df <- df %>% subset(ST=='ST307')
-st307_df <- as.data.frame(st307_df)
-rownames(st307_df) <- st307_df$isolate_no
-tree_new_final_307 <- tree_new_final %>% keep.tip(subset(st307_df$isolate_no,st307_df$isolate_no %in% tree_new_final$tip.label) )%>% phytools::midpoint.root()
-p0 <- gheatmap(ggtree(tree_new_final_307),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale
+# ST17
+```{r,fig.width=3.75,fig.height=5}
+st17_df <- df %>% subset(ST=='ST17')
+st17_df <- as.data.frame(st17_df)
+rownames(st17_df) <- st17_df$isolate_no
+tr_ST17 <- tr %>% keep.tip(subset(st17_df$isolate_no,st17_df$isolate_no %in% tr$tip.label) )%>% phytools::midpoint.root()
+p0 <- gheatmap(ggtree(tr_ST17),df %>% select(Species_ST_recode)%>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.0000005,font.size = 2.5) + ST_scale
 p01 <- p0 + ggnewscale::new_scale_fill()
-p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.1,offset=0.00002,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale
+p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.000008,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.0000005,font.size = 2.5)  + genotype_scale
 p11 <- p1 + ggnewscale::new_scale_fill()
 E <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(resistance_clustering)]) %>% mutate_all(as.factor) %>% `colnames<-`(recode(colnames(.),
                          "CZA_dich_num"='Ceftazidime-avibactam',
@@ -208,21 +214,21 @@ E <- gheatmap(p11,df %>% select(resistance_vars[ComplexHeatmap::column_order(res
                          "ERV_dich_num" = "Eravacycline",
                          "FOS_dich_num" = "Fosfomycin",
                          "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.1*length(resistance_vars),offset=0.00004,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,48.1)+ ggtitle("ST307") + theme(legend.position = 'none')  + geom_treescale(y = -0.5)
+                         "FDC_dich_num"="Cefiderocol")),color = NULL,width=0.05*length(resistance_vars),offset=0.000016,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.0000005,font.size = 2.5)  + feature_scale + ylim(NA,44.1)+ ggtitle("ST17") + theme(legend.position = 'none') + geom_treescale(y = -1,offset=0.3)
 E
 ```
 
 # Combine figures
-```{r,fig.width=13,fig.height=16}
+```{r,fig.width=11.25,fig.height=11.25}
 A_fig <- cowplot::plot_grid(A + theme(legend.position='none'),labels = c("A"))
 A_legend <- cowplot::get_legend(A)
 legend_fig <- cowplot::plot_grid(A_legend)
 smaller <- cowplot::plot_grid(B,C,D,E,ncol=2,labels = c("B","C","D","E"),hjust = 0.25)
 merged <- cowplot::plot_grid(A_fig,smaller,ncol=2,rel_widths = c(0.5,1))
-figure <- cowplot::plot_grid(merged,A_legend,rel_heights = c(1,0.075),ncol=1)
+figure <- cowplot::plot_grid(merged,A_legend,rel_heights = c(1,0.1),ncol=1)
 figure
 ```
 
 ```{r,fig.width=13,fig.height=16}   
-ggsave(filename = "./figures/s_figure_10_resistance_phylogeny.png", plot=figure, width = 13, height = 16, dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_10_resistance_phylogeny.png", plot=figure, width = 11.25, height = 11.25, dpi=900,bg = 'white')
 ```

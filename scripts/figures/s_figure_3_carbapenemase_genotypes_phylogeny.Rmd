@@ -66,15 +66,14 @@ rownames(df_carb_omp) <- df_carb_omp$isolate_no
 
 # Phylogeny 
 ```{r}
-tree_new <- read.tree("~/Desktop/gl_nfs/Project_INTEGRATE/Sequence_data/variant_calling/2025-04-29_SNPKIT/kpneumoniae/snpkit_rfmt_results/phylo_analysis/IQtree/INTEGRATE_kpneumoniae.treefile")
-tree_new_final <- tree_new %>% keep.tip(df$isolate_no %>% subset(. %in% tree_new$tip.label)) %>% phytools::midpoint.root()
+tr <- read.tree("./data/phylogeny/INTEGRATE/INTEGRATE_CRKP.treefile") 
 ```
 
-```{r,fig.width=11,fig.height=10}  
+```{r,fig.width=11,fig.height=11}  
 feature_colors <- c(`1` = "black",`0`="white")
 feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Genotype", guide = guide_legend(nrow=3,order=3, title.position = "top", label.position = "right"))
 geno_vars <- colnames(df_carb_omp) %>% subset(!.%in% c("study","major_STs","isolate_no"))
-genotype <- df_carb_omp %>% subset(rownames(.) %in% tree_new_final$tip.label) %>% select(geno_vars) %>% select(-carbapenemase) %>% drop_na() %>% select_if(colSums(.)>0) %>% ComplexHeatmap::Heatmap()
+genotype <- df_carb_omp %>% subset(rownames(.) %in% tr$tip.label) %>% select(geno_vars) %>% select(-carbapenemase) %>% drop_na() %>% select_if(colSums(.)>0) %>% ComplexHeatmap::Heatmap()
 
 genotypes <- c(table(df$carbapenemase %>% subset(.!="No carbapenemase")) %>% sort(decreasing = T) %>% names,"No carbapenemase")
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
@@ -82,16 +81,16 @@ genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,
 
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
-p0 <- gheatmap(ggtree(tree_new_final %>% phytools::midpoint.root()),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale +  theme(legend.key = element_rect(colour = c('black')))
+p0 <- gheatmap(ggtree(tr),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale +  theme(legend.key = element_rect(colour = c('black')))
 p01 <- p0 + ggnewscale::new_scale_fill()
-p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0031,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale + theme(legend.key = element_rect(colour = c('black')))
+p1 <- gheatmap(p01,df %>% select(carbapenemase) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0035,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale + theme(legend.key = element_rect(colour = c('black')))
 p11 <- p1 + ggnewscale::new_scale_fill()
 
-figure <- gheatmap(p11,df_carb_omp %>% select(genotype@column_names_param$labels[ComplexHeatmap::column_order(genotype)]) %>% mutate_all(as.factor)  %>% `colnames<-`(recode(colnames(.),"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in OmpK36") %>% gsub("Rare_","Rare ",.)),color  = NULL,width=0.05*length(geno_vars),offset=0.006,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,610) + theme(legend.position = 'bottom',legend.direction="horizontal", 
-                                    legend.justification = "center", legend.key = element_rect(colour = c('black')))  + geom_treescale(y = -10)
+figure <- gheatmap(p11,df_carb_omp %>% select(genotype@column_names_param$labels[ComplexHeatmap::column_order(genotype)]) %>% mutate_all(as.factor)  %>% `colnames<-`(recode(colnames(.),"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in ompK36","Rare_ompK35_insertion" = "Rare ompK356 insertion",'Rare_ompK36_insertion' = 'Rare ompK36 insertion', "ompK36_T136TDT" = 'ompK36 T136TDT', "ompK36_D135DGD" = "ompK36 D135DGD","ompK36_D135DD" ="ompK36 D135DD","blaSHV_C-112A" = 'blaSHV C112A')%>% gsub("Rare_","Rare ",.)),color  = NULL,width=0.05*length(geno_vars),offset=0.007,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,610) + theme(legend.position = 'bottom',legend.direction="horizontal",  legend.justification = "center", legend.key = element_rect(colour = c('black')))  + geom_treescale(y = -10, offset = 2)
+
 figure
 ```
 
 ```{r}
-ggsave(filename = "./figures/s_figure_3_carbapenem_resistance_associated_genotypes_phylogeny.png",plot=figure, width = 11,height = 10,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_3_carbapenem_resistance_associated_genotypes_phylogeny.png",plot=figure, width = 11,height = 11, dpi=900, bg = 'white')
 ``` 

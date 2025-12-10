@@ -1,0 +1,12 @@
+#!/bin/sh
+#SBATCH --job-name=IQTREE3_INTEGRATE
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,FAIL,END,REQUEUE
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --nodes=1 --ntasks=1 --cpus-per-task=11 --mem=55g --time=78:00:00
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/INTEGRATE/IQTREE2_slurm.out
+
+## Note: Chang the mail-user, account, and SBATCH mem/time requirements as you see fit
+iqtree -s /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_cognac_SNP_sites.fa -T AUTO -o INT_CRE_1243 -B 5000 -nstop 200 -pre /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/INTEGRATE_CRKP

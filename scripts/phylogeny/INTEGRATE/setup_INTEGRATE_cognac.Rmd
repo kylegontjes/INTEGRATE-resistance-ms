@@ -1,0 +1,81 @@
+---
+title: "Setup INTEGRATE cognac run"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```   
+
+# Load metadata
+```{r}
+library(tidyverse)
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS") 
+df_INTEGRATE <- subset(df,study=='2021-23')
+```
+ 
+# Create isolate list
+```{r}
+df_INTEGRATE  %>% .$isolate_no %>% sort %>% saveRDS(.,"./scripts/phylogeny/INTEGRATE/INTEGRATE_isolate_list.RDS")
+```
+
+# Create cognac R script
+```{bash}
+cd scripts/phylogeny/INTEGRATE
+echo "
+# Cognac Run
+# Start Date: 12/05/25
+# Population: INTEGRATE isolates
+# Activate
+library(tidyverse)
+library(cognac)
+Sys.info()
+sessionInfo()
+
+setwd('/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+
+outDir = '/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/INTEGRATE/'
+
+genomic_id = readRDS('./scripts/phylogeny/INTEGRATE/INTEGRATE_isolate_list.RDS')  
+
+fasta_files = paste0('/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/prokka/',genomic_id,'/',genomic_id,'.fna')
+gff_files = paste0('/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/prokka/',genomic_id,'/',genomic_id,'.gff')
+
+# Run Conac requiring at least 500 genes are included in the alignment 
+cognac(
+  fastaFiles = fasta_files ,
+  featureFiles = gff_files,
+  outDir        = outDir,
+  minGeneNum    = 500,
+  maxMissGenes  = 0.05, 
+  njTree     = TRUE,
+  mapNtToAa = TRUE,
+  keepTempFiles = TRUE
+)
+ " > cognac_INTEGRATE.R
+```
+
+# Create cognac sh script
+
+```{bash}
+cd scripts/phylogeny/INTEGRATE
+echo "#!/bin/sh
+# Job name
+#SBATCH --job-name=cognac_INTEGRATE
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1 
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=12 --mem-per-cpu=7900m --time=5:00:00
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/INTEGRATE/cognac_INTEGRATE_slurm.out
+
+R CMD BATCH --no-restore --no-save --quiet ./cognac_INTEGRATE.R  /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/INTEGRATE/cognac_INTEGRATE_R_console.out
+" > cognac_INTEGRATE.sbat
+```
