@@ -79,8 +79,8 @@ names(phylogeographic_clustering_data) <- STs
 
 ```{r}
 # Figure X table
-mytheme <- ttheme_minimal(core = list(fg_params = list(hjust=0, vjust = 0.5 ,x=0.1, fontsize=8.75),padding = unit(c(4.5, 2), "mm")),
-                          colhead = list(fg_params = list(hjust=0, vjust = 0.5, x=0.1, fontsize=8.75, fontface="bold"),padding = unit(c(2, 2), "mm")),
+mytheme <- ttheme_minimal(core = list(fg_params = list(hjust=0, vjust = 0.5 ,x=0.1, fontsize=8.75),padding = unit(c(4.75, 2.5), "mm")),
+                          colhead = list(fg_params = list(hjust=0, vjust = 0.5, x=0.1, fontsize=8.75, fontface="bold"),padding = unit(c(2.5, 2.5), "mm")),
                           rowhead=list(fg_params=list(hjust=0, x=0)))
 
 general_statistics <- rbind(phylogeographic_clustering_data$ST258$general_clustering_stats%>% mutate(ST='ST258'),phylogeographic_clustering_data$ST307$general_clustering_stats%>% mutate(ST='ST307')) %>% rbind(.,phylogeographic_clustering_data$ST14$general_clustering_stats%>% mutate(ST='ST14')) %>% rbind(.,phylogeographic_clustering_data$ST17$general_clustering_stats%>% mutate(ST='ST17'))
@@ -88,7 +88,7 @@ general_statistics <- rbind(phylogeographic_clustering_data$ST258$general_cluste
 general_statistics <- general_statistics %>%select(ST,present,no_feature,phylogenetic_events,singletons,singletons_PCMP,singletons_INTEGRATE,singletons_public, clusters, cluster_isolates, cluster_size_median,cluster_size_range) 
 general_statistics$cluster_median_range <- paste0(general_statistics$cluster_size_median," (",general_statistics$cluster_size_range,")")
 general_statistics <- general_statistics %>% select(-cluster_size_median,-cluster_size_range)
-colnames(general_statistics) <- c("Sequence\ntype (ST)","California\nisolates","Other\ngenomes","Phylogenetic\n events","Singletons","Singletons\n[2014-15 study]","Singletons\n[2021-23 study]","Singletons\n[Public]","Clusters","Cluster\n isolates","Cluster size\nmedian (range)")
+colnames(general_statistics) <- c("Sequence\ntype (ST)","California\nisolates","Other\ngenomes","Phylogenetic\n events","Singletons","Singletons\n(2014-15 study)","Singletons\n(2021-23 study)","Singletons\n(Public)","Clusters","Cluster\nisolates","Cluster size\nmedian (range)")
 rownames(general_statistics) <- NULL
  
 A <-  general_statistics %>% tableGrob(rows = NULL,theme = mytheme)
@@ -112,7 +112,7 @@ B <- ggplot(data=clustering_data_melt ,aes(x=value,fill=variable,y=cluster_name)
 ```
 
 ```{r,fig.width=8.5,fig.height=6.8}
-figure <- cowplot::plot_grid(A,B,ncol=1,rel_heights = c(0.25,1),labels = c("A","B"))
+figure <- cowplot::plot_grid(A,B,ncol=1,rel_heights = c(0.275,1),labels = c("A","B"))
 figure
 ```
 
