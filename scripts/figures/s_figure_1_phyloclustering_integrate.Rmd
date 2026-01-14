@@ -1,5 +1,5 @@
 ---
-title: "phylogeographic_analyses"
+title: "Supplemental Figure 1: Phylogeographic analysis of major INTEGRATE STs in CA"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -17,7 +17,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r environment, echo=F, message=FALSE, include=F, results=F}
 #Packages
-packages <- c("tidyverse") 
+packages <- c("tidyverse",'ape','ggtree','phytools')
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
@@ -71,26 +71,33 @@ df$collection_year <- df$year
 ```{r}
 voi <- c('isolate_no','participant_id','ST','collection_date','collection_year','continent','country','california')
 combined_phylogeographic_df <- bind_rows(public_dataset %>% select(any_of(voi)),df %>% select(any_of(voi))) %>% as.data.frame
-```
-
-# Trees
-```{r}
-library(ape)
-library(ggtree)
-tr_ST14 <- read.tree("./data/phylogeny/phylogeographic/ST14/cognac_nj.tre") %>% drop.tip("INT_CRE_1243") %>% phytools::midpoint_root()
-tr_ST17 <- read.tree("./data/phylogeny/phylogeographic/ST17/cognac_nj.tre") %>% drop.tip("INT_CRE_1243") %>% phytools::midpoint_root()
-tr_ST307 <- read.tree("./data/phylogeny/phylogeographic/ST307/cognac_nj.tre") %>% drop.tip("INT_CRE_1243") %>% phytools::midpoint_root()
-tr_ST258 <- read.tree("./data/phylogeny/phylogeographic/ST258/cognac_nj.tre") %>% drop.tip("INT_CRE_1243") %>% phytools::midpoint_root() 
-```
-
-```{r}
-rownames(combined_phylogeographic_df) <- combined_phylogeographic_df$isolate_no
+rownames(combined_phylogeographic_df) <- combined_phylogeographic_df$isolate_no 
 combined_phylogeographic_df$collection_decade <- floor(combined_phylogeographic_df$collection_year/10)*10
 combined_phylogeographic_df$collection_year_fct <- as.factor(combined_phylogeographic_df$collection_year)
-combined_phylogeographic_df$type <- ifelse(grepl("PCMP_H",combined_phylogeographic_df$isolate_no),"2014-15 CA LTACH",
-                                           ifelse(grepl("INT_CRE_",combined_phylogeographic_df$isolate_no),"2021-23 CA LTACH","Public genomes"))
+combined_phylogeographic_df$type <- ifelse(grepl("PCMP_H",combined_phylogeographic_df$isolate_no),"2014-15 Study",
+                                           ifelse(grepl("INT_CRE_",combined_phylogeographic_df$isolate_no),"2021-23 Study","Public genomes"))
 combined_phylogeographic_df$california_bin <- ifelse(combined_phylogeographic_df$california==T,1,0)
 
+# Factor
+combined_phylogeographic_df$collection_decade <- factor(combined_phylogeographic_df$collection_decade,levels = c("1980",'1990','2000','2010','2020'))
+combined_phylogeographic_df$continent <- factor(combined_phylogeographic_df$continent,levels = c("Africa","Americas","Asia","Europe","Oceania"))
+combined_phylogeographic_df$california <- factor(combined_phylogeographic_df$california,levels = c(TRUE,FALSE))
+combined_phylogeographic_df$type <- factor(combined_phylogeographic_df$type,levels = c("2014-15 Study","2021-23 Study","Public genomes"))
+
+# California tips
+CA_tips <- combined_phylogeographic_df %>% subset(california==T) %>% .$isolate_no
+```
+
+# Trees 
+```{r}
+tr_ST14 <- read.tree("./data/phylogeny/phylogeographic/ST14/phylogeographic_ST14.treefile") %>% drop.tip("INT_CRE_1243") 
+tr_ST17 <- read.tree("./data/phylogeny/phylogeographic/ST17/phylogeographic_ST17.treefile") %>% drop.tip("INT_CRE_1243")  
+tr_ST307 <- read.tree("./data/phylogeny/phylogeographic/ST307/phylogeographic_ST307.treefile") %>% drop.tip("INT_CRE_1243") 
+tr_ST258 <- read.tree("./data/phylogeny/phylogeographic/ST258/phylogeographic_ST258.treefile") %>% drop.tip("INT_CRE_1243")  
+```
+
+# Scales
+```{r}
 total_colors <- 10
 all_colors <- hues::iwanthue(total_colors,plot = T)
 
@@ -98,151 +105,100 @@ decade_scale <- scale_fill_manual(breaks = c("1980","1990","2000","2010","2020")
 
 continent_scale <- scale_fill_manual(breaks = c("Africa","Americas","Asia","Europe","Oceania"),values = all_colors[c(3,7,6,9,10)],name = "Continent",guide = guide_legend(nrow=3,order=2),drop=FALSE)
 
-california_scale <- scale_fill_manual(breaks = c(TRUE,FALSE),values = c("black","white"),labels = c("California","Other"),name = "California",guide = guide_legend(nrow=3,order=3),drop=FALSE)
+california_scale <- scale_fill_manual(breaks = c(TRUE,FALSE),values = c("red","black"),labels = c("California","Other"),name = "Location",guide = guide_legend(nrow=3,order=3),drop=FALSE)
 
-study_scale <- scale_fill_manual(breaks = c("2014-15 CA LTACH","2021-23 CA LTACH","Public genomes"),values = c("blue","red","darkgray"),name = "Type",guide = guide_legend(nrow=3,order=4),drop=FALSE)
+study_scale <- scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown",gray(0.2)),name = "California genome",guide = guide_legend(nrow=3,order=4),drop=FALSE)
 
-study_scale_color <- scale_color_manual(breaks = c("2014-15 CA LTACH","2021-23 CA LTACH","Public genomes"),values = c("blue","red","darkgray"),name = "Type",guide = guide_legend(nrow=3,order=4),drop=FALSE)
+study_scale_color <- scale_color_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown",gray(0.2)),name = "California genome",guide = guide_legend(nrow=3,order=4),drop=FALSE)
+```
 
-combined_phylogeographic_df_top_STs <-  combined_phylogeographic_df %>% subset(ST %in% c("ST14","ST17",'ST258','ST307'))
-combined_phylogeographic_df_top_STs$collection_decade <- factor(combined_phylogeographic_df_top_STs$collection_decade,levels = c("1980",'1990','2000','2010','2020'))
-combined_phylogeographic_df_top_STs$continent <- factor(combined_phylogeographic_df_top_STs$continent,levels = c("Africa","Americas","Asia","Europe","Oceania"))
-combined_phylogeographic_df_top_STs$california <- factor(combined_phylogeographic_df_top_STs$california,levels = c(TRUE,FALSE))
-combined_phylogeographic_df_top_STs$type <- factor(combined_phylogeographic_df_top_STs$type,levels = c("2014-15 CA LTACH","2021-23 CA LTACH","Public genomes"))
-
-CA_tips <- combined_phylogeographic_df_top_STs %>% subset(california==T) %>% .$isolate_no
+# Reconstructions
+```{r}
+CA_asr <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs.RDS")
+CA_asr_cluster <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering.RDS")
+```
  
+## Function
+```{r}
+get_phylogeny <- function(st,tr,df,pcdf,col_offset,ymax,point_size,line_width){
+  p <- ggtree(tr)
+  tip_x <- max(p$data$x) + (max(p$data$x) * .0125)
+  tip_x_start <- (max(p$data$x) * .0125)
+  df_ST <- df %>% subset(ST==st)
+  CA_isolates <- df_ST %>% subset(california==T) %>% .$isolate_no
+  tr_data <- as_tibble(tr) %>% left_join(.,df_ST, by = c("label" = "isolate_no"))
+  painted_tree <- phyloAMR::paint_tree_with_states(parent_child_df = pcdf, tr = tr, scale_labels = c("California","Other"),legend_name = "California")  
+  painted_tree_w_new_scale <- painted_tree  + ggnewscale::new_scale_color() 
+  painted_tip_tree <- painted_tree_w_new_scale %<+% tr_data + geom_tippoint(aes(subset = california == T, x=tip_x,color = type),size = point_size,position='dodge') + study_scale_color
+  
+  tip_data <- painted_tip_tree$data %>%
+    filter(label %in% CA_isolates) %>%
+    group_by(y) %>%                  # group by tip
+    arrange(type) %>%                # optional: sort within cluster 
+    ungroup()
+  
+  painted_tip_tree_dashed <- painted_tip_tree + geom_segment(
+    data = tip_data,  # subset data for layer
+    aes(x = x+tip_x_start, y = y, yend = y,color=type),  # aesthetics from data
+    xend = tip_x,                  # fixed coordinate outside aes
+    linetype = "dashed",
+    linewidth=line_width
+  ) 
+  
+  p0 <-  gheatmap(painted_tip_tree_dashed, df_ST %>% select(collection_decade) %>% `colnames<-`("Decade"), color=NULL, width=0.05, colnames_position = 'top', colnames_angle = 90, colnames_offset_y = 25, hjust=0) + decade_scale + ylim(NA,ymax)
+  p0.1 <- p0+ggnewscale::new_scale_fill()
+  figure <- gheatmap(p0.1, df_ST %>% select(continent)  %>% `colnames<-`("Continent") ,color=NULL,width=0.05,offset=col_offset,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 25,hjust=0) + continent_scale + ylim(NA,ymax)  
+  return(figure)
+}
 ```
 
 ## ST258
 ```{r} 
-
-tr_data <- as_tibble(tr_ST258) %>%
-  left_join(.,combined_phylogeographic_df_top_STs %>% subset(ST=="ST258"), by = c("label" = "isolate_no"))
-
-p0 <- gheatmap(ggtree(tr_ST258) %<+% tr_data +
-    geom_tippoint(aes(subset = california == T, color = type), size = 0.5) +study_scale_color  , combined_phylogeographic_df_top_STs %>% select(collection_decade) %>% `colnames<-`("Decade") ,color=NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 25, hjust=0)+ decade_scale + ylim(NA,6500)
-p0.1 <- p0+ggnewscale::new_scale_fill()
-A <- gheatmap(p0.1, combined_phylogeographic_df_top_STs %>% select(continent)  %>% `colnames<-`("Continent") ,color=NULL,width=0.1,offset=0.0001,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 25,hjust=0) + continent_scale + ylim(NA,7250)
-#p1.1 <- p1+ggnewscale::new_scale_fill()
-#p2 <- gheatmap(p1.1, combined_phylogeographic_df_top_STs %>% select(california)  %>% `colnames<-`("California"),color=NULL,width=0.1,offset=0.0002,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 25,hjust=0)  + california_scale + ylim(NA,6500)
-#p2.1 <- p2+ggnewscale::new_scale_fill()
-#A <- gheatmap(p2.1, combined_phylogeographic_df_top_STs %>% select(type) %>%  `colnames<-`("Study") ,color=NULL,width=0.1,offset=0.0003,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 25,hjust=0)  + study_scale + ylim(NA,7250)
-#A + ggtitle("ST258") + ylim(NA,7250) +
-  
-```
-
-## ST14
-```{r}
-tr_data <- as_tibble(tr_ST14) %>%
-  left_join(.,combined_phylogeographic_df_top_STs %>% subset(ST=="ST14"), by = c("label" = "isolate_no"))
-
-p0 <- gheatmap(ggtree(tr_ST14)  %<+% tr_data +
-    geom_tippoint(aes(subset = california == T, color = type), size = 1.25) +study_scale_color, combined_phylogeographic_df %>% select(collection_decade) %>% mutate_all(as.factor) %>% `colnames<-`("Decade") ,color=NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + decade_scale + ylim(NA,1780)
-p0.1 <- p0+ggnewscale::new_scale_fill()
-B <- gheatmap(p0.1, combined_phylogeographic_df %>% select(continent) %>% mutate_all(as.factor) %>% `colnames<-`("Continent"),color=NULL,width=0.1,offset=0.0002,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + continent_scale + ylim(NA,2000)
-#p1.1 <- p1+ggnewscale::new_scale_fill()
-
-
-#p2 <- gheatmap(p1.1, combined_phylogeographic_df %>% select(california) %>% mutate_all(as.factor) %>% `colnames<-`("California"),color=NULL,width=0.1,offset=0.0004,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + california_scale + ylim(NA,1780)
-#p2.1 <- p2+ggnewscale::new_scale_fill()
-#B <- gheatmap(p2.1, combined_phylogeographic_df %>% select(type) %>% mutate_all(as.factor) %>% `colnames<-`("Study"),color=NULL,width=0.1,offset=0.0006,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + study_scale + ylim(NA,2000)
-#B + ggtitle("ST14") + ylim(NA,2000)
+A <- get_phylogeny(st='ST258',tr=tr_ST258,df = combined_phylogeographic_df, pcdf = CA_asr$ST258$parent_child_df, col_offset = 0.001125,ymax = 7100,point_size=0.1,line_width=0.05)
+A  + theme(legend.position='none')
 ```
 
 # ST307
 ```{r}
-tr_data <- as_tibble(tr_ST307) %>%
-  left_join(.,combined_phylogeographic_df_top_STs %>% subset(ST=="ST307"), by = c("label" = "isolate_no"))
+B <- get_phylogeny(st='ST307',tr=tr_ST307,df = combined_phylogeographic_df, pcdf = CA_asr$ST307$parent_child_df, col_offset = 0.001,ymax = 4900,point_size=0.1,line_width=0.05)
+B + theme(legend.position='none')
+```
 
-rownames(combined_phylogeographic_df) <- combined_phylogeographic_df$isolate_no
-p0 <- gheatmap(ggtree(tr_ST307) %<+% tr_data +
-    geom_tippoint(aes(subset = california == T, color = type), size = 1.25) +study_scale_color , combined_phylogeographic_df %>% select(collection_decade) %>% mutate_all(as.factor) %>% `colnames<-`('Decade') ,color=NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + decade_scale + ylim(NA,4500)
-p0.1 <- p0+ggnewscale::new_scale_fill()
-C <- gheatmap(p0.1, combined_phylogeographic_df %>% select(continent) %>% mutate_all(as.factor)%>% `colnames<-`("Continent") ,color=NULL,width=0.1,offset=0.000075,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + continent_scale + ylim(NA,5000)
-#p1.1 <- p1+ggnewscale::new_scale_fill()
-#p2 <- gheatmap(p1.1, combined_phylogeographic_df %>% select(california) %>% mutate_all(as.factor)%>% `colnames<-`("California") ,color=NULL,width=0.1,offset=0.00015,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + california_scale + ylim(NA,4500)
-#p2.1 <- p2+ggnewscale::new_scale_fill()
-#C <- gheatmap(p2.1, combined_phylogeographic_df %>% select(type) %>% mutate_all(as.factor) %>% `colnames<-`("Study"),color=NULL,width=0.1,offset=0.000225,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + study_scale + ylim(NA,5000)
-
-#C + ggtitle("ST307")+ ylim(NA,5000)
+## ST14
+```{r}
+C <- get_phylogeny(st='ST14',tr=tr_ST14,df = combined_phylogeographic_df, pcdf = CA_asr$ST14$parent_child_df, col_offset = 0.004,ymax = 1950,point_size=0.1,line_width=0.05)
+C  + theme(legend.position='none')
 ```
 
 ## ST17
 ```{r} 
-tr_data <- as_tibble(tr_ST17) %>%
-  left_join(.,combined_phylogeographic_df_top_STs %>% subset(ST=="ST17"), by = c("label" = "isolate_no"))
-
-rownames(combined_phylogeographic_df) <- combined_phylogeographic_df$isolate_no
-p0 <- gheatmap(ggtree(tr_ST17) %<+% tr_data +
-    geom_tippoint(aes(subset = california == T, color = type), size = 1.25) +study_scale_color , combined_phylogeographic_df %>% select(collection_decade) %>% mutate_all(as.factor) %>% `colnames<-`('Decade') ,color=NULL,width=0.1,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + decade_scale + ylim(NA,1600)
-p0.1 <- p0+ggnewscale::new_scale_fill()
-D <- gheatmap(p0.1, combined_phylogeographic_df %>% select(continent) %>% mutate_all(as.factor) %>% `colnames<-`("Continent"),color=NULL,width=0.1,offset=0.000175,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + continent_scale + ylim(NA,1800)
-#p1.1 <- p1+ggnewscale::new_scale_fill()
-#p2 <- gheatmap(p1.1, combined_phylogeographic_df %>% select(california) %>% mutate_all(as.factor)%>% `colnames<-`("California") ,color=NULL,width=0.1,offset=0.00035,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + california_scale + ylim(NA,1600)
-#p2.1 <- p2+ggnewscale::new_scale_fill()
-#D <- gheatmap(p2.1, combined_phylogeographic_df %>% select(type) %>% mutate_all(as.factor) %>% `colnames<-`("Study"),color=NULL,width=0.1,offset=0.000525,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = 10, hjust=0) + hues::scale_fill_iwanthue() + study_scale + ylim(NA,1800)
-
-#D + ggtitle("ST17")
+D <- get_phylogeny(st='ST17',tr=tr_ST17,df = combined_phylogeographic_df, pcdf = CA_asr$ST17$parent_child_df, col_offset = 0.0015,ymax = 1700,point_size=0.1,line_width=0.05)
+D + theme(legend.position='none')
 ```
 
 # Create plots to grab legend! 
 ```{r}
-decade <- ggplot(data=combined_phylogeographic_df_top_STs,aes(x=collection_decade,fill=collection_decade)) + geom_bar(stat='count') + decade_scale
-continent <- ggplot(data=combined_phylogeographic_df_top_STs,aes(x=continent,fill=continent)) + geom_bar(stat='count') + continent_scale 
-study <- ggplot(data=combined_phylogeographic_df_top_STs,aes(x=type,fill=type)) + geom_bar(stat='count') + study_scale
+decade <- ggplot(data=combined_phylogeographic_df,aes(x=collection_decade,fill=collection_decade)) + geom_bar(stat='count') + decade_scale
+continent <- ggplot(data=combined_phylogeographic_df,aes(x=continent,fill=continent)) + geom_bar(stat='count') + continent_scale 
+study <- ggplot(data=combined_phylogeographic_df,aes(x=type,fill=type)) + geom_bar(stat='count') + study_scale
+california <- ggplot(data=combined_phylogeographic_df,aes(x=california,fill=california)) + geom_bar(stat='count') + california_scale
 
 decade_legend <- cowplot::get_legend(decade) %>% cowplot::plot_grid()
 continent_legend <- cowplot::get_legend(continent) %>% cowplot::plot_grid() 
 study_legend <- cowplot::get_legend(study) %>% cowplot::plot_grid()
+california_legend <- cowplot::get_legend(california) %>% cowplot::plot_grid()
 
-legends <- cowplot::plot_grid(decade_legend,continent_legend,study_legend,ncol=3)
+legends <- cowplot::plot_grid(california_legend,study_legend,decade_legend,continent_legend,ncol=4)
 ```
  
 # Cowplot figure
-```{r,fig.width=10,fig.height=10}
-main <- cowplot::plot_grid(A + theme(legend.position = 'none'),B+ theme(legend.position = 'none'),C+ theme(legend.position = 'none'),D+ theme(legend.position = 'none'),ncol=2,labels = c("A. ST258","B. ST14","C. ST307","D. ST14"))
-figure <- cowplot::plot_grid(main,legends,ncol=1,rel_heights = c(1,0.1))
+```{r,fig.width=10,fig.height=15}
+main <- cowplot::plot_grid(A + theme(legend.position = 'none'),B+ theme(legend.position = 'none'),C+ theme(legend.position = 'none'),D+ theme(legend.position = 'none'),ncol=2,labels = c("A. ST258","B. ST307","C. ST14","D. ST17"))
+figure <- cowplot::plot_grid(main,legends,ncol=1,rel_heights = c(1,0.075))
 figure
-
-ggsave(filename = "./figures/s_figure_1_phylogeographic.png",plot = figure,dpi=900,bg='white',height=10,width=10)
 ```
 
-# Ancestral state reconstruction (will perform later)
-```{r} 
-# # ST258
-# ST258_CA_asr <- phyloAMR::asr(df=combined_phylogeographic_df %>% subset(isolate_no %in% tr_ST258$tip.label),tr=tr_ST258,'isolate_no',trait = "california_bin",model = 'MF')
-# 
-# ST258_CA_asr_cluster <- phyloAMR::asr_cluster_detection(df = combined_phylogeographic_df %>% subset(isolate_no %in% tr_ST258$tip.label),tr=tr_ST258,tip_name_variable = 'isolate_no',patient_id = 'participant_id',parent_child_df = ST258_CA_asr$parent_child_df,node_states = 'joint',confidence = NULL,simplify_faux_clusters = T,simplify_revertant = T,collapse_cluster = T)
-# 
-# ST258_CA_asr$parent_child_df %>% .$gain %>% table
-# ST258_CA_asr_cluster$singleton <- ST258_CA_asr_cluster$asr_cluster  =='singleton'
-# ST258_CA_asr_cluster$asr_cluster %>% table
-# 
-# #ST14
-# ST14_CA_asr <- phyloAMR::asr(df=combined_phylogeographic_df %>% subset(isolate_no %in% tr_ST14$tip.label),tr=tr_ST14,'isolate_no',trait = "california_bin")
-# ST14_CA_asr_cluster <- phyloAMR::asr_cluster_detection(df = combined_phylogeographic_df %>% subset(isolate_no %in% tr_ST14$tip.label),tr=tr_ST14,tip_name_variable = 'isolate_no',patient_id = 'participant_id',parent_child_df = ST14_CA_asr$parent_child_df,node_states = 'joint',confidence = NULL,simplify_faux_clusters = T,simplify_revertant = T,collapse_cluster = T)
-# 
-# ST14_CA_asr$parent_child_df %>% .$gain %>% table
-# ST14_CA_asr_cluster$asr_cluster %>% table
-# 
-# # ST17
-# ST17_CA_asr <- phyloAMR::asr(df=combined_phylogeographic_df %>% subset(isolate_no %in% tr_ST17$tip.label),tr=tr_ST17,'isolate_no',trait = "california_bin")
-# 
-# ST17_CA_asr_cluster <- phyloAMR::asr_cluster_detection(df = combined_phylogeographic_df %>% subset(isolate_no %in% tr_ST17$tip.label),tr=tr_ST17,tip_name_variable = 'isolate_no',patient_id = 'participant_id',parent_child_df = ST17_CA_asr$parent_child_df,node_states = 'joint',confidence = NULL,simplify_faux_clusters = T,simplify_revertant = T,collapse_cluster = T)
-# 
-# ST17_CA_asr$parent_child_df %>% .$gain %>% table
-# ST17_CA_asr_cluster$asr_cluster %>% table
-# 
-# # ST307
-# ST307_CA_asr <- phyloAMR::asr(df=combined_phylogeographic_df %>% subset(isolate_no %in% tr_ST307$tip.label),tr=tr_ST307,'isolate_no',trait = "california_bin",model = 'MF')
-# 
-# ST307_CA_asr_cluster <- phyloAMR::asr_cluster_detection(df = combined_phylogeographic_df %>% subset(isolate_no %in% tr_ST307$tip.label),tr=tr_ST307,tip_name_variable = 'isolate_no',patient_id = 'participant_id',parent_child_df = ST307_CA_asr$parent_child_df,node_states = 'joint',confidence = NULL,simplify_faux_clusters = T,simplify_revertant = T,collapse_cluster = T)
-# 
-# ST307_CA_asr$parent_child_df %>% .$gain %>% table
-# ST307_CA_asr_cluster$singleton <- ST307_CA_asr_cluster$asr_cluster  =='singleton'
-# ST307_CA_asr_cluster$asr_cluster %>% table
+```{r}
+ggsave(filename = "./figures/s_figure_1_phylogeographic.png",plot = figure,dpi=900,bg='white',height=15,width=10)
 ```
-
-
 

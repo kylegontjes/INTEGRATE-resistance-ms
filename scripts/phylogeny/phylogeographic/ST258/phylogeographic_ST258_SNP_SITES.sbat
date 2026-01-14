@@ -1,0 +1,12 @@
+#!/bin/sh
+#SBATCH --job-name=phylogeographic_ST258_snp_sites
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,FAIL,END,REQUEUE
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --nodes=1 --ntasks=1 --cpus-per-task=1 --mem=30g --time=3:00:00
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/phylogeographic/ST258/phylogeographic_ST258_snp_sites_slurm.out
+
+snp-sites /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/phylogeographic/ST258/concatenated_gene_nt_alignment.fasta -o /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/phylogeographic/ST258/phylogeographic_ST258_cognac_SNP_sites.fa
+

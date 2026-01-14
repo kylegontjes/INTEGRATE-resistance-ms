@@ -1,0 +1,25 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=kleborate_INTEGRATE_partition_365
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/public_genomes/kleborate/NCBI_Pathogens_Kpn_kleborate_partition_365.out
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=1 --mem=3g --time=3:00:00
+
+IFS=$'\n' # make newlines the only separator
+set -f # disable globbing
+
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/results
+
+# Version
+kleborate --version
+
+isolates=`cat /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/partitions/NCBI_Pathogens_Kpn_partition_365.txt` 
+IFS=$'\n' read -r -d "" -a assembly_array <<< "$isolates"
+
+kleborate -a "${assembly_array[@]}" -p kpsc -o partition_365 --trim_headers
+

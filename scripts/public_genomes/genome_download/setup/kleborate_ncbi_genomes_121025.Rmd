@@ -1,0 +1,140 @@
+---
+title: "kleborate_ncbi_genomes"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse","countrycode") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+# Genome list
+
+```{r}
+ncbi_list <- read_delim("../../../Sequence_data/public_genomes/kpneumoniae/metadata/NCBI_Pathogens_Kpn_isolates_121025.tsv")
+paste0("Number of pathogens entries: ",nrow(ncbi_list))
+```
+
+# Genome content
+```{r}
+ncbi_list$genome <- ncbi_list$Level %in% c("Complete Genome","Contig")
+paste0("Number of genomes: ",sum(ncbi_list$genome ))
+```
+
+
+# Date data
+```{r}
+get_date_fast <- function(x){ 
+  x <- as.character(x)
+
+  bad <- (x == "") | grepl("/", x, fixed = TRUE)
+  x[bad] <- NA
+
+  parsed <- lubridate::parse_date_time(
+    x,
+    orders = c("y", "ym", "ymd", "ymd_HMS"),
+    truncated = 3,
+    quiet = TRUE
+  )
+
+  lubridate::as_date(parsed)
+} 
+ 
+ncbi_list$collection_date <- get_date_fast(ncbi_list$`Collection date`)
+ncbi_list$collection_year <-  lubridate::year(ncbi_list$collection_date) 
+ncbi_list$has_date <- !is.na(ncbi_list$collection_date)
+paste0("Number of entries with collection date data: ", sum(ncbi_list$has_date))
+paste0("Number of entries without collection date data: ", sum(!ncbi_list$has_date))
+```
+
+# Location
+```{r}
+recode_country <- function(x){
+   split <- str_split(x,":",simplify = T)
+   country <- trimws(split[,1],which='both')
+   country <- ifelse(country %in% c("not available",'not collected','not determined','not provided',"missing", "-","","restricted access","Restricted access"),NA,country)
+   country <- recode(country,
+                     "Berlgium" = "Belgium",
+                     "Cambodge" = "Cambodia",
+                     "KSA" = "Kingdom of Saudi Arabia",
+                     "UAE" = "United Arab Emirates",
+                     "United Kingdom (England, Wales & N. Ireland)" = "United Kingdom",
+                     "USA" = "United States")
+   return(country)
+}
+
+recode_california <- function(x){
+   split <- str_split(x,":",simplify = T)
+   region2 <- trimws(split[,2],which='both')
+   region2 <- recode(region2,"CA" = "California",
+                     "CA, San Francisco"  = "California",
+                     "Cali" = "California",
+                     "Calif" = "California",
+                     "California, Davis"= "California",
+                     "California, Los Angeles County" = "California",  
+                     "California, Mono Lake"= "California",
+                     "California, UC San Diego Health" = "California",
+                     "Los Angeles" = "California",
+                     "Palo Alto, California" = "California",
+                     "San Diego, CA" = "California",
+                     "San Diego" = "California",
+                     "Santa Clara County, CA" = "California",
+                     "Torrance, CA" = "California",
+                     "UCSF Medical Center, San Francisco, California" = "California",
+                     "USA:Stanford" = "California"
+                     )
+  region2 == "California"
+}
+
+ncbi_list$country <-  recode_country(ncbi_list$Location)
+ncbi_list$california <-  recode_california(ncbi_list$Location)
+ncbi_list$continent <- countrycode(ncbi_list$country, origin = 'country.name', destination = 'continent')
+ncbi_list$has_location <- is.na(ncbi_list$country) ==F 
+ncbi_list$Penn_KPC_project <- grepl("PCMP",ncbi_list$`Isolate identifiers`) 
+no_location <- ncbi_list %>% subset(has_location==F)
+
+paste0("Number of entries with location data: ", sum(ncbi_list$has_location))
+paste0("Number of entries without location data: ", sum(!ncbi_list$has_location))
+paste0("Number of entries from California: ", sum( ncbi_list$california))
+paste0("Number of entries from Penn KPC project: ", sum(ncbi_list$Penn_KPC_project))
+paste0("Number of entries from California but not Penn KPC : ", sum(ncbi_list$california & !ncbi_list$Penn_KPC_project))
+```
+
+# Handle duplicates
+```{r}
+duplicate_isolates <- ncbi_list$`Isolate identifiers` %>% table %>% subset(.>1) %>% names()
+duplicated()
+```
+
+# Save data
+
+
+```{r}
+table(ncbi_list$has_location,ncbi_list$has_date,ncbi_list$genome,dnn=c("has location",'has date','Genome'))
+
+ncbi_list_w_date_location <- subset(ncbi_list,is.na(country)==F & is.na(collection_date)==F & genome==T & Penn_KPC_project ==F)
+paste0("Number of assemblies with date and location and not from Penn KPC project: ", nrow(ncbi_list_w_date_location))
+
+saveRDS(ncbi_list_w_date_location,"~/Desktop/gl_nfs/Project_INTEGRATE/Sequence_data/public_genomes/kpneumoniae/metadata/NCBI_Pathogens_Kpn_isolates_w_date_location_121025.RDS")
+writeLines(ncbi_list_w_date_location$Assembly,"~/Desktop/gl_nfs/Project_INTEGRATE/Sequence_data/public_genomes/kpneumoniae/metadata/NCBI_Pathogens_Kpn_isolates_w_date_location_assembly_list_121025.txt")
+```

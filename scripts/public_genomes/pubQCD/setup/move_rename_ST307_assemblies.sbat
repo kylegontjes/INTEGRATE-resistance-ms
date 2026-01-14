@@ -1,0 +1,17 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=move_rename_ST307_assemblies
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/public_genomes/pubQCD/move_rename_ST307_assemblies
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=1 --mem=5g --time=24:00:00
+ 
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/public_genomes/pubQCD/setup
+
+bash move_rename_ST307_assemblies.sh
+
+

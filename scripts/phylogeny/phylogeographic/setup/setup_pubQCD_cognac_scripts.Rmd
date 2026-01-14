@@ -1,0 +1,188 @@
+---
+title: "setup_cognac_runs"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+
+# Sample assembly list
+```{r}
+public_dataset <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/NCBI_metadata/NCBI_Pathogens_Kpn_metadata_isolates_w_spatiotemporal_data_121025.RDS")
+public_dataset$assembly_name <- public_dataset$Assembly
+paste0("Public genomes with isolate and spatiotemporal data: ",nrow(public_dataset))
+kleborate_genome_list <- readr::read_lines("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt")
+kleborate_genome_name <- str_split(kleborate_genome_list,pattern = '/',simplify = T) %>% .[,15]
+paste0("Public genomes tested for Kleborate: ",length(kleborate_genome_list))
+kleborate <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/results/NCBI_pathogens_Kpn_kleborate.txt")
+kleborate$assembly_name <- str_split(kleborate$strain,pattern = '_',simplify = T)   %>% .[,c(1,2)] %>% apply(.,1,paste0,collapse='_')
+paste0("Public genomes with Kleborate Kpn species complex entry: ",nrow(kleborate))
+paste0("Public genomes without Kleborate Kpn species complex entry: ",length(kleborate_genome_list) - nrow(kleborate))
+public_dataset <- left_join(public_dataset,kleborate)
+```
+
+# Load QCD data
+```{r}
+qcd <- read_csv("~/Desktop/gl_nfs/Project_INTEGRATE/Public_datasets/2025-12-15_all_Kleb_NCBI_Pathogen/illumina/master_qc_summary_assembly.csv")
+qcd$Assembly <- qcd$Sample
+qcd <- qcd %>% rename('mlst_ST'= 'ST' ,
+                      "pubQCD_N50"="N50")
+public_dataset <- left_join(public_dataset,qcd)
+```
+
+# Load integrate data
+```{r}
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
+df_kleborate <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kleborate_kpsc_both_studies.RDS") 
+df <- left_join(df,df_kleborate )
+```
+
+
+# Generate isolate list
+```{r}
+STs <- c("ST258","ST14","ST17","ST307")
+
+for(st in STs){
+  ST_df <- subset(public_dataset,ST== st & species == "Klebsiella pneumoniae")
+  ST_df_QC_free <- subset(ST_df, QC_warnings == "-" & `QC Check` == "PASS" & species_match == "strong") 
+  public_genomes <- ST_df_QC_free$Assembly
+  public_genomes_path <- paste("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Public_datasets/2025-12-15_all_Kleb_NCBI_Pathogen/assembly/illumina/prokka/",public_genomes,"/",public_genomes,".fna",sep="")
+  public_genomes_gff_path <- paste("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Public_datasets/2025-12-15_all_Kleb_NCBI_Pathogen/assembly/illumina/prokka/",public_genomes,"/",public_genomes,".gff",sep="")
+  # INTEGRATE
+ INTEGRATE_genomes <- subset(df,study == '2021-23' &  QC_warnings == "-" & qc_pass == T & species_match == "strong" & ST == st) %>% .$isolate_no
+ if(length(INTEGRATE_genomes)>0){
+ INTEGRATE_genomes_path <-   paste("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/prokka/",INTEGRATE_genomes,"/",INTEGRATE_genomes,".fna",sep = "")
+ INTEGRATE_genomes_gff_path <-   paste("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/prokka/",INTEGRATE_genomes,"/",INTEGRATE_genomes,".gff",sep="")
+ } else {
+   INTEGRATE_genomes_path <- c()
+   INTEGRATE_genomes_gff_path <- c()
+ }
+ # 2014-15
+ Penn_KPC_genomes <- subset(df,study == '2014-15' &  QC_warnings == "-" & qc_pass == T & species_match == "strong" & ST == st) %>% .$isolate_no
+ if(length(Penn_KPC_genomes)>0){
+ Penn_KPC_genomes_path <-   paste("/nfs/turbo/umms-esnitkin/Project_Penn_KPC/Sequence_data/assembly/illumina/prokka/",Penn_KPC_genomes,"/",Penn_KPC_genomes,".fna",sep = "")
+ Penn_KPC_genomes_gff_path <-   paste("/nfs/turbo/umms-esnitkin/Project_Penn_KPC/Sequence_data/assembly/illumina/prokka/",Penn_KPC_genomes,"/",Penn_KPC_genomes,".gff",sep="")  
+ } else {
+   Penn_KPC_genomes_path <- c()
+   Penn_KPC_genomes_gff_path <- c()
+ }
+ # Outgroup
+ outgroup <- "INT_CRE_1243"
+ outgroup_genomes_path <-   paste("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/prokka/",outgroup,"/",outgroup,".fna",sep = "")
+ outgroup_genomes_gff_path <-   paste("/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Sequence_data/assembly/illumina/prokka/",outgroup,"/",outgroup,".gff",sep="")
+ 
+ # Isolate list
+ isolate_list <- c(public_genomes,INTEGRATE_genomes,Penn_KPC_genomes,outgroup)
+ saveRDS(object = isolate_list,file =  paste0("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/phylogeny/phylogeographic/",st,"/",st,"_isolate_list.RDS"))
+ 
+ # Genomes
+ genomes <- c(public_genomes_path,INTEGRATE_genomes_path,Penn_KPC_genomes_path,outgroup_genomes_path) 
+ saveRDS(object = genomes,file =  paste0("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/phylogeny/phylogeographic/",st,"/",st,"_genomes_path.RDS"))
+ 
+ # Gffs
+ gffs <- c(public_genomes_gff_path,INTEGRATE_genomes_gff_path,Penn_KPC_genomes_gff_path,outgroup_genomes_gff_path)
+ saveRDS(object = gffs,file = paste0("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/phylogeny/phylogeographic/",st,"/",st,"_annotations_path.RDS"))
+}
+```
+
+# Create cognac R script
+```{bash}
+cd scripts/phylogeny/phylogeographic/setup
+
+echo "
+# Cognac Run
+# Start Date: 12/16/25
+# Population: public_ST isolates
+# Activate
+library(tidyverse)
+library(cognac)
+Sys.info()
+sessionInfo()
+
+setwd('/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+
+outDir = '/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/phylogeographic/public_ST/'
+
+genomic_id = readRDS('./scripts/phylogeny/phylogeographic/public_ST/public_ST_isolate_list.RDS')  
+fasta_files = readRDS('./scripts/phylogeny/phylogeographic/public_ST/public_ST_genomes_path.RDS')
+gff_files =  readRDS('./scripts/phylogeny/phylogeographic/public_ST/public_ST_annotations_path.RDS')
+
+# Run Conac requiring at least 500 genes are included in the alignment 
+cognac(
+  fastaFiles = fasta_files ,
+  featureFiles = gff_files,
+  outDir        = outDir,
+  minGeneNum    = 500,
+  maxMissGenes  = 0.05, 
+  njTree     = TRUE,
+  mapNtToAa = TRUE,
+  keepTempFiles = TRUE,
+  outGroup = 'INT_CRE_1243'
+)
+ " > cognac_phylogeographic_model.R
+```
+
+
+# Modify this script
+```{r}
+for(ST in STs){
+  R_script <- readr::read_lines('./scripts/phylogeny/phylogeographic/setup/cognac_phylogeographic_model.R') 
+  # job-name
+  R_script <- gsub("public_ST",ST,R_script) 
+  # Write file
+  writeLines(text = R_script,con = paste0("./scripts/phylogeny/phylogeographic/",ST,"/cognac_phylogeographic_",ST,".R"))
+}
+``` 
+
+# Create cognac sh script
+
+```{bash}
+cd scripts/phylogeny/phylogeographic/setup
+echo "#!/bin/sh
+# Job name
+#SBATCH --job-name=cognac_phylogeographic_public_ST
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=largemem
+#SBATCH --account=esnitkin1 
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=12 --mem-per-cpu=32g --time=24:00:00
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/phylogeographic/public_ST/cognac_INTEGRATE_slurm.out
+
+R CMD BATCH --no-restore --no-save --quiet ./cognac_phylogeographic_public_ST.R  /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/phylogeographic/public_ST/cognac_phylogeographic_public_ST_R_console.out
+" > cognac_phylogeographic_model.sbat
+```
+
+# Modify this script
+```{r}
+for(ST in STs){
+  sbat_script <- readr::read_lines('./scripts/phylogeny/phylogeographic/setup/cognac_phylogeographic_model.sbat') 
+  # job-name
+  sbat_script <- gsub("public_ST",ST,sbat_script) 
+  # Write file
+  writeLines(text = sbat_script,con = paste0("./scripts/phylogeny/phylogeographic/",ST,"/cognac_phylogeographic_",ST,".sbat"))
+}
+``` 

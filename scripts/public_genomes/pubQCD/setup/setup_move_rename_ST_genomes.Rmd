@@ -1,0 +1,97 @@
+---
+title: "setup_ST_pubQCD"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse","countrycode") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+# Load data
+```{r}
+public_dataset <- readRDS("./data/public_genomes/NCBI_metadata/NCBI_Pathogens_Kpn_metadata_isolates_w_spatiotemporal_data_121025.RDS")
+public_dataset$assembly_name <- public_dataset$Assembly
+paste0("Public genomes with isolate and spatiotemporal data: ",nrow(public_dataset))
+kleborate_genome_list <- readLines("./data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt")
+kleborate_genome_name <- str_split(kleborate_genome_list,pattern = '/',simplify = T) %>% .[,15]
+paste0("Public genomes tested for Kleborate: ",length(kleborate_genome_list))
+kleborate <- read_delim("./data/public_genomes/kleborate/results/NCBI_pathogens_Kpn_kleborate.txt")
+kleborate$assembly_name <- str_split(kleborate$strain,pattern = '_',simplify = T)   %>% .[,c(1,2)] %>% apply(.,1,paste0,collapse='_')
+paste0("Public genomes with Kleborate Kpn species complex entry: ",nrow(kleborate))
+paste0("Public genomes withiout Kleborate Kpn species complex entry: ",length(kleborate_genome_list) - nrow(kleborate))
+public_dataset <- left_join(public_dataset,kleborate)
+
+genome_paths <- readr::read_lines("./data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt")
+genome_paths_df <- data.frame(paths = genome_paths)
+genome_paths_df$assembly = str_split(pattern = "/",string=genome_paths_df$paths,simplify=T) %>% .[,15]
+paths <- setNames(genome_paths_df$paths, genome_paths_df$assembly)
+
+```
+
+# ST frequency
+```{r}
+STs <- c("ST258","ST14","ST17","ST307")
+
+STs_list <- pbmcapply::pbmclapply(STs,FUN=function(x){
+  print(x)
+  ST_df <- subset(public_dataset,species == "Klebsiella pneumoniae" & ST==x)
+  assemblies <-   ST_df$Assembly
+  paths <- paths[assemblies]  %>% gsub("/raw_assemblies/ncbi_dataset/data/","/NCBI_pathogens_kpn_assemblies/",.)
+  move_scripts <- paste0("mv ",paths," /scratch/esnitkin_root/esnitkin1/kgontjes/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/",x,"/",assemblies,".fna")
+  shebang <- c("#!/bin/bash")
+  writeLines(c(shebang,move_scripts),paste0("./scripts/public_genomes/pubQCD/setup/move_rename_",x,"_assemblies.sh"))
+},mc.cores=4) %>% `names<-`(STs)
+```
+
+```{bash}
+cd scripts/public_genomes/pubQCD/setup/
+
+echo '#!/bin/sh
+# Job name
+#SBATCH --job-name=move_rename_STs_assemblies
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/public_genomes/pubQCD/move_rename_STs_assemblies
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=1 --mem=5g --time=24:00:00
+ 
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/scripts/public_genomes/pubQCD/setup
+
+bash move_rename_STs_assemblies.sh
+
+' > model_move_rename_ST_script.sbat
+```
+
+# Edit the model script
+```{r}
+setwd("./scripts/public_genomes/pubQCD/setup") 
+for (ST in STs){
+  script <- readLines("./model_move_rename_ST_script.sbat") 
+  script <- gsub("STs",ST,script)  
+  writeLines(script,paste0("./move_rename_",ST,"_assemblies.sbat"))
+}
+```

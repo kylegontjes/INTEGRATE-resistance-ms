@@ -56,7 +56,143 @@ paste0("No Singleton ST: ",table(df_201415$Species_ST %>% subset(.!= "Klebsiella
 gontjesr::convert_tableone_into_df(dataset=df_201415,vars='Species_ST')
 ```
 
-# Did differences exist
+# Did differences exist among prevalence of existing lineages (ST258 and ST17)
 ```{r}
 convert_tableone_into_df(dataset = df,vars = c("ST258","ST17"),factorVars = c("ST258","ST17"),strata='study',argsNormal = "ST17",outcome_names = c("2014-15","2021-23"))
+```
+
+# Phylogeographic analyses
+## Reconstructions
+```{r}
+CA_asr <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs.RDS")
+CA_asr_cluster <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering.RDS")
+```
+
+## Clustering data
+```{r}
+STs <- names(CA_asr_cluster)
+
+phylogeographic_clustering_data <- lapply(STs,FUN=function(st){
+  CA_clustering <- CA_asr_cluster[[st]]
+  general_clustering_stats <- phyloAMR::asr_cluster_analysis(CA_clustering)
+  # Singletons
+  singletons <- subset(CA_clustering,asr_cluster_renamed=='Singleton') 
+  general_clustering_stats$singletons_PCMP <-  sum(grepl("PCMP_H",singletons$child_name))
+  general_clustering_stats$singletons_INTEGRATE <- sum(grepl("INT_CRE_",singletons$child_name))
+  general_clustering_stats$singletons_public <- nrow(singletons) - sum(general_clustering_stats$singletons_PCMP,general_clustering_stats$singletons_INTEGRATE)
+  
+  # Clustering
+  cluster_names <- CA_clustering$asr_cluster_renamed %>% subset(!.%in% c("No feature","Singleton")) %>% unique %>% sort
+  cluster_stats <- lapply(cluster_names,FUN=function(cluster_name){
+    cluster_df <- subset(CA_clustering,asr_cluster_renamed== cluster_name)
+    n_tips <- nrow(cluster_df)
+    n_participants <- length(unique(cluster_df$patient_id))
+    n_PCMP <- sum(grepl("PCMP_H",cluster_df$child_name))
+    n_INTEGRATE <- sum(grepl("INT_CRE_",cluster_df$child_name))
+    n_public <- n_tips - sum(n_PCMP,n_INTEGRATE) 
+    data.frame(
+      cluster_name=cluster_name,
+      n_tips=n_tips,
+      n_participants=n_participants,
+      n_PCMP=n_PCMP,
+      n_INTEGRATE=n_INTEGRATE,
+      n_public=n_public
+    )
+  }) %>% do.call(rbind,.)
+  
+  # Clustering summary statistics (i.e., number of all, PCMP_H + INTEGRATE, PCMP_H + )
+  sum_variables <- cluster_stats %>% select(n_PCMP,n_INTEGRATE,n_public)
+  cluster_stats$type <- apply(sum_variables,MARGIN=1,FUN=function(x){subset(x,x>0) %>% names() %>% paste0(collapse="_")}) %>% gsub("n_","",.) %>% gsub("_","+",.)
+   
+  list(clustering_info = cluster_stats,
+       general_clustering_stats=general_clustering_stats
+       ) 
+})  
+
+names(phylogeographic_clustering_data) <- STs
+```
+
+# ST258 - clonal expansion of existing lineages with multiple novel introductions and clear loss of circulating PCMP_H genomes
+1. Phylogenetic events: 16 
+
+2. Singletons: 5 public, 1 INTEGRATE, 1 PCMP_H
+
+3. Clusters: 9 clusters
+
+a. 6 involve PCMP_H isolates: 1 dead-end, 4 with all, 1 w/ only public
+
+b. 5 involve INTEGRATE isolates: 4 with all, 1 w/ only public
+
+c. 8 involve public isolates: 4 with all, 1 w/ PCMP_H, 1 w/ INTEGRATE, 2 w/ only public 
+
+```{r}
+paste0("Phylogeographic data for: ","ST258")
+phylogeographic_clustering_data$ST258$general_clustering_stats %>% favorite_kable()
+  
+paste0("Clustering data for: ","ST258")
+table(phylogeographic_clustering_data$ST258$clustering_info$type)
+
+phylogeographic_clustering_data$ST258$clustering_info %>% favorite_kable()
+```
+
+# ST307 - Many introductions with varying success
+
+1. Phylogenetic events: 15
+
+2. Singletons: 5 public + 3 INTEGRATE
+
+3. Clusters: 7 clusters
+
+a. 5 involve INTEGRATE isolates: 1 exclusive, 4 w/ public  
+
+b. 6 involve public isolates 4 with INTEGRATE, 2 unique
+
+```{r}
+paste0("Phylogeographic data for: ","ST307")
+phylogeographic_clustering_data$ST307$general_clustering_stats %>% favorite_kable()
+  
+paste0("Clustering data for: ","ST307")
+table(phylogeographic_clustering_data$ST307$clustering_info$type)
+
+phylogeographic_clustering_data$ST307$clustering_info %>% favorite_kable()
+```
+
+# ST14 - Capture of large circulating lineage and a few small minor introductions
+
+1. Phylogenetic events: 7
+
+2. Singletons: 5 public  
+
+3. Clusters: 2 clusters 
+
+a. Both involve INTEGRATE + public genomes. One is very large (138 INTEGRATE + 50 public) and another is small (1 INTEGRATE + 1 public)
+
+```{r}
+paste0("Phylogeographic data for: ","ST14")
+phylogeographic_clustering_data$ST14$general_clustering_stats %>% favorite_kable()
+  
+paste0("Clustering data for: ","ST14")
+table(phylogeographic_clustering_data$ST14$clustering_info$type)
+
+phylogeographic_clustering_data$ST14$clustering_info %>% favorite_kable()
+```
+
+# ST17 - Clonal expansion of existing population w/ minor dead end introductions
+
+1. Phylogenetic events: 7
+
+2. Singletons: 7 public  
+
+3. Clusters: 1 cluster
+
+a. Involves all groups: 2 PCMP_H, 33 INTEGRATE, and 9 public genomes 
+
+```{r}
+paste0("Phylogeographic data for: ","ST17")
+phylogeographic_clustering_data$ST17$general_clustering_stats %>% favorite_kable()
+  
+paste0("Clustering data for: ","ST17")
+table(phylogeographic_clustering_data$ST17$clustering_info$type)
+
+phylogeographic_clustering_data$ST17$clustering_info %>% favorite_kable()
 ```

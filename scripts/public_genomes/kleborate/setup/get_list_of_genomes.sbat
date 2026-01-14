@@ -1,0 +1,14 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=get_list_of_assembly_files_ncbi
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/public_genomes/genome_download/get_list_of_assembly_files_ncbi.out
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=1 --mem=5g --time=0:10:00
+
+# conda activate ncbi-datasets
+find /scratch/esnitkin_root/esnitkin1/kgontjes/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/raw_assemblies/ncbi_dataset/data/ -type f -name "*.fna" -print > /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt

@@ -1,0 +1,14 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=cognac_phylogeographic_ST307
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=largemem
+#SBATCH --account=esnitkin1 
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=12 --mem-per-cpu=32g --time=24:00:00
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/phylogeographic/ST307/cognac_INTEGRATE_slurm.out
+
+R CMD BATCH --no-restore --no-save --quiet ./cognac_phylogeographic_ST307.R  /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/phylogeographic/ST307/cognac_phylogeographic_ST307_R_console.out
+

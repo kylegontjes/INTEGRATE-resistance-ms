@@ -1,0 +1,89 @@
+---
+title: "setup_pubQCD_runs"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/scratch/pubQCD/')
+```
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+# Sbat script editing
+```{r}
+STs <- c("ST258","ST14","ST17","ST307")
+
+for(ST in STs){
+  sbat_script <- readr::read_lines('bash_script_to_run_assembly_pubQCD.sbat') 
+  # job-name
+  sbat_script <- gsub("run_pubQCD",paste0("NCBI_",ST,"_run_pubQCD"),sbat_script)
+  # Mail user
+  sbat_script <- gsub("dhatrib@umich.edu","kgontjes@umich.edu",sbat_script)
+  # Time
+  sbat_script <- gsub("--time=08","--time=96",sbat_script)
+  # config file
+  sbat_script <- gsub("config/config_assembly.yaml",paste0("config/config_assembly_NCBI_",ST,".yaml"),sbat_script)
+  # Write file
+  writeLines(sbat_script,paste0("./bash_script_to_run_assembly_pubQCD_NCBI_",ST,".sbat"))
+}
+```
+
+# Sample assembly list
+```{r}
+public_dataset <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/NCBI_metadata/NCBI_Pathogens_Kpn_metadata_isolates_w_spatiotemporal_data_121025.RDS")
+public_dataset$assembly_name <- public_dataset$Assembly
+paste0("Public genomes with isolate and spatiotemporal data: ",nrow(public_dataset))
+kleborate_genome_list <- readr::read_lines("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt")
+kleborate_genome_name <- str_split(kleborate_genome_list,pattern = '/',simplify = T) %>% .[,15]
+paste0("Public genomes tested for Kleborate: ",length(kleborate_genome_list))
+kleborate <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/results/NCBI_pathogens_Kpn_kleborate.txt")
+kleborate$assembly_name <- str_split(kleborate$strain,pattern = '_',simplify = T)   %>% .[,c(1,2)] %>% apply(.,1,paste0,collapse='_')
+paste0("Public genomes with Kleborate Kpn species complex entry: ",nrow(kleborate))
+paste0("Public genomes withiout Kleborate Kpn species complex entry: ",length(kleborate_genome_list) - nrow(kleborate))
+public_dataset <- left_join(public_dataset,kleborate)
+
+pbmcapply::pbmclapply(STs,FUN=function(x){ 
+  ST_df <- subset(public_dataset,species == "Klebsiella pneumoniae" & ST==x)
+  assemblies <- ST_df$Assembly
+  header <- c("sample_id")
+  writeLines(c("sample_id",assemblies),paste0("config/sample_assembly_NCBI_",x,".csv"))
+},mc.cores=4) 
+```
+
+# Update config file
+```{r}
+for(ST in STs){
+  config_file <- readr::read_lines('./config/config_assembly.yaml') 
+  # samples
+  config_file <- gsub("config/sample_assembly.csv",paste0("config/sample_assembly_NCBI_",ST,".csv"),config_file)
+  # Path
+  config_file <- gsub("/nfs/turbo/umms-esnitkin/Project_MRSA_CM/Public_datasets/2025-04-18_all-MRSA-USA300_NCBI/illumina/2025-04-18_MRSA-USA300-assemblies_NCBI/assembly_downloads",paste0("/scratch/esnitkin_root/esnitkin1/kgontjes/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/",ST),config_file)
+  # Prefix
+  config_file <- gsub("2025-05-29_Project_MRSA_USA_300_assembly_pubQCD",paste0("2025-12-23_Project_INTEGRATE_NCBI_Kpn_",ST,"_assembly_pubQCD"),config_file)
+  # Genome size
+  config_file <- gsub("genome_size: 3000000","genome_size: 5600000",config_file)
+  config_file <- gsub("assembly_length: 3500000","assembly_length: 5600000",config_file)
+  # Min contigs
+  config_file <- gsub("min_contigs: 10","min_contigs: 1",config_file) 
+  # Write file
+  writeLines(config_file,paste0("./config/config_assembly_NCBI_",ST,".yaml"))
+}
+```

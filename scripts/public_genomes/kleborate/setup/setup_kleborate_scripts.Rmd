@@ -1,0 +1,86 @@
+---
+title: "Describe pre-cleaned"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse","countrycode") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+```{r}
+genome_list <- readLines("./data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt")
+```
+
+# Partitions
+```{r}
+partitions <- split(genome_list,cut(seq_along(genome_list), 500, labels = FALSE))
+
+partition_name <- paste0("partition_",seq_len(length(partitions)))
+
+for(x in  1:500){
+  writeLines(partitions[[x]],paste0("./data/public_genomes/kleborate/partitions/NCBI_Pathogens_Kpn_partition_",x,".txt"))
+}
+```
+
+# Kleborate script
+
+```{bash}
+cd scripts/public_genomes/kleborate/setup
+
+echo '#!/bin/sh
+# Job name
+#SBATCH --job-name=kleborate_INTEGRATE_subset
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/public_genomes/kleborate/NCBI_Pathogens_Kpn_kleborate_subset.out
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=1 --mem=3g --time=3:00:00
+
+IFS=$'\''\n'\'' # make newlines the only separator
+set -f # disable globbing
+
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/results
+
+# Version
+kleborate --version
+
+isolates=`cat /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/partitions/NCBI_Pathogens_Kpn_subset.txt` 
+IFS=$'\''\n'\'' read -r -d "''" -a assembly_array <<< "$isolates"
+
+kleborate -a "${assembly_array[@]}" -p kpsc -o subset --trim_headers
+' > model_public_kleborate_partition.sbat
+```
+
+# Edit these
+```{r}
+setwd("./scripts/public_genomes/kleborate/") 
+for (partition in partition_name){
+  script <- readLines("./setup/model_public_kleborate_partition.sbat") 
+  script <- gsub("subset",partition,script)  
+  writeLines(script,paste0("./scripts/public_genomes_kleborate_",partition,".sbat"))
+}
+```

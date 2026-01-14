@@ -1,0 +1,110 @@
+---
+title: "Phylogeographic ancestral state reconstruction of california"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse",'ape','ggtree','phytools','phyloAMR')
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+
+# Sample assembly list
+```{r}
+public_dataset <- readRDS("./data/public_genomes/NCBI_metadata/NCBI_Pathogens_Kpn_metadata_isolates_w_spatiotemporal_data_121025.RDS")
+public_dataset$assembly_name <- public_dataset$Assembly
+paste0("Public genomes with isolate and spatiotemporal data: ",nrow(public_dataset))
+kleborate_genome_list <- readr::read_lines("./data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt")
+kleborate_genome_name <- str_split(kleborate_genome_list,pattern = '/',simplify = T) %>% .[,15]
+paste0("Public genomes tested for Kleborate: ",length(kleborate_genome_list))
+kleborate <- read_delim("./data/public_genomes/kleborate/results/NCBI_pathogens_Kpn_kleborate.txt")
+kleborate$assembly_name <- str_split(kleborate$strain,pattern = '_',simplify = T)   %>% .[,c(1,2)] %>% apply(.,1,paste0,collapse='_')
+paste0("Public genomes with Kleborate Kpn species complex entry: ",nrow(kleborate))
+paste0("Public genomes without Kleborate Kpn species complex entry: ",length(kleborate_genome_list) - nrow(kleborate))
+public_dataset <- left_join(public_dataset,kleborate)
+```
+
+# Load QCD data
+```{r}
+qcd <- read_csv("../../..//Public_datasets/2025-12-15_all_Kleb_NCBI_Pathogen/illumina/master_qc_summary_assembly.csv")
+qcd$Assembly <- qcd$Sample
+qcd <- qcd %>% rename('mlst_ST'= 'ST' ,
+                      "pubQCD_N50"="N50")
+public_dataset <- left_join(public_dataset,qcd)
+public_dataset$isolate_no <- public_dataset$Assembly 
+public_dataset$participant_id <- public_dataset$Assembly
+```
+
+# Load integrate data
+```{r}
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
+df_kleborate <- readRDS("./data/kleborate/kleborate_kpsc_both_studies.RDS") 
+df <- left_join(df,df_kleborate)
+df$country <- "United States"
+df$california <- TRUE
+```
+
+# Merge dataset
+```{r}
+voi <- c('isolate_no','participant_id','ST','collection_date','collection_year','continent','country','california')
+combined_phylogeographic_df <- bind_rows(public_dataset %>% select(any_of(voi)),df %>% select(any_of(voi))) %>% as.data.frame
+rownames(combined_phylogeographic_df) <- combined_phylogeographic_df$isolate_no   
+combined_phylogeographic_df$california_bin <- ifelse(combined_phylogeographic_df$california==T,1,0)
+```
+
+# Trees 
+```{r}
+tr_ST14 <- read.tree("./data/phylogeny/phylogeographic/ST14/phylogeographic_ST14.treefile") %>% drop.tip("INT_CRE_1243") 
+tr_ST17 <- read.tree("./data/phylogeny/phylogeographic/ST17/phylogeographic_ST17.treefile") %>% drop.tip("INT_CRE_1243")  
+tr_ST307 <- read.tree("./data/phylogeny/phylogeographic/ST307/phylogeographic_ST307.treefile") %>% drop.tip("INT_CRE_1243") 
+tr_ST258 <- read.tree("./data/phylogeny/phylogeographic/ST258/phylogeographic_ST258.treefile") %>% drop.tip("INT_CRE_1243")  
+```
+
+# Ancestral state reconstruction
+## Reconstruction
+```{r}
+STs <- c('ST17','ST14',"ST258","ST307")
+
+CA_asr <- pbmcapply::pbmclapply(STs,FUN=function(st){
+  tree <- get(paste0("tr_",st))
+  dataset <- combined_phylogeographic_df %>% subset(isolate_no %in% tree$tip.label)
+  asr_obj <- asr(df=dataset,tr=tree,'isolate_no',trait = "california_bin",model = 'MF',node_states = 'joint',upper_bound = 1e50,lower_bound = 1e-9 , confidence_threshold = NULL)
+  return(asr_obj)
+}, mc.cores = 4) 
+
+names(CA_asr) <- STs
+saveRDS(CA_asr,"./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs.RDS")
+```
+
+## CA ASR Clustering
+```{r}
+CA_asr_cluster <- pbmcapply::pbmclapply(STs,FUN=function(st){
+  tree <- get(paste0("tr_",st))
+  dataset <- combined_phylogeographic_df %>% subset(isolate_no %in% tree$tip.label)
+  parent_child_dataset <- CA_asr[[st]]$parent_child_df
+  cluster_obj <- asr_cluster_detection(df = dataset,tr=tree,tip_name_variable = 'isolate_no',patient_id = 'participant_id',parent_child_df = parent_child_dataset, node_states = 'joint', confidence = NULL, simplify_faux_clusters = T, simplify_revertant = T, collapse_cluster = T)
+  return(cluster_obj)
+}, mc.cores = 4)
+
+names(CA_asr_cluster) <- STs
+saveRDS(CA_asr_cluster,"./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering.RDS")
+```

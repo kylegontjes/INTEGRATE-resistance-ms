@@ -1,0 +1,89 @@
+---
+title: "setup_phylogeographic_IQTree"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+# Create SNPSites script
+```{bash}
+cd scripts/phylogeny/phylogeographic/setup
+
+echo "#!/bin/sh
+#SBATCH --job-name=phylogeographic_public_ST_snp_sites
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,FAIL,END,REQUEUE
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --nodes=1 --ntasks=1 --cpus-per-task=1 --mem=30g --time=3:00:00
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/phylogeographic/public_ST/phylogeographic_public_ST_snp_sites_slurm.out
+
+snp-sites /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/phylogeographic/public_ST/concatenated_gene_nt_alignment.fasta -o /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/phylogeographic/public_ST/phylogeographic_public_ST_cognac_SNP_sites.fa
+" > SNP_Sites_model_script.sbat
+```
+
+# Modify this script
+```{r}
+STs <- c("ST14",'ST17',"ST258","ST307")
+for(ST in STs){
+  SNP_Sites_script <- readr::read_lines('./scripts/phylogeny/phylogeographic/setup/SNP_Sites_model_script.sbat') 
+  # job-name
+  SNP_Sites_script <- gsub("public_ST",ST,SNP_Sites_script) 
+  # Write file
+  writeLines(text = SNP_Sites_script,con = paste0("./scripts/phylogeny/phylogeographic/",ST,"/phylogeographic_",ST,"_SNP_SITES.sbat"))
+}
+``` 
+# Create 
+
+```{bash}
+cd scripts/phylogeny/phylogeographic/setup
+echo "#!/bin/sh
+#SBATCH --job-name=phylogeographic_public_ST_IQTREE
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,FAIL,END,REQUEUE
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --nodes=1 --ntasks=1 --cpus-per-task=10 --mem=80g --time=140:00:00
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/phylogeny/phylogeographic/public_ST/phylogeographic_public_ST_IQTREE2_slurm.out
+
+## Note: Chang the mail-user, account, and SBATCH mem/time requirements as you see fit
+iqtree -s /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/phylogeographic/public_ST/phylogeographic_public_ST_cognac_SNP_sites.fa -T AUTO -o INT_CRE_1243 -B 5000 -nstop 200 -pre /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/phylogeny/phylogeographic/public_ST/phylogeographic_public_ST
+" > IQTree_model_script.sbat
+```
+
+```{r}
+for(ST in STs){
+  IQTREE_sbat <- readr::read_lines('./scripts/phylogeny/phylogeographic/setup/IQTree_model_script.sbat') 
+  # job-name
+  IQTREE_sbat <- gsub("public_ST",ST,IQTREE_sbat) 
+  # Write file
+  writeLines(text = IQTREE_sbat,con = paste0("./scripts/phylogeny/phylogeographic/",ST,"/phylogeographic_",ST,"_IQTREE.sbat"))
+}
+``` 
+```
+
+
