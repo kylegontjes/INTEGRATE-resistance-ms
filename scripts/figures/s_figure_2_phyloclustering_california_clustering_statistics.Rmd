@@ -1,0 +1,123 @@
+---
+title: "Supplemental Figure 2: Phylogenetic clustering statistics"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
+```
+
+```{r}
+# Packages
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr")
+lapply(packages,library,character.only=T)
+
+# Functions
+source("./lib/consistent_themes.R")
+
+# Print environment
+Sys.info()
+sessionInfo()
+```
+# Phylogeographic analyses
+## Reconstructions
+```{r}
+CA_asr <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs.RDS")
+CA_asr_cluster <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering.RDS")
+```
+
+## Clustering data
+```{r}
+STs <- names(CA_asr_cluster)
+
+phylogeographic_clustering_data <- lapply(STs,FUN=function(st){
+  CA_clustering <- CA_asr_cluster[[st]]
+  general_clustering_stats <- phyloAMR::asr_cluster_analysis(CA_clustering)
+  # Singletons
+  singletons <- subset(CA_clustering,asr_cluster_renamed=='Singleton') 
+  general_clustering_stats$singletons_PCMP <-  sum(grepl("PCMP_H",singletons$child_name))
+  general_clustering_stats$singletons_INTEGRATE <- sum(grepl("INT_CRE_",singletons$child_name))
+  general_clustering_stats$singletons_public <- nrow(singletons) - sum(general_clustering_stats$singletons_PCMP,general_clustering_stats$singletons_INTEGRATE)
+  
+  # Clustering
+  cluster_names <- CA_clustering$asr_cluster_renamed %>% subset(!.%in% c("No feature","Singleton")) %>% unique %>% sort
+  cluster_stats <- lapply(cluster_names,FUN=function(cluster_name){
+    cluster_df <- subset(CA_clustering,asr_cluster_renamed== cluster_name)
+    n_tips <- nrow(cluster_df)
+    n_participants <- length(unique(cluster_df$patient_id))
+    n_PCMP <- sum(grepl("PCMP_H",cluster_df$child_name))
+    n_INTEGRATE <- sum(grepl("INT_CRE_",cluster_df$child_name))
+    n_public <- n_tips - sum(n_PCMP,n_INTEGRATE) 
+    data.frame(
+      cluster_name=cluster_name,
+      n_tips=n_tips,
+      n_participants=n_participants,
+      n_PCMP=n_PCMP,
+      n_INTEGRATE=n_INTEGRATE,
+      n_public=n_public
+    )
+  }) %>% do.call(rbind,.)
+  
+  # Clustering summary statistics (i.e., number of all, PCMP_H + INTEGRATE, PCMP_H + )
+  sum_variables <- cluster_stats %>% select(n_PCMP,n_INTEGRATE,n_public)
+  cluster_stats$type <- apply(sum_variables,MARGIN=1,FUN=function(x){subset(x,x>0) %>% names() %>% paste0(collapse="_")}) %>% gsub("n_","",.) %>% gsub("_","+",.)
+   
+  list(clustering_info = cluster_stats,
+       general_clustering_stats=general_clustering_stats
+       ) 
+})  
+
+names(phylogeographic_clustering_data) <- STs
+```
+ 
+# Table
+
+```{r}
+# Figure X table
+mytheme <- ttheme_minimal(core = list(fg_params = list(hjust=0, vjust = 0.5 ,x=0.1, fontsize=8.75),padding = unit(c(4.5, 2), "mm")),
+                          colhead = list(fg_params = list(hjust=0, vjust = 0.5, x=0.1, fontsize=8.75, fontface="bold"),padding = unit(c(2, 2), "mm")),
+                          rowhead=list(fg_params=list(hjust=0, x=0)))
+
+general_statistics <- rbind(phylogeographic_clustering_data$ST258$general_clustering_stats%>% mutate(ST='ST258'),phylogeographic_clustering_data$ST307$general_clustering_stats%>% mutate(ST='ST307')) %>% rbind(.,phylogeographic_clustering_data$ST14$general_clustering_stats%>% mutate(ST='ST14')) %>% rbind(.,phylogeographic_clustering_data$ST17$general_clustering_stats%>% mutate(ST='ST17'))
+
+general_statistics <- general_statistics %>%select(ST,present,no_feature,phylogenetic_events,singletons,singletons_PCMP,singletons_INTEGRATE,singletons_public, clusters, cluster_isolates, cluster_size_median,cluster_size_range) 
+general_statistics$cluster_median_range <- paste0(general_statistics$cluster_size_median," (",general_statistics$cluster_size_range,")")
+general_statistics <- general_statistics %>% select(-cluster_size_median,-cluster_size_range)
+colnames(general_statistics) <- c("Sequence\ntype (ST)","California\nisolates","Other\ngenomes","Phylogenetic\n events","Singletons","Singletons\n[2014-15 study]","Singletons\n[2021-23 study]","Singletons\n[Public]","Clusters","Cluster\n isolates","Cluster size\nmedian (range)")
+rownames(general_statistics) <- NULL
+ 
+A <-  general_statistics %>% tableGrob(rows = NULL,theme = mytheme)
+```
+
+# Cluster dynamics data (i.e., membership in study)
+```{r}
+clustering_data <- rbind(phylogeographic_clustering_data$ST258$clustering_info %>% mutate(ST='ST258'),phylogeographic_clustering_data$ST307$clustering_info %>% mutate(ST='ST307')) %>% rbind(phylogeographic_clustering_data$ST14$clustering_info %>% mutate(ST='ST14')) %>% rbind(phylogeographic_clustering_data$ST17$clustering_info %>% mutate(ST='ST17'))
+ 
+clustering_data_melt <- clustering_data %>% reshape2::melt(id.vars = c("ST","cluster_name"))  %>% subset(variable %in% c("n_PCMP","n_INTEGRATE","n_public"))
+clustering_data_melt$value <- as.numeric(clustering_data_melt$value)
+clustering_data_melt$variable <- recode(clustering_data_melt$variable,
+                                        "n_PCMP" = "2014-15 Study",
+                                        "n_INTEGRATE" = "2021-23 Study",
+                                        "n_public" = "Public genomes")
+                                         
+clustering_data_melt$ST <- factor(clustering_data_melt$ST,levels = c("ST258","ST307","ST14","ST17"))
+study_scale <- scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown",gray(0.2)),name = "California genome",guide = guide_legend(nrow=1,order=1),drop=FALSE)
+
+B <- ggplot(data=clustering_data_melt ,aes(x=value,fill=variable,y=cluster_name)) + geom_bar(stat='identity') + facet_wrap(~ST,scales = "free_x") + theme_bw_me + xlab("Number of isolates") + ylab("Phylogenetic clustering of California isolates") +  scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown",gray(0.2)),name = "California genomes",guide = guide_legend(nrow=1,order=1))
+```
+
+```{r,fig.width=8.5,fig.height=6.8}
+figure <- cowplot::plot_grid(A,B,ncol=1,rel_heights = c(0.25,1),labels = c("A","B"))
+figure
+```
+
+
+```{r}
+ggsave(filename = "./figures/s_figure_2_phylogeographic_clustering_statistics.png",plot = figure,dpi=900,bg='white',height=6.8,width=8.5)
+```
+
