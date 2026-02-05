@@ -161,7 +161,7 @@ B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvi
 B
 ``` 
 
-# D. Kpn ST258
+# D. Compare carbapenemases among Kpn ST258
 ```{r}
 ST_dist_ST258 <-  df %>% subset(Species_ST == "Klebsiella pneumoniae ST258") %>%
   count(study, carbapenemase) %>%
@@ -182,6 +182,7 @@ D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,
 D
 ```
 
+# Construct the figure 
 ```{r,fig.width=9,fig.height=7.2} 
 AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=12)  
 CD <-  cowplot::plot_grid(C + theme(legend.position = 'none'),D + theme(legend.position = 'none'),ncol=2,labels = c("C","D"),label_size = 12,rel_widths = c(1,.33))

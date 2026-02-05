@@ -7,7 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 require(knitr)
-knitr::opts_chunk$set(echo = TRUE)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
@@ -63,6 +64,7 @@ mobtyper_mat <- readRDS("./data/mobsuite/mobtyper_merged_w_carbapenemase_data.RD
 
 ## KPC
 ```{r} 
+paste0("Detected plasmids: ",paste0(KPC_plasmid_matrix %>% select(-Chromosome, -`No carbapenemase`) %>% select_if(colSums(.)>0)  %>% colnames(),collapse = " "))
 paste0("Total plasmids: ",ncol(KPC_plasmid_matrix %>% select(-Chromosome, -`No carbapenemase`) %>% select_if(colSums(.)>0) ))
 old_plasmids <- KPC_plasmid_matrix %>% subset(grepl("PCMP",rownames(.)))%>% select(-Chromosome, -`No carbapenemase`)   %>% colSums(.) %>% subset(.>0) %>% names
 new_plasmids <- KPC_plasmid_matrix %>% subset(grepl("INT",rownames(.)))%>% select(-Chromosome, -`No carbapenemase`)  %>% colSums(.) %>% subset(.>0) %>% names
@@ -70,7 +72,9 @@ ggVennDiagram::ggVennDiagram(list(Old = old_plasmids, New = new_plasmids))
 
 shared_kpc_plasmids <- intersect(old_plasmids,new_plasmids)
 variables <-  c("carbapenemase_plasmid",shared_kpc_plasmids,'Chromosome')
-gontjesr::convert_tableone_into_df(dataset=df %>% subset(carbapenemase_plasmid != "No carbapenemase"),vars =variables,strata='study',outcome_names = c("2014-15",'2021-23'),argsNormal = "carbapenemase_plasmid",factorVars =variables) %>% favorite_kable()
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(carbapenemase_plasmid != "No carbapenemase"),vars =variables,strata='study',outcome_names = c("2014-15",'2021-23'),factorVars =variables,exact = 'carbapenemase_plasmid') %>% favorite_kable()
+
+table(df %>% subset(carbapenemase_plasmid != "No carbapenemase") %>% .$carbapenemase_plasmid, df %>% subset(carbapenemase_plasmid != "No carbapenemase") %>% .$study) %>% fisher.test(simulate.p.value = T)
 ```
 
 ## ST258
@@ -83,5 +87,7 @@ ST258_plasmids_new <- KPC_plasmid_matrix %>% subset(rownames(.) %in% c(df %>% su
 
 ggVennDiagram::ggVennDiagram(list(Old = ST258_plasmids_old, New = ST258_plasmids_new))
 
-gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='ST258' & carbapenemase_plasmid != "No carbapenemase"),vars = variables,strata='study',outcome_names = c("2014-15",'2021-23'),argsNormal = 'carbapenemase_plasmid',factorVars = variables) %>% favorite_kable()
+gontjesr::convert_tableone_into_df(dataset=df %>% subset(ST=='ST258' & carbapenemase_plasmid != "No carbapenemase"),vars = variables,strata='study',outcome_names = c("2014-15",'2021-23'),exact = 'carbapenemase_plasmid',factorVars = variables) %>% favorite_kable()
+
+table(df %>% subset(carbapenemase_plasmid != "No carbapenemase" & ST=="ST258") %>% .$carbapenemase_plasmid, df %>% subset(carbapenemase_plasmid != "No carbapenemase" & ST=="ST258") %>% .$study) %>% fisher.test(simulate.p.value = T)
 ```

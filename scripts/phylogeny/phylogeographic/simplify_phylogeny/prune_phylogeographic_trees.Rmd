@@ -1,0 +1,184 @@
+---
+title: "Simplify the INTEGRATE phylogeographic phylogenies to reduce complexity "
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse",'ape','ggtree','phytools','phangorn')
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+
+# Theme
+source("./lib/consistent_themes.R")
+```
+
+
+# Sample assembly list
+```{r}
+public_dataset <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/NCBI_metadata/NCBI_Pathogens_Kpn_metadata_isolates_w_spatiotemporal_data_121025.RDS")
+public_dataset$assembly_name <- public_dataset$Assembly
+paste0("Public genomes with isolate and spatiotemporal data: ",nrow(public_dataset))
+kleborate_genome_list <- readr::read_lines("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt")
+kleborate_genome_name <- str_split(kleborate_genome_list,pattern = '/',simplify = T) %>% .[,15]
+paste0("Public genomes tested for Kleborate: ",length(kleborate_genome_list))
+kleborate <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/results/NCBI_pathogens_Kpn_kleborate.txt")
+kleborate$assembly_name <- str_split(kleborate$strain,pattern = '_',simplify = T)   %>% .[,c(1,2)] %>% apply(.,1,paste0,collapse='_')
+paste0("Public genomes with Kleborate Kpn species complex entry: ",nrow(kleborate))
+paste0("Public genomes without Kleborate Kpn species complex entry: ",length(kleborate_genome_list) - nrow(kleborate))
+public_dataset <- left_join(public_dataset,kleborate)
+```
+
+# Load QCD data
+```{r}
+qcd <- read_csv("~/Desktop/gl_nfs/Project_INTEGRATE/Public_datasets/2025-12-15_all_Kleb_NCBI_Pathogen/illumina/master_qc_summary_assembly.csv")
+qcd$Assembly <- qcd$Sample
+qcd <- qcd %>% rename('mlst_ST'= 'ST' ,
+                      "pubQCD_N50"="N50")
+public_dataset <- left_join(public_dataset,qcd)
+public_dataset$isolate_no <- public_dataset$Assembly 
+public_dataset$participant_id <- public_dataset$Assembly
+```
+
+# Load integrate data
+```{r}
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
+df_kleborate <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kleborate_kpsc_both_studies.RDS") 
+df <- left_join(df,df_kleborate )
+df$country <- "United States"
+df$california <- TRUE
+df$continent <- "Americas"
+df$collection_date <- df$date
+df$collection_year <- df$year
+```
+
+# Merge dataset
+```{r}
+voi <- c('isolate_no','participant_id','ST','collection_date','collection_year','continent','country','california')
+combined_phylogeographic_df <- bind_rows(public_dataset %>% select(any_of(voi)),df %>% select(any_of(voi))) %>% as.data.frame
+rownames(combined_phylogeographic_df) <- combined_phylogeographic_df$isolate_no 
+combined_phylogeographic_df$collection_decade <- floor(combined_phylogeographic_df$collection_year/10)*10
+combined_phylogeographic_df$collection_year_fct <- as.factor(combined_phylogeographic_df$collection_year)
+combined_phylogeographic_df$type <- ifelse(grepl("PCMP_H",combined_phylogeographic_df$isolate_no),"2014-15 Study",
+                                           ifelse(grepl("INT_CRE_",combined_phylogeographic_df$isolate_no),"2021-23 Study","Public genomes"))
+combined_phylogeographic_df$california_bin <- ifelse(combined_phylogeographic_df$california==T,1,0)
+
+# Factor
+combined_phylogeographic_df$collection_decade <- factor(combined_phylogeographic_df$collection_decade,levels = c("1980",'1990','2000','2010','2020'))
+combined_phylogeographic_df$continent <- factor(combined_phylogeographic_df$continent,levels = c("Africa","Americas","Asia","Europe","Oceania"))
+combined_phylogeographic_df$california <- factor(combined_phylogeographic_df$california,levels = c(TRUE,FALSE))
+combined_phylogeographic_df$type <- factor(combined_phylogeographic_df$type,levels = c("2014-15 Study","2021-23 Study","Public genomes"))
+
+# California tips
+CA_tips <- combined_phylogeographic_df %>% subset(california==T) %>% .$isolate_no
+```
+
+# Trees 
+```{r}
+tr_ST14 <- read.tree("./data/phylogeny/phylogeographic/ST14/phylogeographic_ST14.treefile") %>% drop.tip("INT_CRE_1243") 
+tr_ST17 <- read.tree("./data/phylogeny/phylogeographic/ST17/phylogeographic_ST17.treefile") %>% drop.tip("INT_CRE_1243")  
+tr_ST307 <- read.tree("./data/phylogeny/phylogeographic/ST307/phylogeographic_ST307.treefile") %>% drop.tip("INT_CRE_1243") 
+tr_ST258 <- read.tree("./data/phylogeny/phylogeographic/ST258/phylogeographic_ST258.treefile") %>% drop.tip("INT_CRE_1243")  
+```
+
+# Prune trees
+```{r}
+prune_tree <- function(tree, dataset, sequence_type) {
+  p <- ggtree(tree)
+  p$data <- p$data %>% left_join(
+    combined_phylogeographic_df %>% subset(ST == sequence_type),
+    by = c("label" = "isolate_no")
+  )
+  # Mark trait data and california
+  p$data$trait_combo <- paste(p$data$continent, p$data$collection_decade, sep = "_")
+  p$data$CA_tip <- p$data$california_bin == 1
+  # Flag as collapsable
+  p$data$collapse_candidate <- FALSE
+  for (i in nrow(p$data):1) {
+    if (!p$data$isTip[i]) {
+      descendants <- getDescendants(tree, p$data$node[i])
+      tip_descendants <- p$data[p$data$node %in% descendants &
+                                    p$data$isTip, ]
+        
+        traits <- unique(tip_descendants$trait_combo)
+        has_CA <- any(tip_descendants$california_bin == 1) 
+        if (length(traits) == 1 && !has_CA) {
+          p$data$collapse_candidate[i] <- TRUE
+        }
+    }
+  }
+  # To collapse nodes
+  collapse_nodes <- p$data %>% subset(collapse_candidate == T) %>% .$node %>% sort(decreasing = T)
+  get_descendants_to_remove <- pbmcapply::pbmclapply(
+    collapse_nodes,
+    FUN = function(x) {
+      tree$tip.label[unlist(phangorn::Descendants(tree, node = x, type = 'tips'))]
+    },
+    mc.cores = 7
+  ) %>% unlist %>% sort %>% unique
+  # Drop tips
+  tree_pruned <- drop.tip(tree, get_descendants_to_remove)
+  tree_pruned
+}
+```
+
+# Run on actual data
+```{r}
+# ST14
+tr_ST14_pruned <- prune_tree(tr_ST14, combined_phylogeographic_df, "ST14")
+write.tree(phy = tr_ST14_pruned,file = "./data/phylogeny/phylogeographic/ST14/phylogeographic_ST14_pruned.treefile")
+# ST17
+tr_ST17_pruned <- prune_tree(tr_ST17, combined_phylogeographic_df, "ST17")
+write.tree(phy = tr_ST17_pruned,file = "./data/phylogeny/phylogeographic/ST17/phylogeographic_ST17_pruned.treefile")
+# ST258
+tr_ST258_pruned <- prune_tree(tr_ST258, combined_phylogeographic_df, "ST258")
+write.tree(phy = tr_ST258_pruned,file = "./data/phylogeny/phylogeographic/ST258/phylogeographic_ST258_pruned.treefile")
+# ST307
+tr_ST307_pruned <- prune_tree(tr_ST307, combined_phylogeographic_df, "ST307")
+write.tree(phy = tr_ST307_pruned,file = "./data/phylogeny/phylogeographic/ST307/phylogeographic_ST307_pruned.treefile")
+```
+
+# Tree differences
+## ST14
+```{r}
+ggtree(tr_ST14)
+ggtree(tr_ST14_pruned)
+```
+
+## ST17
+```{r}
+ggtree(tr_ST17)
+ggtree(tr_ST17_pruned)
+```
+
+## ST258
+```{r}
+ggtree(tr_ST258)
+ggtree(tr_ST258_pruned)
+```
+
+## ST307
+```{r}
+ggtree(tr_ST307)
+ggtree(tr_ST307_pruned)
+```
+
+

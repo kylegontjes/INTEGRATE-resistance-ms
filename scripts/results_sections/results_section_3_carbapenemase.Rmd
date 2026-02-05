@@ -7,8 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
-opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
@@ -49,7 +49,7 @@ ST_major_scale <- scale_fill_manual(values = ST_palette,name = "Major sequence t
 
 # Load  carbapenemase content
 ```{r}
-carbapenemase_content <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
+carbapenemase_content <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS") 
 df <- left_join(df,carbapenemase_content)
 
 df$blaKPC_presence <- grepl("KPC",df$carbapenemase_family) 
@@ -57,6 +57,7 @@ df$blaKPC_2 <- grepl("KPC-2",df$carbapenemase)  & !grepl("KPC-29",df$carbapenema
 df$blaNDM <- grepl("NDM",df$carbapenemase)
 df$blaOXA <- grepl("OXA",df$carbapenemase)
 df$no_carbapenemase <- grepl("No carbapenemase",df$carbapenemase_family) 
+df$blactamase_non_carbapenmase_bin <- df$blactamase_non_carbapenemase != 'No blactamase' 
 ```
 
 # Load omp matrix
@@ -67,22 +68,24 @@ df <- left_join(df,carb_omp)
 df$OmpK36_mutation <- df %>% as.data.frame %>% select_if(grepl("OmpK36",colnames(.)) | grepl("ompK36",colnames(.))) %>% rowSums() %>% {ifelse(.>0,1,0)}
 df$OmpK35_mutation <- df %>% as.data.frame %>% select_if(grepl("OmpK35",colnames(.)) | grepl("ompK35",colnames(.))) %>% rowSums() %>% {ifelse(.>0,1,0)}
 df$porin_mutation <-  df$OmpK36_mutation  == 1 | df$OmpK35_mutation ==1
+df$non_carbapenemase_blactam_andor_omp_mutation <- df$blactamase_non_carbapenmase_bin==T | df$porin_mutation == T
+df$non_carbapenemase_blactam_and_omp_mutation <- df$blactamase_non_carbapenmase_bin==T & df$porin_mutation == T
 ```  
 
 # Differences across study periods in carbapenemase
 ```{r}
-convert_tableone_into_df(dataset = df,vars = c('blaKPC_presence',"blaNDM","blaOXA",'carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation"),strata = 'study',outcome_names = c("2014-15","2021-23"),argsNormal = "carbapenemase",factorVars = c('carbapenemase',"blaNDM","blaOXA","porin_mutation","OmpK35_mutation","OmpK36_mutation")) %>% favorite_kable()
+convert_tableone_into_df(dataset = df,vars = c('blaKPC_presence',"blaNDM","blaOXA",'carbapenemase','no_carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation",'non_carbapenemase_blactam_and_omp_mutation','non_carbapenemase_blactam_andor_omp_mutation'),strata = 'study',outcome_names = c("2014-15","2021-23"),factorVars = c('carbapenemase',"blaNDM","blaOXA",'no_carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation",'non_carbapenemase_blactam_andor_omp_mutation','non_carbapenemase_blactam_and_omp_mutation'),exact = "carbapenemase",'non_carbapenemase_blactam_and_omp_mutation') %>% favorite_kable()
 ```
 
 # Differences among noncarbepenmase genomes
 ```{r}
 df_nocarb <- df %>% subset(carbapenemase == 'No carbapenemase')
-convert_tableone_into_df(dataset = df_nocarb,vars = c('blaKPC_presence',"blaNDM","blaOXA",'carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation"),strata = 'study',outcome_names = c("2014-15","2021-23"),argsNormal = "carbapenemase",factorVars = c('carbapenemase',"blaNDM","blaOXA","porin_mutation","OmpK35_mutation","OmpK36_mutation")) %>% favorite_kable()
+convert_tableone_into_df(dataset = df_nocarb,vars = c('blaKPC_presence',"blaNDM","blaOXA",'carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation",'non_carbapenemase_blactam_and_omp_mutation','blactamase_non_carbapenmase_bin','non_carbapenemase_blactam_andor_omp_mutation'),strata = 'study',outcome_names = c("2014-15","2021-23"),factorVars = c('carbapenemase',"blaNDM","blaOXA","porin_mutation","OmpK35_mutation","OmpK36_mutation",'non_carbapenemase_blactam_and_omp_mutation','blactamase_non_carbapenmase_bin','non_carbapenemase_blactam_andor_omp_mutation'),exact =c('carbapenemase',"blaNDM","blaOXA",'no_carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation",'non_carbapenemase_blactam_and_omp_mutation','blactamase_non_carbapenmase_bin','non_carbapenemase_blactam_andor_omp_mutation')) %>% favorite_kable()
 ```
 
 # Data across ST258
 ```{r}
 df_ST258 <- subset(df,df$ST == "ST258")
 df_ST258$GD_KPC2 <- df_ST258$ompK36_D135DGD==1 & df_ST258$`blaKPC-2` ==1
-convert_tableone_into_df(dataset = df_ST258,vars = c('blaKPC_presence',"blaNDM","blaOXA",'carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation","ompK36_D135DD","ompK36_D135DGD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP","GD_KPC2"),strata = 'study',outcome_names = c("2014-15","2021-23"),argsNormal = "carbapenemase",factorVars = c('carbapenemase',"blaNDM","blaOXA","porin_mutation","OmpK35_mutation","OmpK36_mutation","ompK36_D135DD","ompK36_D135DGD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP","GD_KPC2")) %>% favorite_kable()
+convert_tableone_into_df(dataset = df_ST258,vars = c('blaKPC_presence',"blaNDM","blaOXA",'carbapenemase',"porin_mutation","OmpK35_mutation","OmpK36_mutation","ompK36_D135DD","ompK36_D135DGD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP","GD_KPC2",'non_carbapenemase_blactam_and_omp_mutation','blactamase_non_carbapenmase_bin','non_carbapenemase_blactam_andor_omp_mutation'),strata = 'study',outcome_names = c("2014-15","2021-23"),argsNormal = "carbapenemase",factorVars = c('carbapenemase',"blaNDM","blaOXA","porin_mutation","OmpK35_mutation","OmpK36_mutation","ompK36_D135DD","ompK36_D135DGD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP","GD_KPC2",'non_carbapenemase_blactam_and_omp_mutation','blactamase_non_carbapenmase_bin','non_carbapenemase_blactam_andor_omp_mutation'),exact = c('carbapenemase',"GD_KPC2","ompK36_D135DD","ompK36_Q313STOP","ompK36_T136TDT","ompK36_W125STOP",'GD_KPC2','non_carbapenemase_blactam_and_omp_mutation','blactamase_non_carbapenmase_bin','non_carbapenemase_blactam_andor_omp_mutation')) %>% favorite_kable()
 ```

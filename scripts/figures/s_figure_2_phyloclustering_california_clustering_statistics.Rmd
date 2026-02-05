@@ -7,8 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
-opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
@@ -27,8 +27,8 @@ sessionInfo()
 # Phylogeographic analyses
 ## Reconstructions
 ```{r}
-CA_asr <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs.RDS")
-CA_asr_cluster <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering.RDS")
+CA_asr <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs_pruned.RDS")
+CA_asr_cluster <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering_pruned.RDS")
 ```
 
 ## Clustering data
@@ -104,6 +104,7 @@ clustering_data_melt$variable <- recode(clustering_data_melt$variable,
                                         "n_PCMP" = "2014-15 Study",
                                         "n_INTEGRATE" = "2021-23 Study",
                                         "n_public" = "Public genomes")
+clustering_data_melt$cluster_name <- factor(clustering_data_melt$cluster_name,levels = c(paste0("Cluster ",7:1)))
                                          
 clustering_data_melt$ST <- factor(clustering_data_melt$ST,levels = c("ST258","ST307","ST14","ST17"))
 study_scale <- scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown",gray(0.2)),name = "California genome",guide = guide_legend(nrow=1,order=1),drop=FALSE)
@@ -111,13 +112,11 @@ study_scale <- scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Pub
 B <- ggplot(data=clustering_data_melt ,aes(x=value,fill=variable,y=cluster_name)) + geom_bar(stat='identity') + facet_wrap(~ST,scales = "free_x") + theme_bw_me + xlab("Number of isolates") + ylab("Phylogenetic clustering of California isolates") +  scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown",gray(0.2)),name = "California genomes",guide = guide_legend(nrow=1,order=1))
 ```
 
-```{r,fig.width=8.5,fig.height=6.8}
-figure <- cowplot::plot_grid(A,B,ncol=1,rel_heights = c(0.275,1),labels = c("A","B"))
+```{r,fig.width=8.4,fig.height=6.72}
+figure <- cowplot::plot_grid(A,B,ncol=1,rel_heights = c(0.275,1),labels = c("A","B"),label_size = 12)
 figure
 ```
 
-
 ```{r}
-ggsave(filename = "./figures/s_figure_2_phylogeographic_clustering_statistics.png",plot = figure,dpi=900,bg='white',height=6.8,width=8.5)
+ggsave(filename = "./figures/s_figure_2_phylogeographic_clustering_statistics.png",plot = figure,dpi=900,bg='white',height=6.72,width=8.4)
 ```
-

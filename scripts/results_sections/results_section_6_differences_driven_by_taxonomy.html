@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-12-04" />
+<meta name="date" content="2026-02-04" />
 
 <title>Results section 6: Differences among taxonomic groups</title>
 
@@ -577,32 +577,41 @@ display: none;
 <h1 class="title toc-ignore">Results section 6: Differences among
 taxonomic groups</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-12-04</h4>
+<h4 class="date">2026-02-04</h4>
 
 </div>
 
 
 <div id="environment" class="section level1">
 <h1>Environment</h1>
-<pre><code>                                                                                                    sysname 
-                                                                                                   &quot;Darwin&quot; 
-                                                                                                    release 
-                                                                                                   &quot;24.6.0&quot; 
-                                                                                                    version 
-&quot;Darwin Kernel Version 24.6.0: Wed Oct 15 21:12:21 PDT 2025; root:xnu-11417.140.69.703.14~1/RELEASE_X86_64&quot; 
-                                                                                                   nodename 
-                                                                                           &quot;msla0572.local&quot; 
-                                                                                                    machine 
-                                                                                                   &quot;x86_64&quot; 
-                                                                                                      login 
-                                                                                                     &quot;root&quot; 
-                                                                                                       user 
-                                                                                                 &quot;kgontjes&quot; 
-                                                                                             effective_user 
-                                                                                                 &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>packages &lt;- c(&quot;tidyverse&quot;,&#39;kableExtra&#39;,&#39;tableone&#39;,&#39;gontjesr&#39;) 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()</code></pre>
+<pre><code>                                                                                            sysname 
+                                                                                           &quot;Darwin&quot; 
+                                                                                            release 
+                                                                                           &quot;25.2.0&quot; 
+                                                                                            version 
+&quot;Darwin Kernel Version 25.2.0: Tue Nov 18 21:09:34 PST 2025; root:xnu-12377.61.12~1/RELEASE_X86_64&quot; 
+                                                                                           nodename 
+                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                                            machine 
+                                                                                           &quot;x86_64&quot; 
+                                                                                              login 
+                                                                                             &quot;root&quot; 
+                                                                                               user 
+                                                                                         &quot;kgontjes&quot; 
+                                                                                     effective_user 
+                                                                                         &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 4.5.2 (2025-10-31)
 Platform: x86_64-apple-darwin20
-Running under: macOS Sequoia 15.7.2
+Running under: macOS Tahoe 26.2
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.5-x86_64/Resources/lib/libRblas.0.dylib 
@@ -637,9 +646,48 @@ loaded via a namespace (and not attached):
 [41] xfun_0.53          tidyselect_1.2.1   rstudioapi_0.17.1  farver_2.1.2      
 [45] htmltools_0.5.8.1  survey_4.4-8       rmarkdown_2.29     svglite_2.2.1     
 [49] compiler_4.5.2    </code></pre>
+<pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;)  
+
+df$ST258 &lt;- ifelse(df$Species_ST == &quot;Klebsiella pneumoniae ST258&quot;,T,F)
+df$ST17 &lt;- ifelse(df$Species_ST == &quot;Klebsiella pneumoniae ST17&quot;,T,F)
+
+df_201415 &lt;- df %&gt;% subset(study == &quot;2014-15&quot;)
+df_202123 &lt;- df %&gt;% subset(study == &quot;2021-23&quot;)  
+
+MIC_variables &lt;- c(&#39;MERO&#39;,&quot;IMI&quot;,&#39;blbli&#39;,&#39;MVB&#39;,&#39;IR&#39;,&#39;CZA&#39;,&quot;FDC&quot;,&quot;CT&quot;,&quot;OMC&quot;,&quot;ERV&quot;,&quot;DLX&quot;,&quot;CST&quot;,&quot;PLZ&quot;,&quot;FOS&quot;) 
+resistance_vars &lt;- paste0(MIC_variables,&quot;_dich_num&quot;)  </code></pre>
+<pre class="r"><code>get_frequency_stats_compare &lt;- function(variable,df,comparitor){
+  print(variable)
+ data_table &lt;- table(df[[variable]],df[[comparitor]],useNA = &#39;no&#39;)  
+ test &lt;- if(sum(unlist(data_table) &lt;5)&gt;0){
+    fisher.test(data_table,simulate.p.value = T)
+  } else {
+    chisq.test(data_table)
+  }
+  group1 &lt;- colnames(data_table)[1]
+  group2 &lt;- colnames(data_table)[2]
+  
+  group1_total &lt;- sum(data_table[,1])
+  group2_total &lt;- sum(data_table[,2])
+    
+  group1_count &lt;- data_table[,1] %&gt;% subset(names(.)==1)
+  group2_count &lt;- data_table[,2] %&gt;% subset(names(.)==1)
+  
+  group1_perc &lt;- round(c(group1_count/group1_total)*100,1)
+  group2_perc &lt;- round(c(group2_count/group2_total)*100,1)
+  
+  sig_test &lt;- ifelse(class(test)==&quot;htest&quot; &amp; test$method == &quot;Fisher&#39;s Exact Test for Count Data&quot;,&quot;Fisher&#39;s Exact Test&quot;,&quot;Chi-squared&quot;)
+  p_value &lt;- test$p.value 
+  data.frame(variable=variable,group1=group1,group1_total=group1_total,group1_count=group1_count,group1_perc=group1_perc,
+             group2=group2,group2_total=group2_total,group2_count=group2_count,group2_perc=group2_perc,
+             test=sig_test,p_value=p_value)
+}</code></pre>
 </div>
 <div id="differences-in-resistance-across-st258-isolates" class="section level1">
 <h1>Differences in resistance across ST258 isolates</h1>
+<pre class="r"><code>df_kpn_ST258 &lt;-  subset(df,ST258 == T)
+#Comparisons
+lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_kpn_ST258,comparitor=&#39;study&#39;) %&gt;% do.call(rbind,.)%&gt;% favorite_kable() </code></pre>
 <pre><code>[1] &quot;MERO_dich_num&quot;
 [1] &quot;IMI_dich_num&quot;
 [1] &quot;blbli_dich_num&quot;
@@ -1189,6 +1237,9 @@ Chi-squared
 <div id="differences-in-resistance-across-2021-23-st258-vs-2021-23-not-st258" class="section level1">
 <h1>Differences in resistance across 2021-23 ST258 vs 2021-23 not
 ST258</h1>
+<pre class="r"><code>#Comparisons
+resistance_vars_no_perfect &lt;- subset(resistance_vars,resistance_vars!=&quot;IMI_dich_num&quot;)
+lapply(resistance_vars_no_perfect,FUN=get_frequency_stats_compare,df=df_202123,comparitor=&#39;ST258&#39;) %&gt;% do.call(rbind,.)%&gt;% favorite_kable() </code></pre>
 <pre><code>[1] &quot;MERO_dich_num&quot;
 [1] &quot;blbli_dich_num&quot;
 [1] &quot;MVB_dich_num&quot;

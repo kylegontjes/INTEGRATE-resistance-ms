@@ -7,8 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
-opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
@@ -58,14 +58,14 @@ gontjesr::convert_tableone_into_df(dataset=df_201415,vars='Species_ST')
 
 # Did differences exist among prevalence of existing lineages (ST258 and ST17)
 ```{r}
-convert_tableone_into_df(dataset = df,vars = c("ST258","ST17"),factorVars = c("ST258","ST17"),strata='study',argsNormal = "ST17",outcome_names = c("2014-15","2021-23"))
+convert_tableone_into_df(dataset = df,vars = c("ST258","ST17"),factorVars = c("ST258","ST17"),strata='study',outcome_names = c("2014-15","2021-23"),exact = "ST17")
 ```
 
 # Phylogeographic analyses
 ## Reconstructions
 ```{r}
-CA_asr <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs.RDS")
-CA_asr_cluster <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering.RDS")
+CA_asr <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs_pruned.RDS")
+CA_asr_cluster <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering_pruned.RDS")
 ```
 
 ## Clustering data

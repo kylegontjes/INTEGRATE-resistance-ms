@@ -193,6 +193,7 @@ C <- algorithm(overall_df = df_kpn_202123,comparitor = 'ST258',df1 = df_kpn_2021
 C
 ```
 
+# Create figure
 ```{r,fig.width=8.5,fig.height=7.25}
 legendA <- cowplot::get_legend(A) %>% cowplot::plot_grid() 
 legendST258 <- cowplot::get_legend(C)%>% cowplot::plot_grid() 

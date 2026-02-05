@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-12-02" />
+<meta name="date" content="2026-02-04" />
 
 <title>Results section 5: Differences in resistance across study periods</title>
 
@@ -577,32 +577,41 @@ display: none;
 <h1 class="title toc-ignore">Results section 5: Differences in
 resistance across study periods</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-12-02</h4>
+<h4 class="date">2026-02-04</h4>
 
 </div>
 
 
 <div id="environment" class="section level1">
 <h1>Environment</h1>
-<pre><code>                                                                                                    sysname 
-                                                                                                   &quot;Darwin&quot; 
-                                                                                                    release 
-                                                                                                   &quot;24.6.0&quot; 
-                                                                                                    version 
-&quot;Darwin Kernel Version 24.6.0: Wed Oct 15 21:12:21 PDT 2025; root:xnu-11417.140.69.703.14~1/RELEASE_X86_64&quot; 
-                                                                                                   nodename 
-                                                                              &quot;msla0572.wifi.med.umich.edu&quot; 
-                                                                                                    machine 
-                                                                                                   &quot;x86_64&quot; 
-                                                                                                      login 
-                                                                                                     &quot;root&quot; 
-                                                                                                       user 
-                                                                                                 &quot;kgontjes&quot; 
-                                                                                             effective_user 
-                                                                                                 &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>packages &lt;- c(&quot;tidyverse&quot;,&#39;kableExtra&#39;,&#39;tableone&#39;,&#39;gontjesr&#39;) 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()</code></pre>
+<pre><code>                                                                                            sysname 
+                                                                                           &quot;Darwin&quot; 
+                                                                                            release 
+                                                                                           &quot;25.2.0&quot; 
+                                                                                            version 
+&quot;Darwin Kernel Version 25.2.0: Tue Nov 18 21:09:34 PST 2025; root:xnu-12377.61.12~1/RELEASE_X86_64&quot; 
+                                                                                           nodename 
+                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                                            machine 
+                                                                                           &quot;x86_64&quot; 
+                                                                                              login 
+                                                                                             &quot;root&quot; 
+                                                                                               user 
+                                                                                         &quot;kgontjes&quot; 
+                                                                                     effective_user 
+                                                                                         &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 4.5.2 (2025-10-31)
 Platform: x86_64-apple-darwin20
-Running under: macOS Sequoia 15.7.2
+Running under: macOS Tahoe 26.2
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.5-x86_64/Resources/lib/libRblas.0.dylib 
@@ -640,9 +649,29 @@ loaded via a namespace (and not attached):
 </div>
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
+<pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;)  
+
+df$ST258 &lt;- ifelse(df$Species_ST == &quot;Klebsiella pneumoniae ST258&quot;,T,F)
+df$ST17 &lt;- ifelse(df$Species_ST == &quot;Klebsiella pneumoniae ST17&quot;,T,F)
+
+df_201415 &lt;- df%&gt;% subset(study == &quot;2014-15&quot;)
+df_202123 &lt;- df%&gt;% subset(study == &quot;2021-23&quot;) 
+
+shared_antibiotics &lt;-  c(&#39;MERO&#39;,&quot;IMI&quot;,&#39;blbli&#39;,&#39;MVB&#39;,&#39;IR&#39;,&#39;CZA&#39;,&quot;CST&quot;,&quot;PLZ&quot;,&quot;FOS&quot;)  %&gt;% paste0(.,&quot;_dich_num&quot;)
+  
+novel_antibiotics &lt;-  c(&quot;FDC&quot;,&quot;CT&quot;,&quot;OMC&quot;,&quot;ERV&quot;,&quot;DLX&quot;)  %&gt;% paste0(.,&quot;_dich_num&quot;) </code></pre>
 </div>
 <div id="isolates-not-all-resistance-outcomes" class="section level1">
 <h1>Isolates not all resistance outcomes</h1>
+<pre class="r"><code>isolates_2123 &lt;- df_202123$isolate_no
+
+na_data &lt;- lapply(isolates_2123,FUN=function(x){
+  df_202123 %&gt;% subset(isolate_no == x) %&gt;% select(shared_antibiotics,novel_antibiotics) %&gt;% is.na() %&gt;% rowSums() %&gt;% `names&lt;-`(x)
+}) %&gt;% unlist
+
+at_least_one_missing &lt;- df_202123 %&gt;% subset(isolate_no %in% c(na_data %&gt;% subset(.&gt;0) %&gt;% names())) %&gt;% select(isolate_no,shared_antibiotics,novel_antibiotics)
+ 
+at_least_one_missing %&gt;% favorite_kable() </code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -840,6 +869,43 @@ NA
 </div>
 <div id="differences-across-groups" class="section level1">
 <h1>Differences across groups</h1>
+<pre class="r"><code>get_frequency_stats &lt;- function(variable,df,name){
+   freq &lt;- df[[variable]] %&gt;% sum(.,na.rm=T)
+  tested &lt;- df[[variable]] %&gt;% subset(is.na(.)==F) %&gt;% length
+  not_tested &lt;- nrow(df) - tested
+  prop &lt;- round(freq / tested * 100,2) 
+  data.frame(variable = variable,study = name,freq,tested,prop,not_tested)
+}
+
+get_frequency_stats_compare &lt;- function(variable,df,comparitor){
+ data_table &lt;- table(df[[variable]],df[[comparitor]],useNA = &#39;no&#39;) 
+ test &lt;- if(sum(unlist(data_table) &lt;5)&gt;0){
+    fisher.test(data_table,simulate.p.value = T)
+  } else {
+    chisq.test(data_table)
+  }
+  group1 &lt;- colnames(data_table)[1]
+  group2 &lt;- colnames(data_table)[2]
+  
+  group1_total &lt;- sum(data_table[,1])
+  group2_total &lt;- sum(data_table[,2])
+    
+  group1_count &lt;- data_table[,1] %&gt;% subset(names(.)==1)
+  group2_count &lt;- data_table[,2] %&gt;% subset(names(.)==1)
+  
+  group1_perc &lt;- round(c(group1_count/group1_total)*100,1)
+  group2_perc &lt;- round(c(group2_count/group2_total)*100,1)
+  
+  sig_test &lt;- ifelse(class(test)==&quot;htest&quot; &amp; test$method == &quot;Fisher&#39;s Exact Test for Count Data&quot;,&quot;Fisher&#39;s Exact Test&quot;,&quot;Chi-squared&quot;)
+  p_value &lt;- test$p.value
+  
+  data.frame(variable=variable,group1=group1,group1_total=group1_total,group1_count=group1_count,group1_perc=group1_perc,
+             group2=group2,group2_total=group2_total,group2_count=group2_count,group2_perc=group2_perc,
+             test=sig_test,p_value=p_value)
+}
+
+# New agents tested:
+lapply(novel_antibiotics,FUN=get_frequency_stats,df=df_202123,name = &#39;2021-23&#39;) %&gt;% do.call(rbind,.) %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -966,6 +1032,8 @@ DLX_dich_num
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>#Comparisons
+lapply(shared_antibiotics,FUN=get_frequency_stats_compare,df=df,comparitor=&#39;study&#39;) %&gt;% do.call(rbind,.)%&gt;% favorite_kable() </code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>

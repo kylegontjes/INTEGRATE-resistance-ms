@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-12-29" />
+<meta name="date" content="2026-02-04" />
 
 <title>Results section 2: Taxonomy</title>
 
@@ -576,11 +576,14 @@ display: none;
 
 <h1 class="title toc-ignore">Results section 2: Taxonomy</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-12-29</h4>
+<h4 class="date">2026-02-04</h4>
 
 </div>
 
 
+<pre class="r"><code># Packages
+packages &lt;- c(&quot;tidyverse&quot;,&quot;gridExtra&quot;,&quot;kableExtra&quot;,&quot;tableone&quot;,&quot;gontjesr&quot;)
+lapply(packages,library,character.only=T)</code></pre>
 <pre><code>[[1]]
  [1] &quot;lubridate&quot; &quot;forcats&quot;   &quot;stringr&quot;   &quot;dplyr&quot;     &quot;purrr&quot;     &quot;readr&quot;    
  [7] &quot;tidyr&quot;     &quot;tibble&quot;    &quot;ggplot2&quot;   &quot;tidyverse&quot; &quot;knitr&quot;     &quot;stats&quot;    
@@ -611,6 +614,11 @@ display: none;
 [11] &quot;tidyr&quot;      &quot;tibble&quot;     &quot;ggplot2&quot;    &quot;tidyverse&quot;  &quot;knitr&quot;     
 [16] &quot;stats&quot;      &quot;graphics&quot;   &quot;grDevices&quot;  &quot;utils&quot;      &quot;datasets&quot;  
 [21] &quot;methods&quot;    &quot;base&quot;      </code></pre>
+<pre class="r"><code># Functions
+source(&quot;./lib/consistent_themes.R&quot;)
+
+# Print environment
+Sys.info()</code></pre>
 <pre><code>                                                                                            sysname 
                                                                                            &quot;Darwin&quot; 
                                                                                             release 
@@ -618,7 +626,7 @@ display: none;
                                                                                             version 
 &quot;Darwin Kernel Version 25.2.0: Tue Nov 18 21:09:34 PST 2025; root:xnu-12377.61.12~1/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                                   &quot;msla0572.local&quot; 
+                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -627,6 +635,7 @@ display: none;
                                                                                          &quot;kgontjes&quot; 
                                                                                      effective_user 
                                                                                          &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 4.5.2 (2025-10-31)
 Platform: x86_64-apple-darwin20
 Running under: macOS Tahoe 26.2
@@ -666,11 +675,21 @@ loaded via a namespace (and not attached):
 [49] compiler_4.5.2     gridtext_0.1.5    </code></pre>
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
+<pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;)  
+
+df$ST258 &lt;- ifelse(df$Species_ST == &quot;Klebsiella pneumoniae ST258&quot;,T,F)
+df$ST17 &lt;- ifelse(df$Species_ST == &quot;Klebsiella pneumoniae ST17&quot;,T,F)
+
+df_201415 &lt;- df%&gt;% subset(study == &quot;2014-15&quot;)
+df_202123 &lt;- df%&gt;% subset(study == &quot;2021-23&quot;) </code></pre>
 </div>
 <div id="integrate-summary" class="section level1">
 <h1>Integrate summary</h1>
+<pre class="r"><code>paste0(&quot;No ST: &quot;,length(unique(df_202123$Species_ST %&gt;% subset(.!= &quot;Klebsiella pneumoniae ST-&quot;))))</code></pre>
 <pre><code>[1] &quot;No ST: 36&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;No Singleton ST: &quot;,table(df_202123$Species_ST %&gt;% subset(.!= &quot;Klebsiella pneumoniae ST-&quot;)) %&gt;% subset(.==1) %&gt;% length)</code></pre>
 <pre><code>[1] &quot;No Singleton ST: 23&quot;</code></pre>
+<pre class="r"><code>gontjesr::convert_tableone_into_df(dataset=df_202123,vars=&#39;Species_ST&#39;)</code></pre>
 <pre><code>                             Variable Overall (n=507)
 2                      Species_ST (%)                
 3        Klebsiella pneumoniae ST1017         1 (0.2)
@@ -709,12 +728,19 @@ loaded via a namespace (and not attached):
 36         Klebsiella pneumoniae ST70         1 (0.2)
 37        Klebsiella pneumoniae ST987        17 (3.4)
 38        Klebsiella pneumoniae ST997         1 (0.2)</code></pre>
+<pre class="r"><code>OLD_ST &lt;- unique(df_201415$Species_ST) %&gt;% sort %&gt;% subset(.!= &quot;Klebsiella pneumoniae ST-&quot;)
+new_ST &lt;- unique(df_202123$Species_ST) %&gt;% sort %&gt;% subset(.!= &quot;Klebsiella pneumoniae ST-&quot;)
+
+paste0(&quot;Number of sequence types found in INTEGRATE and 2014-15: &quot;,sum(new_ST %in% OLD_ST))</code></pre>
 <pre><code>[1] &quot;Number of sequence types found in INTEGRATE and 2014-15: 2&quot;</code></pre>
 </div>
 <div id="old-study" class="section level1">
 <h1>Old study</h1>
+<pre class="r"><code>paste0(&quot;No ST: &quot;,length(unique(df_201415$Species_ST %&gt;% subset(.!= &quot;Klebsiella pneumoniae ST-&quot;))))</code></pre>
 <pre><code>[1] &quot;No ST: 10&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;No Singleton ST: &quot;,table(df_201415$Species_ST %&gt;% subset(.!= &quot;Klebsiella pneumoniae ST-&quot;)) %&gt;% subset(.==1) %&gt;% length)</code></pre>
 <pre><code>[1] &quot;No Singleton ST: 5&quot;</code></pre>
+<pre class="r"><code>gontjesr::convert_tableone_into_df(dataset=df_201415,vars=&#39;Species_ST&#39;)</code></pre>
 <pre><code>                            Variable Overall (n=374)
 2                     Species_ST (%)                
 3         Klebsiella pneumoniae ST15        11 (2.9)
@@ -731,6 +757,7 @@ loaded via a namespace (and not attached):
 <div id="did-differences-exist-among-prevalence-of-existing-lineages-st258-and-st17" class="section level1">
 <h1>Did differences exist among prevalence of existing lineages (ST258
 and ST17)</h1>
+<pre class="r"><code>convert_tableone_into_df(dataset = df,vars = c(&quot;ST258&quot;,&quot;ST17&quot;),factorVars = c(&quot;ST258&quot;,&quot;ST17&quot;),strata=&#39;study&#39;,outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;),exact = &quot;ST17&quot;)</code></pre>
 <pre><code>          Variable Overall (n=881) 2014-15 (n=374) 2021-23 (n=507) p-value
 2 ST258 = TRUE (%)      563 (63.9)      352 (94.1)      211 (41.6)  &lt;0.001
 3  ST17 = TRUE (%)        35 (4.0)         2 (0.5)        33 (6.5)  &lt;0.001</code></pre>
@@ -739,9 +766,51 @@ and ST17)</h1>
 <h1>Phylogeographic analyses</h1>
 <div id="reconstructions" class="section level2">
 <h2>Reconstructions</h2>
+<pre class="r"><code>CA_asr &lt;- readRDS(&quot;./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs_pruned.RDS&quot;)
+CA_asr_cluster &lt;- readRDS(&quot;./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering_pruned.RDS&quot;)</code></pre>
 </div>
 <div id="clustering-data" class="section level2">
 <h2>Clustering data</h2>
+<pre class="r"><code>STs &lt;- names(CA_asr_cluster)
+
+phylogeographic_clustering_data &lt;- lapply(STs,FUN=function(st){
+  CA_clustering &lt;- CA_asr_cluster[[st]]
+  general_clustering_stats &lt;- phyloAMR::asr_cluster_analysis(CA_clustering)
+  # Singletons
+  singletons &lt;- subset(CA_clustering,asr_cluster_renamed==&#39;Singleton&#39;) 
+  general_clustering_stats$singletons_PCMP &lt;-  sum(grepl(&quot;PCMP_H&quot;,singletons$child_name))
+  general_clustering_stats$singletons_INTEGRATE &lt;- sum(grepl(&quot;INT_CRE_&quot;,singletons$child_name))
+  general_clustering_stats$singletons_public &lt;- nrow(singletons) - sum(general_clustering_stats$singletons_PCMP,general_clustering_stats$singletons_INTEGRATE)
+  
+  # Clustering
+  cluster_names &lt;- CA_clustering$asr_cluster_renamed %&gt;% subset(!.%in% c(&quot;No feature&quot;,&quot;Singleton&quot;)) %&gt;% unique %&gt;% sort
+  cluster_stats &lt;- lapply(cluster_names,FUN=function(cluster_name){
+    cluster_df &lt;- subset(CA_clustering,asr_cluster_renamed== cluster_name)
+    n_tips &lt;- nrow(cluster_df)
+    n_participants &lt;- length(unique(cluster_df$patient_id))
+    n_PCMP &lt;- sum(grepl(&quot;PCMP_H&quot;,cluster_df$child_name))
+    n_INTEGRATE &lt;- sum(grepl(&quot;INT_CRE_&quot;,cluster_df$child_name))
+    n_public &lt;- n_tips - sum(n_PCMP,n_INTEGRATE) 
+    data.frame(
+      cluster_name=cluster_name,
+      n_tips=n_tips,
+      n_participants=n_participants,
+      n_PCMP=n_PCMP,
+      n_INTEGRATE=n_INTEGRATE,
+      n_public=n_public
+    )
+  }) %&gt;% do.call(rbind,.)
+  
+  # Clustering summary statistics (i.e., number of all, PCMP_H + INTEGRATE, PCMP_H + )
+  sum_variables &lt;- cluster_stats %&gt;% select(n_PCMP,n_INTEGRATE,n_public)
+  cluster_stats$type &lt;- apply(sum_variables,MARGIN=1,FUN=function(x){subset(x,x&gt;0) %&gt;% names() %&gt;% paste0(collapse=&quot;_&quot;)}) %&gt;% gsub(&quot;n_&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;_&quot;,&quot;+&quot;,.)
+   
+  list(clustering_info = cluster_stats,
+       general_clustering_stats=general_clustering_stats
+       ) 
+})  
+
+names(phylogeographic_clustering_data) &lt;- STs</code></pre>
 </div>
 </div>
 <div id="st258---clonal-expansion-of-existing-lineages-with-multiple-novel-introductions-and-clear-loss-of-circulating-pcmp_h-genomes" class="section level1">
@@ -760,7 +829,9 @@ public</p></li>
 <li><p>8 involve public isolates: 4 with all, 1 w/ PCMP_H, 1 w/
 INTEGRATE, 2 w/ only public</p></li>
 </ol>
+<pre class="r"><code>paste0(&quot;Phylogeographic data for: &quot;,&quot;ST258&quot;)</code></pre>
 <pre><code>[1] &quot;Phylogeographic data for: ST258&quot;</code></pre>
+<pre class="r"><code>phylogeographic_clustering_data$ST258$general_clustering_stats %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -841,68 +912,71 @@ singletons_public
 7
 </td>
 <td style="text-align:right;">
-9
+7
 </td>
 <td style="text-align:right;">
 689
 </td>
 <td style="text-align:right;">
-42
+70
 </td>
 <td style="text-align:right;">
-76.56
+98.43
 </td>
 <td style="text-align:left;">
-2-345
+4-352
 </td>
 <td style="text-align:right;">
-5449
+1047
 </td>
 <td style="text-align:right;">
-144
+61
 </td>
 <td style="text-align:right;">
-23
+1
 </td>
 <td style="text-align:right;">
 2
 </td>
 <td style="text-align:right;">
-3.57
+2
 </td>
 <td style="text-align:left;">
-2-31
+2-2
 </td>
 <td style="text-align:right;">
-16
+14
 </td>
 <td style="text-align:right;">
-11.33
+39.93
 </td>
 <td style="text-align:right;">
-0.27
+1.29
 </td>
 <td style="text-align:right;">
-56.25
-</td>
-<td style="text-align:right;">
-1
+50
 </td>
 <td style="text-align:right;">
 1
 </td>
 <td style="text-align:right;">
-5
+0
+</td>
+<td style="text-align:right;">
+6
 </td>
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>paste0(&quot;Clustering data for: &quot;,&quot;ST258&quot;)</code></pre>
 <pre><code>[1] &quot;Clustering data for: ST258&quot;</code></pre>
+<pre class="r"><code>table(phylogeographic_clustering_data$ST258$clustering_info$type)</code></pre>
 <pre><code>
      INTEGRATE+public                  PCMP PCMP+INTEGRATE+public 
                     1                     1                     4 
-          PCMP+public                public 
-                    1                     2 </code></pre>
+          PCMP+public 
+                    1 </code></pre>
+<pre class="r"><code>phylogeographic_clustering_data$ST258$clustering_info %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -958,29 +1032,6 @@ PCMP+public
 Cluster 2
 </td>
 <td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:left;">
-public
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Cluster 3
-</td>
-<td style="text-align:right;">
 76
 </td>
 <td style="text-align:right;">
@@ -1001,7 +1052,7 @@ PCMP+INTEGRATE+public
 </tr>
 <tr>
 <td style="text-align:left;">
-Cluster 4
+Cluster 3
 </td>
 <td style="text-align:right;">
 19
@@ -1024,45 +1075,22 @@ INTEGRATE+public
 </tr>
 <tr>
 <td style="text-align:left;">
-Cluster 5
+Cluster 4
 </td>
 <td style="text-align:right;">
-5
+352
 </td>
 <td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:left;">
-public
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Cluster 6
-</td>
-<td style="text-align:right;">
-345
-</td>
-<td style="text-align:right;">
-303
+310
 </td>
 <td style="text-align:right;">
 132
 </td>
 <td style="text-align:right;">
-142
+143
 </td>
 <td style="text-align:right;">
-71
+77
 </td>
 <td style="text-align:left;">
 PCMP+INTEGRATE+public
@@ -1070,7 +1098,7 @@ PCMP+INTEGRATE+public
 </tr>
 <tr>
 <td style="text-align:left;">
-Cluster 7
+Cluster 5
 </td>
 <td style="text-align:right;">
 126
@@ -1093,7 +1121,7 @@ PCMP+INTEGRATE+public
 </tr>
 <tr>
 <td style="text-align:left;">
-Cluster 8
+Cluster 6
 </td>
 <td style="text-align:right;">
 4
@@ -1116,7 +1144,7 @@ PCMP
 </tr>
 <tr>
 <td style="text-align:left;">
-Cluster 9
+Cluster 7
 </td>
 <td style="text-align:right;">
 70
@@ -1151,7 +1179,9 @@ PCMP+INTEGRATE+public
 <li><p>5 involve INTEGRATE isolates: 1 exclusive, 4 w/ public</p></li>
 <li><p>6 involve public isolates 4 with INTEGRATE, 2 unique</p></li>
 </ol>
+<pre class="r"><code>paste0(&quot;Phylogeographic data for: &quot;,&quot;ST307&quot;)</code></pre>
 <pre><code>[1] &quot;Phylogeographic data for: ST307&quot;</code></pre>
+<pre class="r"><code>phylogeographic_clustering_data$ST307$general_clustering_stats %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -1232,49 +1262,49 @@ singletons_public
 8
 </td>
 <td style="text-align:right;">
-7
+6
 </td>
 <td style="text-align:right;">
 70
 </td>
 <td style="text-align:right;">
-6
+7
 </td>
 <td style="text-align:right;">
-10
+11.67
 </td>
 <td style="text-align:left;">
-2-30
+3-30
 </td>
 <td style="text-align:right;">
-4201
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-2.5
-</td>
-<td style="text-align:right;">
-2.5
-</td>
-<td style="text-align:left;">
-2-3
+893
 </td>
 <td style="text-align:right;">
 15
 </td>
 <td style="text-align:right;">
-1.82
+1
 </td>
 <td style="text-align:right;">
-0.35
+14
 </td>
 <td style="text-align:right;">
-46.67
+14
+</td>
+<td style="text-align:left;">
+14-14
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+8.03
+</td>
+<td style="text-align:right;">
+1.5
+</td>
+<td style="text-align:right;">
+42.86
 </td>
 <td style="text-align:right;">
 0
@@ -1288,10 +1318,13 @@ singletons_public
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>paste0(&quot;Clustering data for: &quot;,&quot;ST307&quot;)</code></pre>
 <pre><code>[1] &quot;Clustering data for: ST307&quot;</code></pre>
+<pre class="r"><code>table(phylogeographic_clustering_data$ST307$clustering_info$type)</code></pre>
 <pre><code>
-       INTEGRATE INTEGRATE+public           public 
-               1                4                2 </code></pre>
+INTEGRATE+public           public 
+               4                2 </code></pre>
+<pre class="r"><code>phylogeographic_clustering_data$ST307$clustering_info %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -1347,29 +1380,6 @@ INTEGRATE+public
 Cluster 2
 </td>
 <td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:left;">
-public
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Cluster 3
-</td>
-<td style="text-align:right;">
 30
 </td>
 <td style="text-align:right;">
@@ -1390,42 +1400,42 @@ INTEGRATE+public
 </tr>
 <tr>
 <td style="text-align:left;">
-Cluster 4
+Cluster 3
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 <td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-2
+3
 </td>
 <td style="text-align:right;">
 0
-</td>
-<td style="text-align:left;">
-INTEGRATE
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Cluster 5
-</td>
-<td style="text-align:right;">
-6
-</td>
-<td style="text-align:right;">
-6
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:right;">
 3
+</td>
+<td style="text-align:left;">
+public
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Cluster 4
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5
 </td>
 <td style="text-align:right;">
 3
@@ -1436,7 +1446,7 @@ INTEGRATE+public
 </tr>
 <tr>
 <td style="text-align:left;">
-Cluster 6
+Cluster 5
 </td>
 <td style="text-align:right;">
 6
@@ -1459,7 +1469,7 @@ INTEGRATE+public
 </tr>
 <tr>
 <td style="text-align:left;">
-Cluster 7
+Cluster 6
 </td>
 <td style="text-align:right;">
 5
@@ -1496,7 +1506,9 @@ introductions</h1>
 INTEGRATE + 50 public) and another is small (1 INTEGRATE + 1
 public)</li>
 </ol>
+<pre class="r"><code>paste0(&quot;Phylogeographic data for: &quot;,&quot;ST14&quot;)</code></pre>
 <pre><code>[1] &quot;Phylogeographic data for: ST14&quot;</code></pre>
+<pre class="r"><code>phylogeographic_clustering_data$ST14$general_clustering_stats %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -1592,7 +1604,7 @@ singletons_public
 2-188
 </td>
 <td style="text-align:right;">
-1487
+462
 </td>
 <td style="text-align:right;">
 1
@@ -1613,10 +1625,10 @@ singletons_public
 7
 </td>
 <td style="text-align:right;">
-11.59
+29.68
 </td>
 <td style="text-align:right;">
-0.47
+1.47
 </td>
 <td style="text-align:right;">
 28.57
@@ -1633,10 +1645,13 @@ singletons_public
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>paste0(&quot;Clustering data for: &quot;,&quot;ST14&quot;)</code></pre>
 <pre><code>[1] &quot;Clustering data for: ST14&quot;</code></pre>
+<pre class="r"><code>table(phylogeographic_clustering_data$ST14$clustering_info$type)</code></pre>
 <pre><code>
 INTEGRATE+public 
                2 </code></pre>
+<pre class="r"><code>phylogeographic_clustering_data$ST14$clustering_info %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -1725,7 +1740,9 @@ introductions</h1>
 <li>Involves all groups: 2 PCMP_H, 33 INTEGRATE, and 9 public
 genomes</li>
 </ol>
+<pre class="r"><code>paste0(&quot;Phylogeographic data for: &quot;,&quot;ST17&quot;)</code></pre>
 <pre><code>[1] &quot;Phylogeographic data for: ST17&quot;</code></pre>
+<pre class="r"><code>phylogeographic_clustering_data$ST17$general_clustering_stats %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -1821,7 +1838,7 @@ singletons_public
 44-44
 </td>
 <td style="text-align:right;">
-1404
+521
 </td>
 <td style="text-align:right;">
 0
@@ -1842,10 +1859,10 @@ NA
 8
 </td>
 <td style="text-align:right;">
-3.51
+8.92
 </td>
 <td style="text-align:right;">
-0.57
+1.51
 </td>
 <td style="text-align:right;">
 12.5
@@ -1862,10 +1879,13 @@ NA
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>paste0(&quot;Clustering data for: &quot;,&quot;ST17&quot;)</code></pre>
 <pre><code>[1] &quot;Clustering data for: ST17&quot;</code></pre>
+<pre class="r"><code>table(phylogeographic_clustering_data$ST17$clustering_info$type)</code></pre>
 <pre><code>
 PCMP+INTEGRATE+public 
                     1 </code></pre>
+<pre class="r"><code>phylogeographic_clustering_data$ST17$clustering_info %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-12-03" />
+<meta name="date" content="2026-02-04" />
 
 <title>Results section 1: Propsective surveillance of CRKP from California LTACHs</title>
 
@@ -577,11 +577,14 @@ display: none;
 <h1 class="title toc-ignore">Results section 1: Propsective surveillance
 of CRKP from California LTACHs</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-12-03</h4>
+<h4 class="date">2026-02-04</h4>
 
 </div>
 
 
+<pre class="r"><code># Packages
+packages &lt;- c(&quot;tidyverse&quot;,&quot;gridExtra&quot;,&quot;kableExtra&quot;,&quot;tableone&quot;,&quot;gontjesr&quot;)
+lapply(packages,library,character.only=T)</code></pre>
 <pre><code>[[1]]
  [1] &quot;lubridate&quot; &quot;forcats&quot;   &quot;stringr&quot;   &quot;dplyr&quot;     &quot;purrr&quot;     &quot;readr&quot;    
  [7] &quot;tidyr&quot;     &quot;tibble&quot;    &quot;ggplot2&quot;   &quot;tidyverse&quot; &quot;knitr&quot;     &quot;stats&quot;    
@@ -612,25 +615,31 @@ of CRKP from California LTACHs</h1>
 [11] &quot;tidyr&quot;      &quot;tibble&quot;     &quot;ggplot2&quot;    &quot;tidyverse&quot;  &quot;knitr&quot;     
 [16] &quot;stats&quot;      &quot;graphics&quot;   &quot;grDevices&quot;  &quot;utils&quot;      &quot;datasets&quot;  
 [21] &quot;methods&quot;    &quot;base&quot;      </code></pre>
-<pre><code>                                                                                                    sysname 
-                                                                                                   &quot;Darwin&quot; 
-                                                                                                    release 
-                                                                                                   &quot;24.6.0&quot; 
-                                                                                                    version 
-&quot;Darwin Kernel Version 24.6.0: Wed Oct 15 21:12:21 PDT 2025; root:xnu-11417.140.69.703.14~1/RELEASE_X86_64&quot; 
-                                                                                                   nodename 
-                                                                              &quot;msla0572.wifi.med.umich.edu&quot; 
-                                                                                                    machine 
-                                                                                                   &quot;x86_64&quot; 
-                                                                                                      login 
-                                                                                                     &quot;root&quot; 
-                                                                                                       user 
-                                                                                                 &quot;kgontjes&quot; 
-                                                                                             effective_user 
-                                                                                                 &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code># Functions
+source(&quot;./lib/consistent_themes.R&quot;)
+
+# Print environment
+Sys.info()</code></pre>
+<pre><code>                                                                                            sysname 
+                                                                                           &quot;Darwin&quot; 
+                                                                                            release 
+                                                                                           &quot;25.2.0&quot; 
+                                                                                            version 
+&quot;Darwin Kernel Version 25.2.0: Tue Nov 18 21:09:34 PST 2025; root:xnu-12377.61.12~1/RELEASE_X86_64&quot; 
+                                                                                           nodename 
+                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                                            machine 
+                                                                                           &quot;x86_64&quot; 
+                                                                                              login 
+                                                                                             &quot;root&quot; 
+                                                                                               user 
+                                                                                         &quot;kgontjes&quot; 
+                                                                                     effective_user 
+                                                                                         &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 4.5.2 (2025-10-31)
 Platform: x86_64-apple-darwin20
-Running under: macOS Sequoia 15.7.2
+Running under: macOS Tahoe 26.2
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.5-x86_64/Resources/lib/libRblas.0.dylib 
@@ -667,22 +676,50 @@ loaded via a namespace (and not attached):
 [49] compiler_4.5.2     gridtext_0.1.5    </code></pre>
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
+<pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;)
+
+df_201415 &lt;- df%&gt;% subset(study == &quot;2014-15&quot;)
+df_202123 &lt;- df%&gt;% subset(study == &quot;2021-23&quot;) </code></pre>
+</div>
+<div id="period-1-study" class="section level1">
+<h1>2014-15 (period 1) study</h1>
+<pre class="r"><code>paste0(&quot;Number of specimens: &quot;,nrow(df_201415))</code></pre>
+<pre><code>[1] &quot;Number of specimens: 374&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of patients: &quot;,length(unique(df_201415$participant_id)))</code></pre>
+<pre><code>[1] &quot;Number of patients: 329&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Minimum date: &quot;,min(df_201415$date,na.rm=T))</code></pre>
+<pre><code>[1] &quot;Minimum date: 2014-08-12&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Maximum date: &quot;,max(df_201415$date,na.rm=T))</code></pre>
+<pre><code>[1] &quot;Maximum date: 2015-07-24&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of facilities: &quot;,length(unique(df_201415$hospital_location %&gt;% subset(.!=&#39;NA&#39;),na.rm=T)))</code></pre>
+<pre><code>[1] &quot;Number of facilities: 12&quot;</code></pre>
 </div>
 <div id="overview-of-clinical-specimens-from-2021-23" class="section level1">
 <h1>Overview of clinical specimens from 2021-23</h1>
+<pre class="r"><code>paste0(&quot;Number of specimens: &quot;,nrow(df_202123))</code></pre>
 <pre><code>[1] &quot;Number of specimens: 507&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of patients: &quot;,length(unique(df_202123$participant_id)))</code></pre>
 <pre><code>[1] &quot;Number of patients: 394&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Minimum date: &quot;,min(df_202123$date,na.rm=T))</code></pre>
 <pre><code>[1] &quot;Minimum date: 2021-06-07&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Maximum date: &quot;,max(df_202123$date,na.rm=T))</code></pre>
 <pre><code>[1] &quot;Maximum date: 2023-12-30&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of facilities: &quot;,length(unique(df_202123$hospital_location)))</code></pre>
 <pre><code>[1] &quot;Number of facilities: 13&quot;</code></pre>
-</div>
-<div id="integrate-metadata-availability" class="section level1">
-<h1>INTEGRATE metadata availability</h1>
+<div id="integrate-metadata-availability" class="section level2">
+<h2>INTEGRATE metadata availability</h2>
+<pre class="r"><code>df_202123_no_metadata &lt;- df %&gt;% subset(is.na(hospital_location) &amp; study ==&#39;2021-23&#39;)
+df_202123_w_metadata &lt;- df %&gt;% subset(is.na(hospital_location)==F &amp; study ==&#39;2021-23&#39;)
+df_w_metadata &lt;- df %&gt;% subset(is.na(hospital_location)==F)
+
+paste0(&quot;Number of isolates with metadata: &quot;,nrow(df_202123_w_metadata))</code></pre>
 <pre><code>[1] &quot;Number of isolates with metadata: 507&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Proportion of isolates with metadata: &quot;,round(nrow(df_202123_w_metadata)/ sum(nrow(df_202123_no_metadata),nrow(df_202123_w_metadata)),3))</code></pre>
 <pre><code>[1] &quot;Proportion of isolates with metadata: 1&quot;</code></pre>
 </div>
-<div id="anatomical-site" class="section level1">
-<h1>Anatomical site</h1>
+<div id="anatomical-site" class="section level2">
+<h2>Anatomical site</h2>
+<pre class="r"><code>convert_tableone_into_df(dataset=df_202123_w_metadata,vars = &quot;source_simplified&quot;) </code></pre>
 <pre><code>               Variable Overall (n=507)
 2 source_simplified (%)                
 3                 blood       65 (12.8)
@@ -691,307 +728,22 @@ loaded via a namespace (and not attached):
 6                 urine      113 (22.3)
 7                 wound       77 (15.2)</code></pre>
 </div>
-<div id="contextualization-using-old-study" class="section level1">
-<h1>Contextualization using old study</h1>
-<pre><code>[1] &quot;Number of specimens: 374&quot;</code></pre>
-<pre><code>[1] &quot;Number of patients: 329&quot;</code></pre>
-<pre><code>[1] &quot;Minimum date: 2014-08-12&quot;</code></pre>
-<pre><code>[1] &quot;Maximum date: 2015-07-24&quot;</code></pre>
-<pre><code>[1] &quot;Number of facilities: 12&quot;</code></pre>
-</div>
-<div id="source-data" class="section level1">
-<h1>Source data</h1>
-<pre><code>[1] &quot;Overall&quot;</code></pre>
-<pre><code>         
-          blood other respiratory urine wound
-  2014-15    30     0         217   121     6
-  2021-23    65    10         242   113    77</code></pre>
-<pre><code>
-    Fisher&#39;s Exact Test for Count Data with simulated p-value (based on
-    2000 replicates)
-
-data:  .
-p-value = 0.0004998
-alternative hypothesis: two.sided</code></pre>
-<table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
-<thead>
-<tr>
-<th style="text-align:left;">
-Variable
-</th>
-<th style="text-align:left;">
-Overall (n=881)
-</th>
-<th style="text-align:left;">
-2014-15 (n=374)
-</th>
-<th style="text-align:left;">
-2021-23 (n=507)
-</th>
-<th style="text-align:left;">
-p-value
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-source_simplified (%)
-</td>
-<td style="text-align:left;">
-</td>
-<td style="text-align:left;">
-</td>
-<td style="text-align:left;">
-</td>
-<td style="text-align:left;">
-&lt;0.001
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-blood
-</td>
-<td style="text-align:left;">
-95 (10.8)
-</td>
-<td style="text-align:left;">
-30 (8.0)
-</td>
-<td style="text-align:left;">
-65 (12.8)
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-other
-</td>
-<td style="text-align:left;">
-10 (1.1)
-</td>
-<td style="text-align:left;">
-0 (0.0)
-</td>
-<td style="text-align:left;">
-10 (2.0)
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-respiratory
-</td>
-<td style="text-align:left;">
-459 (52.1)
-</td>
-<td style="text-align:left;">
-217 (58.0)
-</td>
-<td style="text-align:left;">
-242 (47.7)
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-urine
-</td>
-<td style="text-align:left;">
-234 (26.6)
-</td>
-<td style="text-align:left;">
-121 (32.4)
-</td>
-<td style="text-align:left;">
-113 (22.3)
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-wound
-</td>
-<td style="text-align:left;">
-83 (9.4)
-</td>
-<td style="text-align:left;">
-6 (1.6)
-</td>
-<td style="text-align:left;">
-77 (15.2)
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-blood = 1 (%)
-</td>
-<td style="text-align:left;">
-95 (10.8)
-</td>
-<td style="text-align:left;">
-30 (8.0)
-</td>
-<td style="text-align:left;">
-65 (12.8)
-</td>
-<td style="text-align:left;">
-0.031
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-other = 1 (%)
-</td>
-<td style="text-align:left;">
-10 (1.1)
-</td>
-<td style="text-align:left;">
-0 (0.0)
-</td>
-<td style="text-align:left;">
-10 (2.0)
-</td>
-<td style="text-align:left;">
-0.016
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-resp = 1 (%)
-</td>
-<td style="text-align:left;">
-459 (52.1)
-</td>
-<td style="text-align:left;">
-217 (58.0)
-</td>
-<td style="text-align:left;">
-242 (47.7)
-</td>
-<td style="text-align:left;">
-0.003
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-urine = 1 (%)
-</td>
-<td style="text-align:left;">
-234 (26.6)
-</td>
-<td style="text-align:left;">
-121 (32.4)
-</td>
-<td style="text-align:left;">
-113 (22.3)
-</td>
-<td style="text-align:left;">
-0.001
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-wound = 1 (%)
-</td>
-<td style="text-align:left;">
-83 (9.4)
-</td>
-<td style="text-align:left;">
-6 (1.6)
-</td>
-<td style="text-align:left;">
-77 (15.2)
-</td>
-<td style="text-align:left;">
-&lt;0.001
-</td>
-</tr>
-</tbody>
-</table>
-<pre><code>[1] &quot;Isolates with other source declaration: &quot;</code></pre>
-<pre><code>NULL</code></pre>
-</div>
-<div id="frequency-differences" class="section level1">
-<h1>Frequency differences</h1>
-<div id="count" class="section level2">
-<h2>Count</h2>
-<pre><code>[1] &quot;Differences by study&quot;</code></pre>
-<pre><code>         
-          Baldwin Park Brea La Mirada Los Angeles Ontario Paramount Rancho
-  2014-15           59   14        39          51      37         0     32
-  2021-23           48   16        49          52      41       112     33
-         
-          Riverside San Diego San Gabriel Valley Santa Ana South Bay
-  2014-15        14        17                 22        16        34
-  2021-23        20        13                 42        16        45
-         
-          Westminster
-  2014-15          39
-  2021-23          20</code></pre>
-<pre><code>         
-          Baldwin Park      Brea La Mirada Los Angeles   Ontario Paramount
-  2014-15     6.696935  1.589103  4.426788    5.788876  4.199773  0.000000
-  2021-23     5.448354  1.816118  5.561862    5.902384  4.653802 12.712826
-         
-             Rancho Riverside San Diego San Gabriel Valley Santa Ana South Bay
-  2014-15  3.632236  1.589103  1.929625           2.497162  1.816118  3.859251
-  2021-23  3.745743  2.270148  1.475596           4.767310  1.816118  5.107832
-         
-          Westminster
-  2014-15    4.426788
-  2021-23    2.270148</code></pre>
-<pre><code>
-    Fisher&#39;s Exact Test for Count Data with simulated p-value (based on
-    2000 replicates)
-
-data:  .
-p-value = 0.0004998
-alternative hypothesis: two.sided</code></pre>
-<pre><code>[1] &quot;Differences by study w/o Paramount&quot;</code></pre>
-<pre><code>         
-          Baldwin Park Brea La Mirada Los Angeles Ontario Rancho Riverside
-  2014-15           59   14        39          51      37     32        14
-  2021-23           48   16        49          52      41     33        20
-         
-          San Diego San Gabriel Valley Santa Ana South Bay Westminster
-  2014-15        17                 22        16        34          39
-  2021-23        13                 42        16        45          20</code></pre>
-<pre><code>         
-          Baldwin Park     Brea La Mirada Los Angeles  Ontario   Rancho
-  2014-15     7.672302 1.820546  5.071521    6.631990 4.811443 4.161248
-  2021-23     6.241873 2.080624  6.371912    6.762029 5.331599 4.291287
-         
-          Riverside San Diego San Gabriel Valley Santa Ana South Bay
-  2014-15  1.820546  2.210663           2.860858  2.080624  4.421326
-  2021-23  2.600780  1.690507           5.461638  2.080624  5.851756
-         
-          Westminster
-  2014-15    5.071521
-  2021-23    2.600780</code></pre>
-<pre><code>
-    Fisher&#39;s Exact Test for Count Data with simulated p-value (based on
-    2000 replicates)
-
-data:  .
-p-value = 0.09195
-alternative hypothesis: two.sided</code></pre>
-</div>
 </div>
 <div id="age-sex-differences" class="section level1">
 <h1>Age &amp; sex differences</h1>
 <ol style="list-style-type: decimal">
 <li>Preferentially select first isolate with metadata</li>
 </ol>
+<pre class="r"><code>paste0(&quot;Total isolates: &quot;,nrow(df))</code></pre>
 <pre><code>[1] &quot;Total isolates: 881&quot;</code></pre>
+<pre class="r"><code>df_w_metadata &lt;- df %&gt;% subset(has_full_metadata==T | participant_id == &quot;13&quot;) %&gt;% group_by(participant_id) %&gt;% arrange(date) %&gt;% slice(1)
+
+df_w_metadata$non_hispanic_white &lt;- df_w_metadata$participant_race==&quot;Caucasian&quot; &amp; df_w_metadata$participant_ethnicity == &quot;Not Hispanic&quot;
+paste0(&quot;Total patients with metadata: &quot;,nrow(df_w_metadata))</code></pre>
 <pre><code>[1] &quot;Total patients with metadata: 708&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Prop patients with metadata: &quot;,nrow(df_w_metadata) / nrow(df) * 100)</code></pre>
 <pre><code>[1] &quot;Prop patients with metadata: 80.3632236095346&quot;</code></pre>
+<pre class="r"><code>convert_tableone_into_df(dataset = df_w_metadata, vars = c(&quot;participant_age_at_first_enc&quot;,&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;participant_ethnicity&quot;,&quot;non_hispanic_white&quot;), factorVars = c(&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;participant_ethnicity&quot;,&quot;non_hispanic_white&quot;),strata=&#39;study&#39;,outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;)) %&gt;% favorite_kable</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -1193,22 +945,352 @@ NaN
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>paste0(&quot;Wilcox test for age&quot;)                  </code></pre>
 <pre><code>[1] &quot;Wilcox test for age&quot;</code></pre>
+<pre class="r"><code>median_IQR &lt;- function(variable,df){
+  df_los_201415 &lt;- subset(df,study ==&quot;2014-15&quot;) %&gt;% .[[variable]]
+  df_los_202123 &lt;-  subset(df,study ==&quot;2021-23&quot; ) %&gt;% .[[variable]]
+  median_overall &lt;- median(df[[variable]],na.rm = T)
+  median_201415 &lt;- median(df_los_201415,na.rm=T)
+  median_202123 &lt;- median(df_los_202123,na.rm=T)
+  IQR_overall &lt;- IQR(df[[variable]],na.rm=T)
+  IQR_201415 &lt;- IQR(df_los_201415,na.rm=T)
+  IQR_202123 &lt;- IQR(df_los_202123,na.rm=T)
+  form &lt;- as.formula(paste0(variable, &quot;~study&quot;))
+  pval &lt;- wilcox.test(form,data=df) %&gt;% .$p.value
+  cbind.data.frame(Variable = variable,overall = paste0(median_overall,&quot; (&quot;,IQR_overall,&quot;)&quot;), study_201415 = paste0(median_201415,&quot; (&quot;,IQR_201415,&quot;)&quot;), study_202123 = paste0(median_202123,&quot; (&quot;,IQR_202123,&quot;)&quot;), pvalue = pval)
+}
+
+median_IQR(&quot;participant_age_at_first_enc&quot;,df_w_metadata)</code></pre>
 <pre><code>                      Variable overall study_201415 study_202123       pvalue
 1 participant_age_at_first_enc 71 (17)      73 (18)      69 (16) 8.792819e-05</code></pre>
-</div>
-<div id="length-of-stay-data" class="section level1">
-<h1>Length of stay data</h1>
+<div id="length-of-stay-data" class="section level2">
+<h2>Length of stay data</h2>
 <ol style="list-style-type: decimal">
 <li>Preferentially select first isolate with metadata</li>
 </ol>
+<pre class="r"><code>paste0(&quot;Number of participants with LOS data: &quot;,nrow(df_w_metadata))</code></pre>
 <pre><code>[1] &quot;Number of participants with LOS data: 708&quot;</code></pre>
+<pre class="r"><code>table(df_w_metadata$study)</code></pre>
 <pre><code>
 2014-15 2021-23 
     329     379 </code></pre>
+<pre class="r"><code>paste0(&quot;Wilcox test for length of stay&quot;)</code></pre>
 <pre><code>[1] &quot;Wilcox test for length of stay&quot;</code></pre>
+<pre class="r"><code>median_IQR(&quot;los_before_culture&quot;,df_w_metadata)</code></pre>
 <pre><code>            Variable overall study_201415 study_202123       pvalue
 1 los_before_culture 25 (47)      20 (38)      32 (60) 4.842353e-06</code></pre>
+</div>
+</div>
+<div id="source-data" class="section level1">
+<h1>Source data</h1>
+<pre class="r"><code>df$blood &lt;- ifelse(df$source_simplified == &quot;blood&quot;,1,0)
+df$other&lt;- ifelse(df$source_simplified == &quot;other&quot;,1,0)
+df$resp&lt;- ifelse(df$source_simplified == &quot;respiratory&quot;,1,0)
+df$urine&lt;- ifelse(df$source_simplified == &quot;urine&quot;,1,0)
+df$wound &lt;- ifelse(df$source_simplified == &quot;wound&quot;,1,0)
+
+paste0(&quot;Overall&quot;)</code></pre>
+<pre><code>[1] &quot;Overall&quot;</code></pre>
+<pre class="r"><code>source_table &lt;- table(df$study,df$source_simplified) 
+source_table  </code></pre>
+<pre><code>         
+          blood other respiratory urine wound
+  2014-15    30     0         217   121     6
+  2021-23    65    10         242   113    77</code></pre>
+<pre class="r"><code>source_table %&gt;% fisher.test(simulate.p.value = T)</code></pre>
+<pre><code>
+    Fisher&#39;s Exact Test for Count Data with simulated p-value (based on
+    2000 replicates)
+
+data:  .
+p-value = 0.0004998
+alternative hypothesis: two.sided</code></pre>
+<pre class="r"><code>convert_tableone_into_df(dataset=df ,vars = c(&quot;source_simplified&quot;,&quot;blood&quot;,&quot;other&quot;,&quot;resp&quot;,&quot;urine&quot;,&quot;wound&quot;),strata=&#39;study&#39;,outcome_names = c(&#39;2014-15&#39;,&quot;2021-23&quot;),factorVars = c(&quot;source_simplified&quot;,&quot;blood&quot;,&quot;other&quot;,&quot;resp&quot;,&quot;urine&quot;,&quot;wound&quot;),exact = c(&quot;other&quot;)) %&gt;% favorite_kable()</code></pre>
+<table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+Overall (n=881)
+</th>
+<th style="text-align:left;">
+2014-15 (n=374)
+</th>
+<th style="text-align:left;">
+2021-23 (n=507)
+</th>
+<th style="text-align:left;">
+p-value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+source_simplified (%)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+blood
+</td>
+<td style="text-align:left;">
+95 (10.8)
+</td>
+<td style="text-align:left;">
+30 (8.0)
+</td>
+<td style="text-align:left;">
+65 (12.8)
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+10 (1.1)
+</td>
+<td style="text-align:left;">
+0 (0.0)
+</td>
+<td style="text-align:left;">
+10 (2.0)
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+respiratory
+</td>
+<td style="text-align:left;">
+459 (52.1)
+</td>
+<td style="text-align:left;">
+217 (58.0)
+</td>
+<td style="text-align:left;">
+242 (47.7)
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+urine
+</td>
+<td style="text-align:left;">
+234 (26.6)
+</td>
+<td style="text-align:left;">
+121 (32.4)
+</td>
+<td style="text-align:left;">
+113 (22.3)
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wound
+</td>
+<td style="text-align:left;">
+83 (9.4)
+</td>
+<td style="text-align:left;">
+6 (1.6)
+</td>
+<td style="text-align:left;">
+77 (15.2)
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+blood = 1 (%)
+</td>
+<td style="text-align:left;">
+95 (10.8)
+</td>
+<td style="text-align:left;">
+30 (8.0)
+</td>
+<td style="text-align:left;">
+65 (12.8)
+</td>
+<td style="text-align:left;">
+0.031
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other = 1 (%)
+</td>
+<td style="text-align:left;">
+10 (1.1)
+</td>
+<td style="text-align:left;">
+0 (0.0)
+</td>
+<td style="text-align:left;">
+10 (2.0)
+</td>
+<td style="text-align:left;">
+0.006
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+resp = 1 (%)
+</td>
+<td style="text-align:left;">
+459 (52.1)
+</td>
+<td style="text-align:left;">
+217 (58.0)
+</td>
+<td style="text-align:left;">
+242 (47.7)
+</td>
+<td style="text-align:left;">
+0.003
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+urine = 1 (%)
+</td>
+<td style="text-align:left;">
+234 (26.6)
+</td>
+<td style="text-align:left;">
+121 (32.4)
+</td>
+<td style="text-align:left;">
+113 (22.3)
+</td>
+<td style="text-align:left;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wound = 1 (%)
+</td>
+<td style="text-align:left;">
+83 (9.4)
+</td>
+<td style="text-align:left;">
+6 (1.6)
+</td>
+<td style="text-align:left;">
+77 (15.2)
+</td>
+<td style="text-align:left;">
+&lt;0.001
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>paste0(&quot;Isolates with other source declaration: &quot;)</code></pre>
+<pre><code>[1] &quot;Isolates with other source declaration: &quot;</code></pre>
+<pre class="r"><code>df %&gt;% subset(source_simplified == &quot;other&quot;) %&gt;% .$source_site</code></pre>
+<pre><code> [1] &quot;Bile&quot;             &quot;Peritoneal Fluid&quot; &quot;Catheter Tip&quot;     &quot;Abdomen&quot;         
+ [5] &quot;Abdomen&quot;          &quot;Ear&quot;              &quot;Bone&quot;             &quot;Fistula&quot;         
+ [9] &quot;Peritoneal Fluid&quot; &quot;Peg site&quot;        </code></pre>
+</div>
+<div id="frequency-differences" class="section level1">
+<h1>Frequency differences</h1>
+<div id="count" class="section level2">
+<h2>Count</h2>
+<pre class="r"><code>paste0(&quot;Differences by study&quot;)</code></pre>
+<pre><code>[1] &quot;Differences by study&quot;</code></pre>
+<pre class="r"><code>hospital_study_table &lt;- table(df_w_metadata$study,df_w_metadata$hospital_location) 
+hospital_study_table</code></pre>
+<pre><code>         
+          Baldwin Park Brea La Mirada Los Angeles Ontario Paramount Rancho
+  2014-15           52   13        32          44      36         0     26
+  2021-23           45   13        31          41      33        67     29
+         
+          Riverside San Diego San Gabriel Valley Santa Ana South Bay
+  2014-15        13        16                 19        15        32
+  2021-23        14        10                 35        10        33
+         
+          Westminster
+  2014-15          31
+  2021-23          18</code></pre>
+<pre class="r"><code>hospital_study_table %&gt;% prop.table() *100</code></pre>
+<pre><code>         
+          Baldwin Park     Brea La Mirada Los Angeles  Ontario Paramount
+  2014-15     7.344633 1.836158  4.519774    6.214689 5.084746  0.000000
+  2021-23     6.355932 1.836158  4.378531    5.790960 4.661017  9.463277
+         
+            Rancho Riverside San Diego San Gabriel Valley Santa Ana South Bay
+  2014-15 3.672316  1.836158  2.259887           2.683616  2.118644  4.519774
+  2021-23 4.096045  1.977401  1.412429           4.943503  1.412429  4.661017
+         
+          Westminster
+  2014-15    4.378531
+  2021-23    2.542373</code></pre>
+<pre class="r"><code>hospital_study_table %&gt;% fisher.test(simulate.p.value = T)</code></pre>
+<pre><code>
+    Fisher&#39;s Exact Test for Count Data with simulated p-value (based on
+    2000 replicates)
+
+data:  .
+p-value = 0.0004998
+alternative hypothesis: two.sided</code></pre>
+<pre class="r"><code>paste0(&quot;Differences by study w/o Paramount&quot;)</code></pre>
+<pre><code>[1] &quot;Differences by study w/o Paramount&quot;</code></pre>
+<pre class="r"><code>df_no_par &lt;- subset(df_w_metadata,hospital_location != &quot;Paramount&quot;)
+hospital_study_table_no_par &lt;- table(df_no_par$study,df_no_par$hospital_location) 
+hospital_study_table_no_par</code></pre>
+<pre><code>         
+          Baldwin Park Brea La Mirada Los Angeles Ontario Rancho Riverside
+  2014-15           52   13        32          44      36     26        13
+  2021-23           45   13        31          41      33     29        14
+         
+          San Diego San Gabriel Valley Santa Ana South Bay Westminster
+  2014-15        16                 19        15        32          31
+  2021-23        10                 35        10        33          18</code></pre>
+<pre class="r"><code>hospital_study_table_no_par %&gt;% prop.table() *100</code></pre>
+<pre><code>         
+          Baldwin Park     Brea La Mirada Los Angeles  Ontario   Rancho
+  2014-15     8.112324 2.028081  4.992200    6.864275 5.616225 4.056162
+  2021-23     7.020281 2.028081  4.836193    6.396256 5.148206 4.524181
+         
+          Riverside San Diego San Gabriel Valley Santa Ana South Bay
+  2014-15  2.028081  2.496100           2.964119  2.340094  4.992200
+  2021-23  2.184087  1.560062           5.460218  1.560062  5.148206
+         
+          Westminster
+  2014-15    4.836193
+  2021-23    2.808112</code></pre>
+<pre class="r"><code>hospital_study_table_no_par %&gt;% chisq.test(simulate.p.value = T)</code></pre>
+<pre><code>
+    Pearson&#39;s Chi-squared test with simulated p-value (based on 2000
+    replicates)
+
+data:  .
+X-squared = 11.105, df = NA, p-value = 0.4373</code></pre>
+</div>
 </div>
 
 
