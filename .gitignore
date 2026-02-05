@@ -51,3 +51,6 @@ rsconnect/
 # Other
 data
 ._*
+
+# Slurm output
+slurm_out/

@@ -210,5 +210,5 @@ figure
 ```
 
 ```{r}
-ggsave(filename = "./figures/s_figure_1_phylogeographic.png",plot = figure,dpi=900,bg='white',height=15,width=10)
+ggsave(filename = "./figures/s_figure_1_phylogeographic.png",plot = figure,dpi=900,bg='white',height=16,width=10.667)
 ```
