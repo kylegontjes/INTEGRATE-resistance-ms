@@ -7,12 +7,13 @@ output: html_document
 
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
-opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
 # Environment
+
 ```{r}
 # Packages
 packages <- c("tidyverse","gridExtra","kableExtra","cowplot","ggalluvial")
@@ -35,7 +36,7 @@ df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23")
 ```
 
-# Coordinate ST data
+# Coordinate sequence type data
 
 ```{r} 
 break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
@@ -44,7 +45,7 @@ break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
 ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
 ``` 
 
-## A. Species ST
+## A. Species Sequence type
 ```{r}
 ST_dist <-  df  %>%
   count(study, Species_ST_recode) %>%
@@ -114,6 +115,6 @@ figure <- cowplot::plot_grid(AB ,ncol=1)
 figure
 ```
 
-```{r,fig.width=6,fig.height=4}   
+```{r,fig.width=9,fig.height=4.5}  
 ggsave(filename = "./figures/figure_1_taxonomy.png",plot=figure,width = 9,height = 4.5,dpi=900,bg = 'white')
 ```

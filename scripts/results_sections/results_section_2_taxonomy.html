@@ -581,6 +581,8 @@ display: none;
 </div>
 
 
+<div id="environment" class="section level1">
+<h1>Environment</h1>
 <pre class="r"><code># Packages
 packages &lt;- c(&quot;tidyverse&quot;,&quot;gridExtra&quot;,&quot;kableExtra&quot;,&quot;tableone&quot;,&quot;gontjesr&quot;)
 lapply(packages,library,character.only=T)</code></pre>
@@ -673,6 +675,7 @@ loaded via a namespace (and not attached):
 [41] xfun_0.53          tidyselect_1.2.1   rstudioapi_0.17.1  farver_2.1.2      
 [45] htmltools_0.5.8.1  survey_4.4-8       rmarkdown_2.29     svglite_2.2.1     
 [49] compiler_4.5.2     gridtext_0.1.5    </code></pre>
+</div>
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
 <pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;)  

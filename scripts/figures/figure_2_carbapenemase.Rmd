@@ -33,7 +33,7 @@ sessionInfo()
 df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
-# Coordinate ST data
+# Coordinate sequence type data
 
 ```{r} 
 break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
@@ -156,7 +156,7 @@ B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvi
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
-                  plot.title = element_text(size = 12, color="black")) + ggtitle("All isolates")
+                  plot.title = element_text(size = 14, color="black")) + ggtitle("All isolates")
 
 B
 ``` 
@@ -177,21 +177,21 @@ D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
-                  plot.title = element_text(size = 12, color="black")) + ggtitle("ST258 isolates")
+                  plot.title = element_text(size = 14, color="black")) + ggtitle("ST258 isolates")
 
 D
 ```
 
 # Construct the figure 
 ```{r,fig.width=9,fig.height=7.2} 
-AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=12)  
-CD <-  cowplot::plot_grid(C + theme(legend.position = 'none'),D + theme(legend.position = 'none'),ncol=2,labels = c("C","D"),label_size = 12,rel_widths = c(1,.33))
+AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=14)  
+CD <-  cowplot::plot_grid(C + theme(legend.position = 'none'),D + theme(legend.position = 'none'),ncol=2,labels = c("C","D"),label_size = 14,rel_widths = c(1,.33))
 
-figure_3 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,1),labels = c("",""),label_size=12)  
+figure_2 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,1),labels = c("",""),label_size=14)  
 
-figure_3
+figure_2
 ``` 
 
 ```{r}
-ggsave(filename = "./figures/figure_2_carbapenemase.png", plot=figure_3, width = 9, height = 7.2, dpi=900, bg = 'white')
+ggsave(filename = "./figures/figure_2_carbapenemase.png", plot=figure_2, width = 9, height = 7.2, dpi=900, bg = 'white')
 ```

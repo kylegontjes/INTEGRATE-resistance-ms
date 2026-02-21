@@ -646,6 +646,9 @@ loaded via a namespace (and not attached):
 [41] xfun_0.53          tidyselect_1.2.1   rstudioapi_0.17.1  farver_2.1.2      
 [45] htmltools_0.5.8.1  survey_4.4-8       rmarkdown_2.29     svglite_2.2.1     
 [49] compiler_4.5.2    </code></pre>
+</div>
+<div id="load-data" class="section level1">
+<h1>Load data</h1>
 <pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;)  
 
 df$ST258 &lt;- ifelse(df$Species_ST == &quot;Klebsiella pneumoniae ST258&quot;,T,F)
@@ -656,6 +659,9 @@ df_202123 &lt;- df %&gt;% subset(study == &quot;2021-23&quot;)
 
 MIC_variables &lt;- c(&#39;MERO&#39;,&quot;IMI&quot;,&#39;blbli&#39;,&#39;MVB&#39;,&#39;IR&#39;,&#39;CZA&#39;,&quot;FDC&quot;,&quot;CT&quot;,&quot;OMC&quot;,&quot;ERV&quot;,&quot;DLX&quot;,&quot;CST&quot;,&quot;PLZ&quot;,&quot;FOS&quot;) 
 resistance_vars &lt;- paste0(MIC_variables,&quot;_dich_num&quot;)  </code></pre>
+</div>
+<div id="frequency-statistics-comparison" class="section level1">
+<h1>Frequency statistics comparison</h1>
 <pre class="r"><code>get_frequency_stats_compare &lt;- function(variable,df,comparitor){
   print(variable)
  data_table &lt;- table(df[[variable]],df[[comparitor]],useNA = &#39;no&#39;)  

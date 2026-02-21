@@ -12,6 +12,8 @@ opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
+# Environment
+
 ```{r}
 # Packages
 packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr")

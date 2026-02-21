@@ -13,6 +13,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 ```
 
 # Environment
+
 ```{r}
 packages <- c("tidyverse",'kableExtra','tableone','gontjesr') 
 
@@ -24,6 +25,8 @@ set.seed(45)
 Sys.info()
 sessionInfo()
 ```
+
+# Load data
 
 ```{r}
 df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")  
@@ -38,6 +41,7 @@ MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV",
 resistance_vars <- paste0(MIC_variables,"_dich_num")  
 ``` 
 
+# Frequency statistics comparison
 ```{r} 
 get_frequency_stats_compare <- function(variable,df,comparitor){
   print(variable)
@@ -68,6 +72,7 @@ get_frequency_stats_compare <- function(variable,df,comparitor){
 ```
 
 # Differences in resistance across ST258 isolates
+
 ```{r}
 df_kpn_ST258 <-  subset(df,ST258 == T)
 #Comparisons
@@ -75,6 +80,7 @@ lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_kpn_ST258,comparito
 ```
 
 #  Differences in resistance across 2021-23 ST258 vs 2021-23 not ST258
+
 ```{r}   
 #Comparisons
 resistance_vars_no_perfect <- subset(resistance_vars,resistance_vars!="IMI_dich_num")

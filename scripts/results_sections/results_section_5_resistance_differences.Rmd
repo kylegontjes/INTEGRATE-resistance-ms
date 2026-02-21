@@ -13,6 +13,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 ```
 
 # Environment
+
 ```{r}
 packages <- c("tidyverse",'kableExtra','tableone','gontjesr') 
 
@@ -26,6 +27,7 @@ sessionInfo()
 ```
 
 # Load data
+
 ```{r}
 df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")  
 
@@ -41,6 +43,7 @@ novel_antibiotics <-  c("FDC","CT","OMC","ERV","DLX")  %>% paste0(.,"_dich_num")
 ```
 
 # Isolates not all resistance outcomes
+
 ```{r}
 isolates_2123 <- df_202123$isolate_no
 
@@ -54,6 +57,7 @@ at_least_one_missing %>% favorite_kable()
 ```
 
 # Differences across groups
+
 ```{r}
 get_frequency_stats <- function(variable,df,name){
    freq <- df[[variable]] %>% sum(.,na.rm=T)
@@ -90,9 +94,9 @@ get_frequency_stats_compare <- function(variable,df,comparitor){
              test=sig_test,p_value=p_value)
 }
 
-# New agents tested:
+# New agents tested in the study (not found in old study)
 lapply(novel_antibiotics,FUN=get_frequency_stats,df=df_202123,name = '2021-23') %>% do.call(rbind,.) %>% favorite_kable()
 
-#Comparisons
+# Comparisons
 lapply(shared_antibiotics,FUN=get_frequency_stats_compare,df=df,comparitor='study') %>% do.call(rbind,.)%>% favorite_kable() 
 ```

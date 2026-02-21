@@ -59,12 +59,12 @@ KPC_plasmid_matrix <- readRDS("./data/carbapenemase_content/carbapenemase_plasmi
 ```
 
 # Phylogeny 
-## Load
+## Load tree
 ```{r}
 tr <- read.tree("./data/phylogeny/INTEGRATE/INTEGRATE_CRKP.treefile") 
 ```
 
-## Scale
+## Scale creation
 ```{r}
 feature_colors <- c(`1` = "black",`0`="white")
 feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Carbapanemase", guide = guide_legend(nrow=2, title.position = "top", label.position = "right",order=3))
@@ -76,7 +76,7 @@ genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin =
 genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(nrow=4, title.position = "top", label.position = "right",order=2)) 
 ```
 
-## Phylogeny
+## Phylogeny creation
 ```{r,fig.width=9.25,fig.height=9.25}  
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
@@ -89,6 +89,8 @@ figure <- gheatmap(p11,KPC_plasmid_matrix %>% select(genotype@column_names_param
 
 figure
 ```
+
+# Save
 
 ```{r}
 ggsave(filename = "./figures/s_figure_7_carbapenem_plasmids_phylogeny.png",plot=figure,width = 9.25, height = 9.25 ,dpi=900,bg = 'white')

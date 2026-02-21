@@ -40,6 +40,7 @@ df <- left_join(df,carbapenemase_content)
 ```
 
 # Load plasmid data
+
 ```{r} 
 mobtyper_merged <- readRDS("./data/mobsuite/mobtyper_merged_w_carbapenemase_data.RDS") %>% subset(isolate_no %in% df$isolate_no) 
 most_frequent_plasmids <- names(mobtyper_merged$primary_cluster_id  %>% table %>% sort(decreasing = T))
@@ -50,6 +51,7 @@ mobsuite_contigs$primary_cluster_id <- factor(mobsuite_contigs$primary_cluster_i
 ```
 
 # Study distribution
+
 ```{r}
 mobtyper_sum <- mobtyper_merged %>% group_by(primary_cluster_id) %>% summarise(n=n(),carbapenemase_plasmid = sum(carbapenemase_plasmid),Non_carbapenemase_plasmid = n-carbapenemase_plasmid)  
 KPC_plasmids <- subset(mobtyper_sum,carbapenemase_plasmid>0) %>% arrange(-carbapenemase_plasmid) %>%  .$primary_cluster_id
@@ -65,8 +67,8 @@ A <- ggplot(data=mobtyper_merged %>% subset(primary_cluster_id %in% KPC_plasmids
 A
 ```
 
-
 # Carbapenemase data
+
 ```{r}
 genotypes <- c(table(df$carbapenemase %>% subset(.!="No carbapenemase")) %>% sort(decreasing = T) %>% names,"No carbapenemase")
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
@@ -82,6 +84,7 @@ B
 ```
 
 # C. Contig count
+
 ```{r}
 C <-  ggplot(data=mobtyper_merged %>% subset(primary_cluster_id %in% KPC_plasmids),aes(x=primary_cluster_id,fill=carbapenemase_plasmid),y=num_contigs) + geom_boxplot(aes(y=num_contigs)) + KPC_plasmid_scale + 
   theme_bw_me + theme(axis.text.x = element_text(angle=45,hjust=1)) + 
@@ -91,6 +94,7 @@ C
 ```
 
 # D. Size
+
 ```{r}
 D <-  ggplot(data=mobtyper_merged %>% subset(primary_cluster_id %in% KPC_plasmids),aes(x=primary_cluster_id,fill=carbapenemase_plasmid),y=size) + geom_boxplot(aes(y=size))  + KPC_plasmid_scale + 
   theme_bw_me + theme(axis.text.x = element_text(angle=45,hjust=1)) + 
@@ -100,6 +104,7 @@ D
 ```
 
 # E. KPC contig size 
+
 ```{r} 
 KPC_contig_data <- mobsuite_contigs %>% subset(primary_cluster_id != "-" & primary_cluster_id %in% KPC_plasmids) 
 E <-  ggplot(data=KPC_contig_data  ,aes(x=primary_cluster_id,fill=carbapenemase_contig),y=size) + geom_boxplot(aes(y=size))  + KPC_contig_bool + 
@@ -110,6 +115,7 @@ E
 ```
 
 # F. Predicted Mobility
+
 ```{r}
 mobility_scale <- scale_fill_manual(values = c("brown","blue","#C0C0C0"),breaks = c("conjugative",'mobilizable','non-mobilizable'),labels = c("Conjugative","Mobilizable","Non-Mobilizable"),name="Predicted mobility",guide = guide_legend(nrow=2, title.position = "top", label.position = "right"))
 
@@ -137,6 +143,7 @@ G
 ```
 
 # H. Replicon type
+
 ```{r} 
 mobtyper_merged$rep_types <- mobtyper_merged$`rep_type(s)`
 rep_type_matrix <- mobtyper_merged %>% subset(primary_cluster_id %in% KPC_plasmids) %>% select(isolate_no,primary_cluster_id,rep_types)%>%
@@ -158,6 +165,7 @@ maxchar <- colnames(rep_type_matrix) %>% sapply(nchar) %>% max
 ```
 
 # I. Relaxase type
+
 ```{r}
 mobtyper_merged$relaxase_types <- mobtyper_merged$`relaxase_type(s)`
 
@@ -184,6 +192,7 @@ I
 ```
 
 # J. MPF Type
+
 ```{r} 
 mpf_type_matrix <- mobtyper_merged  %>% subset(primary_cluster_id %in% KPC_plasmids)  %>% select(isolate_no,primary_cluster_id,mpf_type)%>%
   separate_rows(mpf_type,sep=",") %>%
@@ -208,6 +217,7 @@ J
 ```
 
 # K. oriT type
+
 ```{r}
 mobtyper_merged$orit_types <- mobtyper_merged$`orit_type(s)`
 orit_type_matrix <- mobtyper_merged %>% subset(primary_cluster_id %in% KPC_plasmids) %>% select(isolate_no,primary_cluster_id,orit_types)%>%
@@ -233,6 +243,7 @@ K
 ```
 
 # Grouped figure
+
 ```{r,fig.height=18.75,fig.width=15}
 fig_histograms <- cowplot::plot_grid(A,B ,NULL,ncol=3,labels = c("A","B",""),rel_widths = c(1,1,0.2))
 fig_histograms2 <- cowplot::plot_grid(C +theme(legend.position='none'),D+ theme(legend.position='none'),E + theme(legend.position='none'),ncol=3,labels = c("C","D","E"))
@@ -251,6 +262,7 @@ figure <- cowplot::plot_grid(fig_histograms,fig_histograms2,fig_facet_histograms
 figure
 ```
 
+# Save figure
 ```{r}
 ggsave("./figures/s_figure_6_mobtyper_plasmid_overview.png",plot=figure, units='in',height=18.75,width=15,dpi=900,bg='white')
 ```

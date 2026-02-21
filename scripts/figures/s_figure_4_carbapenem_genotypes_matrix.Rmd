@@ -66,7 +66,7 @@ df_carb_omp <- df %>% select(isolate_no,carbapenemase,study,major_STs) %>% left_
 rownames(df_carb_omp) <- df_carb_omp$isolate_no 
 ```
 
-# Get matrix 
+# Get matrix for figure
   
 ```{r,fig.width=8.5,height=8.5}
 # Carb

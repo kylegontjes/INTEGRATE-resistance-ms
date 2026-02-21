@@ -7,8 +7,8 @@ output: html_document
  
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
-opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
@@ -109,6 +109,7 @@ histogram_figs <- cowplot::plot_grid(plotlist=figures,ncol=3,labels=c(LETTERS[1:
 histogram_figs
 ```
 
+# Save figure
 ```{r}
 ggsave(plot = histogram_figs, filename = "./figures/s_figure_8_resistance_histograms.png", width = 16.5, height = 13.2, bg = "white",dpi=900)
 ```

@@ -12,6 +12,8 @@ opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
+# Environment 
+
 ```{r}
 # Packages
 packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ComplexHeatmap",'ggalluvial','ape','ggtree')
@@ -58,7 +60,7 @@ df <- left_join(df,carbapenemase_content)
 carb_omp <-  readRDS("./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.RDS")
 ``` 
 
-# Supplemental Figure:
+# Supplemental Figure
 ```{r,fig.width=9.5,height=6.7857}  
 df_carb_omp <- df %>% select(isolate_no,carbapenemase,study,major_STs) %>% left_join(., carb_omp %>% mutate(isolate_no = rownames(.)))    %>% as.data.frame
 rownames(df_carb_omp) <- df_carb_omp$isolate_no 
@@ -91,6 +93,7 @@ figure <- gheatmap(p11,df_carb_omp %>% select(genotype@column_names_param$labels
 figure
 ```
 
+# Save figure
 ```{r}
 ggsave(filename = "./figures/s_figure_5_carbapenem_resistance_associated_genotypes_phylogeny.png",plot=figure, width = 11,height = 11, dpi=900, bg = 'white')
 ``` 

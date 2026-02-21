@@ -131,11 +131,11 @@ ggplot(data=res_comps,aes(y=name,x=prop,fill=dataset)) +
   xlab("Percentage (%)")  + 
   theme_bw_me + 
   theme(legend.position = "bottom",
-        axis.text =   element_text(size=9, color="black"),
-        axis.title = element_text(size = 9, color="black"),
-        legend.text =   element_text(size=9, color="black"),
-        legend.title = element_text(size = 11, color="black"),
-        plot.title = element_text(size = 11,color="black")
+        axis.text =   element_text(size=10, color="black"),
+        axis.title = element_text(size = 12, color="black"),
+        legend.text =   element_text(size=12, color="black"),
+        legend.title = element_text(size = 14, color="black"),
+        plot.title = element_text(size = 14,color="black")
 ) + scale  +  geom_text(
   data = res_comps %>% group_by(variable) %>% subset(stars == "*") %>% 
     summarise(name = first(name), stars = first(stars), max_prop = max(prop, na.rm = TRUE),min_prop = min(prop)) %>% mutate(min_prop = ifelse(is.na(min_prop) ==T,0,min_prop)),
@@ -194,7 +194,7 @@ C
 ```
 
 # Create figure
-```{r,fig.width=8.5,fig.height=7.25}
+```{r,fig.width=8.5,fig.height=7.555556}
 legendA <- cowplot::get_legend(A) %>% cowplot::plot_grid() 
 legendST258 <- cowplot::get_legend(C)%>% cowplot::plot_grid() 
 legends <- cowplot::plot_grid(legendA + theme(plot.margin = margin(b =-1.5,unit='in')),legendST258 + theme(plot.margin = margin(t =-1.5,unit='in')),ncol=1)
@@ -204,5 +204,5 @@ figure4
 ```
 
 ```{r,fig.width=8.5,fig.height=7.25}
-ggsave(filename = "./figures/figure_4_resistance_comparisons.png", plot=figure4, width = 8.5, height = 7.25, dpi=900, bg = 'white')
+ggsave(filename = "./figures/figure_4_resistance_comparisons.png", plot=figure4, width = 8.5, height = 7.555556, dpi=900, bg = 'white')
 ```

@@ -720,8 +720,8 @@ loaded via a namespace (and not attached):
 <h1>Load data</h1>
 <pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;)   </code></pre>
 </div>
-<div id="coordinate-st-data" class="section level1">
-<h1>Coordinate ST data</h1>
+<div id="coordinate-sequence-type-data" class="section level1">
+<h1>Coordinate sequence type data</h1>
 <pre class="r"><code>break_of_sts &lt;-  c(sort(unique(df$Species_ST_recode %&gt;% subset(.!=&quot;Singleton STs&quot;))),&quot;Singleton STs&quot;)
 break_of_sts_renamed &lt;- gsub(&quot;Klebsiella pneumoniae &quot;,&quot;&quot;,break_of_sts)
        

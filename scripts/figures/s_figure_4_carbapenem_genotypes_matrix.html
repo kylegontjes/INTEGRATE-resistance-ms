@@ -524,8 +524,8 @@ df &lt;- left_join(df,carbapenemase_content)</code></pre>
 <pre class="r"><code>df_carb_omp &lt;- df %&gt;% select(isolate_no,carbapenemase,study,major_STs) %&gt;% left_join(., carb_omp %&gt;% mutate(isolate_no = rownames(.)))    %&gt;% as.data.frame
 rownames(df_carb_omp) &lt;- df_carb_omp$isolate_no </code></pre>
 </div>
-<div id="get-matrix" class="section level1">
-<h1>Get matrix</h1>
+<div id="get-matrix-for-figure" class="section level1">
+<h1>Get matrix for figure</h1>
 <pre class="r"><code># Carb
 df_melt &lt;- df  %&gt;% select(Species_ST,carbapenemase)  %&gt;%
   separate_rows(carbapenemase, sep = &quot; &amp; &quot;) %&gt;%  # split the genotypes
