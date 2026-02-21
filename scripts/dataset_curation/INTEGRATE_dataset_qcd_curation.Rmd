@@ -14,8 +14,8 @@ d. Dropped one INT_1259 entry as it was a duplicate!
 
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
-opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
 ```
 
@@ -103,17 +103,22 @@ qcd <- qcd %>% subset(!sample %in%drop_worst_duplicated_entry)
 # Merge QCD data with the dataset
 ```{r}
 # Load
-df <- read_delim("../../data/integrate_metadata_20251201.txt")
-df <- df %>%  rename(lab_species = species)
+df <- read_delim("../../data/integrate_metadata_20260220.txt")
+df <- df %>%  rename(lab_species = species,labvantage_id = labvantage_barcode_bacterial_cell_isolate)
 
 # Has metadata
 df$has_full_metadata <- ifelse(is.na(df$patient_sex),F,T)
 paste0("Number of isolates with metadata: ",sum(df$has_full_metadata))
 paste0("Number of isolates without metadata: ",nrow(df) - sum(df$has_full_metadata))
-
-# Remove 
-## Remove their "Drop" isolates
 paste0("Initial isolates in metadata: ", nrow(df))
+
+# Remove  isolates
+## Remove the not delivered
+df$not_delivered <- df$labvantage_id=='not delivered'
+paste0(subset(df,not_delivered ==T) %>% .$sample_id)
+df <- df %>% subset(not_delivered == F) 
+
+## Remove their "Drop" isolates
 df <- df %>% subset(status == "Keep") 
 
 ## Drop due to mismatch OR out of participant stay

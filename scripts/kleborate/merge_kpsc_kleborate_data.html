@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-11-12" />
+<meta name="date" content="2026-02-21" />
 
 <title>Merge KPSC kleborate data</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Merge KPSC kleborate data</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-11-12</h4>
+<h4 class="date">2026-02-21</h4>
 
 </div>
 
@@ -362,12 +362,24 @@ display: none;
 </div>
 <div id="kleborate" class="section level1">
 <h1>Kleborate</h1>
+<pre class="r"><code>## Old 
+kleborate_2014_15&lt;- read_delim(&quot;./data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt&quot;) %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))    %&gt;% mutate(study = &quot;2014-15&quot;) 
+ 
+## New
+kleborate_INTEGRATE &lt;-  read_delim(&quot;./data/kleborate/kpsc_INTEGRATE//klebsiella_pneumo_complex_output.txt&quot;) %&gt;% mutate(study = &quot;2021-23&quot;)  %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))</code></pre>
 </div>
 <div id="kleborate-joint" class="section level1">
 <h1>Kleborate joint</h1>
+<pre class="r"><code>kleborate_joint &lt;- rbind(kleborate_2014_15,kleborate_INTEGRATE) 
+
+saveRDS(kleborate_joint,&quot;./data/kleborate/kleborate_kpsc_both_studies.RDS&quot;)</code></pre>
 </div>
 <div id="kleborate-matrix-of-omp-mutations" class="section level1">
 <h1>Kleborate matrix of omp mutations</h1>
+<pre class="r"><code>rownames(kleborate_joint) &lt;- kleborate_joint$isolate_no
+kleborate_matrix &lt;- gontjesr::get_presence_absence_matrix(kleborate_joint,&#39;Omp_mutations&#39;) %&gt;% as.data.frame
+
+saveRDS(kleborate_matrix,&quot;./data/kleborate/kleborate_kpsc_both_studies_matrix.RDS&quot;)</code></pre>
 </div>
 
 

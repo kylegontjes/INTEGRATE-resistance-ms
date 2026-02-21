@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-12-01" />
+<meta name="date" content="2026-02-21" />
 
 <title>INTEGRATE dataset curation</title>
 
@@ -576,7 +576,7 @@ display: none;
 
 <h1 class="title toc-ignore">INTEGRATE dataset curation</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-12-01</h4>
+<h4 class="date">2026-02-21</h4>
 
 </div>
 
@@ -587,15 +587,35 @@ update) c. Dnsured dropped isoaltes were removed d. Dropped one INT_1259
 entry as it was a duplicate!</p>
 <div id="sequencing-data" class="section level1">
 <h1>Sequencing data</h1>
+<pre class="r"><code># Sample lookup
+sample_lookup = read_delim(&quot;../../../Sequence_data/metadata/sample_lookup/2025-03-25_INT_CRE_genome_sample_lookup.txt&quot;) 
+
+# QCD
+qcd &lt;- read.csv(&quot;../../../Sequence_data/illumina_fastq/master_qc_summary.csv&quot;)  %&gt;% subset(grepl(&quot;NEG_CTL&quot;,Sample)==F) 
+colnames(qcd) &lt;- snakecase::to_snake_case(colnames(qcd))
+qcd$qc_pass &lt;- qcd$qc_check==&quot;PASS&quot; 
+
+paste0(&quot;Number of isolates that had sequencing runs: &quot;,nrow(qcd))</code></pre>
 <pre><code>[1] &quot;Number of isolates that had sequencing runs: 1592&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of isolates that had passed our quality control filters: &quot;,sum(qcd$qc_pass))</code></pre>
 <pre><code>[1] &quot;Number of isolates that had passed our quality control filters: 1489&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Percentage of isolates that had passed our quality control filters: &quot;,round(sum(qcd$qc_pass) / nrow(qcd) * 100 ,2),&quot;%&quot;)</code></pre>
 <pre><code>[1] &quot;Percentage of isolates that had passed our quality control filters: 93.53%&quot;</code></pre>
 </div>
 <div id="filter-step-1-cre-genomes" class="section level1">
 <h1>Filter step #1: CRE genomes</h1>
+<pre class="r"><code>escre_list &lt;- read.csv(&quot;../../data/INTEGRATE_MERLIN_WGS_Species_calls_030925_LLC.csv&quot;)
+escre_species &lt;- subset(escre_list,Enterobacterales == T) %&gt;% .$Species
+
+qcd$CRE &lt;- qcd$species %in% escre_species 
+
+paste0(&quot;Number of QC-passing isolates that were ESCrE: &quot;, sum(qcd$qc_pass &amp; qcd$CRE))</code></pre>
 <pre><code>[1] &quot;Number of QC-passing isolates that were ESCrE: 1482&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Percentage of QC-passing isolates that were ESCrE: &quot;, round(sum(qcd$qc_pass &amp; qcd$CRE) / sum(qcd$qc_pass ) * 100 ,2))</code></pre>
 <pre><code>[1] &quot;Percentage of QC-passing isolates that were ESCrE: 99.53&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;What were the non ESCrE calls?&quot;)</code></pre>
 <pre><code>[1] &quot;What were the non ESCrE calls?&quot;</code></pre>
+<pre class="r"><code>qcd %&gt;% subset(qc_pass==T &amp; CRE==F) %&gt;% group_by(species) %&gt;% summarize(n=n())  %&gt;% arrange(-n)</code></pre>
 <pre><code># A tibble: 6 × 2
   species                     n
   &lt;chr&gt;                   &lt;int&gt;
@@ -607,19 +627,38 @@ entry as it was a duplicate!</p>
 6 Paenibacillus sp            1</code></pre>
 <div id="filtering-2-mismatches" class="section level2">
 <h2>Filtering #2: Mismatches</h2>
+<pre class="r"><code>mismatches &lt;- readxl::read_xlsx(&quot;../../data/INTEGRATE_lab_WGS_species_mismatches_021025_llc.xlsx&quot;)  %&gt;% .[-nrow(.),] 
+
+paste0(&quot;Number of isolates with species-level differences: &quot;, nrow(mismatches))</code></pre>
 <pre><code>[1] &quot;Number of isolates with species-level differences: 105&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Proportion of isolates with species-level differences: &quot;, round(nrow(mismatches) / sum(qcd$qc_pass)*100,2))</code></pre>
 <pre><code>[1] &quot;Proportion of isolates with species-level differences: 7.05&quot;</code></pre>
+<pre class="r"><code># Genus level
+mismatches$genus_mismatch &lt;- mismatches$lab_genus != mismatches$WGS_genus
+paste0(&quot;Number of isolates with genus-level differences: &quot;, sum(mismatches$genus_mismatch))</code></pre>
 <pre><code>[1] &quot;Number of isolates with genus-level differences: 52&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Proportion of isolates with genus-level differences: &quot;, round(sum(mismatches$genus_mismatch) / sum(qcd$qc_pass)*100,2))</code></pre>
 <pre><code>[1] &quot;Proportion of isolates with genus-level differences: 3.49&quot;</code></pre>
+<pre class="r"><code># Mismatched differences
+to_drop_isolates &lt;- mismatches %&gt;% subset(`Keep/Drop`==&quot;drop&quot;) %&gt;% .$sample_id    
+paste0(&quot;Number of isolates to drop: &quot;, length(to_drop_isolates)) </code></pre>
 <pre><code>[1] &quot;Number of isolates to drop: 31&quot;</code></pre>
 </div>
 </div>
 <div id="get-sample-id-from-qcd-entry" class="section level1">
 <h1>Get sample ID from qcd entry</h1>
+<pre class="r"><code>get_sample_id = function(isolate,sample_lookup){
+  subset(sample_lookup,`Genome ID` == isolate) %&gt;% .$`Sample ID` %&gt;% as.character() %&gt;% paste0(collapse=&quot;;&quot;) %&gt;% trimws(.,whitespace = &quot;;&quot;)
+}
+
+qcd$sample_id &lt;- sapply(qcd$sample,get_sample_id,sample_lookup) %&gt;% as.character() </code></pre>
 <div id="filtering-3-duplicates" class="section level2">
 <h2>Filtering #3: Duplicates</h2>
 <ol style="list-style-type: decimal">
-<li>See ./data/
+<li>See ./data/</li>
+</ol>
+<pre class="r"><code>duplicated_metadata_entries &lt;- read_csv(&quot;../../data/INTEGRATE_duplicated_metadata_entries_120125.csv&quot;)
+duplicated_metadata_entries %&gt;% gontjesr::favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -713,41 +752,227 @@ Sequencing plate 13, D-9
 </td>
 </tr>
 </tbody>
-</table></li>
-</ol>
+</table>
+<pre class="r"><code>drop_worst_duplicated_entry &lt;- duplicated_metadata_entries$drop_isolates %&gt;% str_split(pattern = &quot;;&quot;) %&gt;% unlist
+paste0(&quot;Drop the following genomes from qcd file: &quot;,paste0(drop_worst_duplicated_entry,collapse=&quot;;&quot;))</code></pre>
 <pre><code>[1] &quot;Drop the following genomes from qcd file: INT_CRE_1168&quot;</code></pre>
+<pre class="r"><code>qcd &lt;- qcd %&gt;% subset(!sample %in%drop_worst_duplicated_entry)</code></pre>
 </div>
 </div>
 <div id="merge-qcd-data-with-the-dataset" class="section level1">
 <h1>Merge QCD data with the dataset</h1>
+<pre class="r"><code># Load
+df &lt;- read_delim(&quot;../../data/integrate_metadata_20260220.txt&quot;)
+df &lt;- df %&gt;%  rename(lab_species = species,labvantage_id = labvantage_barcode_bacterial_cell_isolate)
+
+# Has metadata
+df$has_full_metadata &lt;- ifelse(is.na(df$patient_sex),F,T)
+paste0(&quot;Number of isolates with metadata: &quot;,sum(df$has_full_metadata))</code></pre>
 <pre><code>[1] &quot;Number of isolates with metadata: 1432&quot;</code></pre>
-<pre><code>[1] &quot;Number of isolates without metadata: 73&quot;</code></pre>
-<pre><code>[1] &quot;Initial isolates in metadata: 1505&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of isolates without metadata: &quot;,nrow(df) - sum(df$has_full_metadata))</code></pre>
+<pre><code>[1] &quot;Number of isolates without metadata: 74&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Initial isolates in metadata: &quot;, nrow(df))</code></pre>
+<pre><code>[1] &quot;Initial isolates in metadata: 1506&quot;</code></pre>
+<pre class="r"><code># Remove  isolates
+## Remove the not delivered
+df$not_delivered &lt;- df$labvantage_id==&#39;not delivered&#39;
+paste0(subset(df,not_delivered ==T) %&gt;% .$sample_id)</code></pre>
+<pre><code>[1] &quot;INT_236&quot;  &quot;INT_905&quot;  &quot;INT_1634&quot;</code></pre>
+<pre class="r"><code>df &lt;- df %&gt;% subset(not_delivered == F) 
+
+## Remove their &quot;Drop&quot; isolates
+df &lt;- df %&gt;% subset(status == &quot;Keep&quot;) 
+
+## Drop due to mismatch OR out of participant stay
+df &lt;- df %&gt;% subset(!sample_id %in% to_drop_isolates) 
+paste0(&quot;Total isolates after dropping using status and mismatch variables: &quot;,nrow(df))</code></pre>
 <pre><code>[1] &quot;Total isolates after dropping using status and mismatch variables: 1445&quot;</code></pre>
 </div>
 <div id="get-genomic-id-for-isolates" class="section level1">
 <h1>Get genomic ID for isolates</h1>
+<pre class="r"><code># Get genome IDS
+get_genomic_id &lt;- function(sample_id,sample_lookup){
+   subset(sample_lookup,`Sample ID` == sample_id) %&gt;% .$`Genome ID` %&gt;% as.character() %&gt;% paste0(collapse=&quot;;&quot;) %&gt;% trimws(.,whitespace = &quot;;&quot;)
+}
+
+df$genome_ids &lt;- sapply(df$sample_id,get_genomic_id,sample_lookup) %&gt;% as.character() 
+
+# Multiple genome IDs
+df$genome_ids_multiple &lt;- grepl(&quot;;&quot;,df$genome_ids)
+paste0(&quot;Number of retained metadata entries with multiple genome_ids: &quot;,sum(df$genome_ids_multiple))</code></pre>
 <pre><code>[1] &quot;Number of retained metadata entries with multiple genome_ids: 17&quot;</code></pre>
+<pre class="r"><code># Get qc-passing genomes
+df$genome_ids_qc_passing &lt;- sapply(df$genome_ids,function(x){
+  ids &lt;- unlist(strsplit(x,&quot;;&quot;))
+  qcd_entries &lt;- qcd %&gt;% subset(sample %in% ids)
+  qc_pass_ids &lt;- qcd_entries %&gt;% subset(qc_pass==T) %&gt;% .$sample
+  if(length(qc_pass_ids)==0){
+    return(&quot;&quot;)
+  } else {
+    return(paste0(qc_pass_ids,collapse=&quot;;&quot;))
+  }
+})
+
+# Get CRE qc-passing genomes
+df$genome_ids_qc_passing_CRE &lt;- sapply(df$genome_ids_qc_passing,function(x){
+  ids &lt;- unlist(strsplit(x,&quot;;&quot;))
+  CRE &lt;- ids[ids %in% subset(qcd,qc_pass==T &amp; CRE==T)$sample]  
+ if(length(CRE)==0){
+    return(&quot;&quot;)
+  } else {
+    return(paste0(CRE,collapse=&quot;;&quot;))
+  }
+})
+
+df$isolate_no &lt;- sapply(df$sample_id,FUN=function(x){
+  df_sub &lt;- subset(df,sample_id==x)
+  if(df_sub$genome_ids_qc_passing_CRE != &quot;&quot;){
+    df_sub$genome_ids_qc_passing_CRE
+  } else{
+    if(df_sub$genome_ids_qc_passing!= &quot;&quot;){ 
+    df_sub$genome_ids_qc_passing
+    } else {
+      df_sub$genome_ids
+    }
+  } 
+}) %&gt;% unlist(use.names = F) %&gt;% `names&lt;-`(NULL)</code></pre>
+<pre class="r"><code>paste0(&quot;Metadata without QC-passing CRE genomes: &quot;,sum(df$genome_ids_qc_passing_CRE==&#39;&#39;))</code></pre>
 <pre><code>[1] &quot;Metadata without QC-passing CRE genomes: 73&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Percentage of metadata without QC-passing CRE genomes: &quot;,round(sum(df$genome_ids_qc_passing_CRE==&#39;&#39;) / nrow(df) *100,2),&quot;%&quot;)</code></pre>
 <pre><code>[1] &quot;Percentage of metadata without QC-passing CRE genomes: 5.05%&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Metadata with duplicate CRE QC genomes: &quot;,grepl(&#39;;&#39;, df$genome_ids_qc_passing_CRE ) %&gt;% sum)</code></pre>
 <pre><code>[1] &quot;Metadata with duplicate CRE QC genomes: 0&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Final CRE qc-passing genome data: &quot;,grepl(&#39;INT&#39;, df$genome_ids_qc_passing_CRE ) %&gt;% sum)</code></pre>
 <pre><code>[1] &quot;Final CRE qc-passing genome data: 1372&quot;</code></pre>
 </div>
 <div id="merge-qcd-with-metadata" class="section level1">
 <h1>Merge QCD with metadata</h1>
+<pre class="r"><code>qcd$isolate_no &lt;- qcd$sample  
+
+# Add qcd for isolates with and without duplicates (failed, thankfully!)
+df_merged &lt;- lapply(df$isolate_no,FUN=function(x){
+  isolates &lt;- str_split(x,&quot;;&quot;) %&gt;% unlist
+  df_sub &lt;- subset(df,isolate_no ==x)
+  qcd_sub &lt;- subset(qcd,isolate_no %in% isolates)
+  if(grepl(&quot;;&quot;,x)==F ){
+    suppressMessages(left_join(df_sub,qcd_sub))
+  } else {
+    qcd_sub_merged &lt;- qcd_sub %&gt;% summarise(across(everything(), ~ paste(unique(.), collapse = &quot;;&quot;))) 
+    suppressMessages(left_join(df_sub,qcd_sub_merged))
+  }
+}) %&gt;% do.call(rbind,.)
+
+paste0(&quot;Number of isolates: &quot;,nrow(df_merged))</code></pre>
 <pre><code>[1] &quot;Number of isolates: 1445&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of qc_passing isolates: &quot;,sum(df_merged$qc_pass==TRUE))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing isolates: 1374&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of qc_passing CRE isolates: &quot;,sum(df_merged$qc_pass==TRUE &amp; df_merged$CRE==TRUE))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing CRE isolates: 1372&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of qc_passing CRE isolates with metadata: &quot;,sum(df_merged$qc_pass==TRUE &amp; df_merged$CRE==TRUE &amp; df_merged$has_full_metadata == T))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing CRE isolates with metadata: 1303&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of qc_passing CRE isolates without metadata: &quot;,sum(df_merged$qc_pass==TRUE &amp; df_merged$CRE==TRUE &amp; df_merged$has_full_metadata == F))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing CRE isolates without metadata: 69&quot;</code></pre>
 </div>
 <div id="curate-metadata" class="section level1">
 <h1>Curate metadata</h1>
 <div id="resistance" class="section level2">
 <h2>Resistance</h2>
+<pre class="r"><code>factorize_mic_null &lt;- function(dataset,resistance){ 
+  values &lt;- unique(na.omit(as.character(dataset[[resistance]])))
+  combination &lt;- ifelse(length(grep(&quot;/&quot;,values))&gt;0,&quot;yes&quot;,&quot;no&quot;)
+  if(combination == &quot;no&quot;){
+    level &lt;- c(
+      #Endpoint 
+      values[grep(&quot;≤|&lt;|&lt;=&quot;,values)], 
+      #if non endpoint included 
+      #non-endpoint sorted
+      as.character(sort(as.numeric(values[!grepl(&quot;≤|&lt;|&gt;|&gt;=|≥&quot;, values)]))),
+      #Endpoint
+      values[grep(&quot;&gt;|&gt;=|≥&quot;,values)])
+  }
+  if(combination == &quot;yes&quot;){
+    values_no_in &lt;- gsub(&quot;/.*&quot;,&quot;&quot;,values)
+    in_value &lt;- gsub(&quot;.*\\/&quot;,&quot;&quot;,values)
+    level &lt;- c(
+      #Endpoint 
+      values_no_in[grep(&quot;≤&quot;,values_no_in)], 
+      #if non endpoint included 
+      #non-endpoint sorted
+      as.character(sort(as.numeric(values_no_in[!grepl(&quot;≤|&gt;&quot;, values_no_in)]))),
+      #Endpoint
+      values_no_in[grep(&quot;&gt;&quot;,values_no_in)])
+    level &lt;- paste0(level,&quot;/&quot;,in_value)
+  }    
+  factorized &lt;- factor(as.vector(dataset[[resistance]]),levels = level)
+  return(factorized)
+}</code></pre>
+<pre class="r"><code>## Convert names
+df_merged &lt;-  dplyr::rename(df_merged,MERO=&#39;mero&#39;,IMI=&#39;imi&#39;,CZA=&#39;cza&#39;,MVB = &quot;mev&quot;,IR = &quot;imr&quot;, PLZ = &quot;plz&quot;, CST=&#39;col&#39;,OMC=&#39;omc&#39;,DLX=&#39;dlx&#39;,ERV=&#39;erv&#39;,CT =&#39;c_t&#39;,FDC = &#39;fdc_kb_zoi_mm&#39;,FOS =&#39;fos&#39;) 
+df_merged &lt;-  dplyr::rename(df_merged,MERO_cat=&#39;mero_int&#39;,IMI_cat=&#39;imi_int&#39;,CZA_cat=&#39;cza_int&#39;,MVB_cat = &quot;mev_int&quot;,IR_cat = &quot;imr_int&quot;, PLZ_cat = &quot;plz_int&quot;, CST_cat=&#39;col_int&#39;,OMC_cat=&#39;omc_int&#39;,DLX_cat=&#39;dlx_int&#39;,ERV_cat=&#39;erv_int&#39;,CT_cat =&#39;ct_int&#39;,FDC_cat = &#39;fdc_int&#39;,FOS_cat = &#39;fos_int&#39;) 
+
+## Create MIC Variable
+MIC_variables &lt;- c(&#39;MERO&#39;,&quot;IMI&quot;,&#39;MVB&#39;,&#39;IR&#39;,&#39;PLZ&#39;,&#39;CST&#39;,&#39;OMC&#39;,&#39;DLX&#39;,&#39;ERV&#39;,&#39;CZA&#39;,&quot;FDC&quot;,&quot;CT&quot;,&quot;FOS&quot;)
+
+## Recode numeric values if found in category if numeric is NA
+for(i in MIC_variables){
+  df_merged[,paste0(i)] &lt;- ifelse(df_merged[[paste0(i)]] %in% c(&quot;S&quot;,&quot;I&quot;,&quot;R&quot;),NA, df_merged[[paste0(i)]])
+}
+
+## Numerize MIC Data
+for(i in MIC_variables){
+  df_merged[,paste0(i,&quot;_num&quot;)] &lt;- df_merged[[paste0(i)]] %&gt;% gsub(&quot;≤&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;&gt;&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;/.&quot;,&quot;&quot;,.) %&gt;% trimws(.,&#39;both&#39;) %&gt;% as.numeric
+}
+
+## Factorize Raw MIC Data
+for(i in MIC_variables){
+  df_merged[,i] &lt;- factorize_mic_null(df_merged,i)
+}
+
+## Log-2 Transform Data
+for(i in MIC_variables){
+  df_merged[,paste0(i,&quot;_log_2&quot;)] &lt;- log2(df_merged[paste0(i,&quot;_num&quot;)])
+}
+
+# Dich
+for(i in MIC_variables){
+  df_merged[,paste0(i,&quot;_dich_num&quot;)] &lt;- sapply(df_merged[paste0(i,&quot;_cat&quot;)],FUN=function(x){
+      ifelse(x %in% c(&quot;ERROR&quot;,NA),NA,ifelse(x %in% c(&quot;I&quot;,&quot;R&quot;),1,0))
+  })
+}
+
+df_merged$blbli_dich_num &lt;- ifelse(is.na(df_merged$MVB_dich_num) &amp; is.na(df_merged$IR_dich_num) &amp; is.na(df_merged$CZA_dich_num),NA,ifelse( df_merged$MVB_dich_num==1| df_merged$IR_dich_num==1 | df_merged$CZA_dich_num == 1,1,0))</code></pre>
 </div>
 <div id="prioritize-kleborates-st-data" class="section level2">
 <h2>Prioritize kleborate’s ST data</h2>
+<pre class="r"><code>kleborate_Ecoli &lt;- read_delim(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/escherichia_INTEGRATE/escherichia_output.txt&quot;) %&gt;% `colnames&lt;-`(recode(colnames(.), &quot;ST...10&quot;=&quot;ST_Pasteur&quot;,  &quot;ST...19&quot;=&quot;ST_Achtman&quot;)) %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
+kleborate_kosc &lt;- read_delim(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kosc_INTEGRATE/klebsiella_oxytoca_complex_output.txt&quot;) %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
+kleborate_kpsc_integrate &lt;- read_delim(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_INTEGRATE/klebsiella_pneumo_complex_output.txt&quot;) %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
+
+# New - preferentially use Kleborate!
+ST_data_202123 &lt;- lapply(df_merged$isolate_no,FUN=function(x){ 
+  ecoli_isolate &lt;- x %in% kleborate_Ecoli$isolate_no
+  kosc_isolate &lt;- x %in% kleborate_kosc$isolate_no
+  kpsc_isolate &lt;- x %in% kleborate_kpsc_integrate$isolate_no
+  has_kleborate_run &lt;- sum(ecoli_isolate,kosc_isolate,kpsc_isolate) &gt;0
+  if(has_kleborate_run==F){
+    print(paste0(x,&quot; has no kleborate run due to being from different species OR multiple specimens provided&quot;))
+    df_sub &lt;- df_merged %&gt;% subset(isolate_no==x)
+    ST &lt;- paste0(unique(df_sub[[&#39;st&#39;]]),collapse=&quot;;&quot;)
+  } 
+  if(ecoli_isolate==T){
+    kleborate_Ecoli_sub &lt;- subset(kleborate_Ecoli,isolate_no==x)
+    ST &lt;- paste0(unique(kleborate_Ecoli_sub[[&#39;ST_Achtman&#39;]]),collapse=&quot;;&quot;) 
+  }
+  if(kosc_isolate==T){
+    kleborate_kosc_sub &lt;- subset(kleborate_kosc,isolate_no==x)
+    ST &lt;- paste0(unique(kleborate_kosc_sub[[&#39;ST&#39;]]),collapse=&quot;;&quot;)  
+  }
+  if(kpsc_isolate==T){
+    kpsc_isolate_sub &lt;- subset(kleborate_kpsc_integrate,isolate_no==x)
+    ST &lt;- paste0(unique(kpsc_isolate_sub[[&#39;ST&#39;]]),collapse=&quot;;&quot;)   
+  }
+  cbind.data.frame(isolate_no = x,ST=ST)
+}) %&gt;% do.call(rbind,.)</code></pre>
 <pre><code>[1] &quot;INT_CRE_45 has no kleborate run due to being from different species OR multiple specimens provided&quot;
 [1] &quot;INT_CRE_53 has no kleborate run due to being from different species OR multiple specimens provided&quot;
 [1] &quot;INT_CRE_54 has no kleborate run due to being from different species OR multiple specimens provided&quot;
@@ -988,10 +1213,13 @@ Sequencing plate 13, D-9
 [1] &quot;INT_CRE_1505 has no kleborate run due to being from different species OR multiple specimens provided&quot;
 [1] &quot;INT_CRE_1509 has no kleborate run due to being from different species OR multiple specimens provided&quot;
 [1] &quot;INT_CRE_1511 has no kleborate run due to being from different species OR multiple specimens provided&quot;</code></pre>
+<pre class="r"><code>df_merged &lt;- left_join(df_merged,ST_data_202123) %&gt;% rename(mlst_st=st)</code></pre>
 </div>
 </div>
 <div id="save-file" class="section level1">
 <h1>Save file</h1>
+<pre class="r"><code>saveRDS(df_merged,&quot;./data/dataset/INTEGRATE_metadata_qcd_merged.RDS&quot;)
+write_csv(df_merged,&quot;./data/dataset/INTEGRATE_metadata_qcd_merged.csv&quot;)</code></pre>
 </div>
 
 

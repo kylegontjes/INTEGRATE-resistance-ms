@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-12-01" />
+<meta name="date" content="2026-02-21" />
 
 <title>PENN blaKPC 2014-15 CA LTACH isolate collection curation</title>
 
@@ -577,13 +577,18 @@ display: none;
 <h1 class="title toc-ignore">PENN blaKPC 2014-15 CA LTACH isolate
 collection curation</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-12-01</h4>
+<h4 class="date">2026-02-21</h4>
 
 </div>
 
 
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
+<pre class="r"><code>df_2014_15 &lt;- readxl::read_excel(&quot;~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/data/459_patients_data_for_posting.xls&quot;)  %&gt;% as.data.frame
+df_2014_15 &lt;- df_2014_15 %&gt;% subset(state == &#39;CA&#39;)  
+df_2014_15$sample_id &lt;- as.character(df_2014_15$isolate_no)
+df_2014_15$isolate_no &lt;-  paste0(&quot;PCMP_H&quot;,df_2014_15$isolate_no)   
+df_2014_15$participant_id &lt;- as.character(df_2014_15$Patient_ID)</code></pre>
 </div>
 <div id="recoded-participant-13s-initial-entry-due-to-incorrect-admit-and-discharge-date" class="section level1">
 <h1>Recoded participant 13’s initial entry due to incorrect admit and
@@ -593,7 +598,10 @@ discharge date</h1>
 (i.e., age different correlated with collection date difference), the
 two isolates had the same admit date, which suggests a possible issue
 with admit and discharge data</h2>
+<pre class="r"><code>wrong_Cx_data &lt;- df_2014_15 %&gt;% subset(LOSbeforeCx &lt;0) %&gt;% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx)
+paste0(&quot;Incorrect isolate with bad admit and discharge data: &quot;)</code></pre>
 <pre><code>[1] &quot;Incorrect isolate with bad admit and discharge data: &quot;</code></pre>
+<pre class="r"><code>wrong_Cx_data %&gt;% gontjesr::favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -646,7 +654,16 @@ PCMP_H13
 </tr>
 </tbody>
 </table>
+<pre class="r"><code># Recode df when LOSbeforeCx variable is less than 0, make the admit_date, discharge_date, LOSbeforeCx, and LOS_after_cx variables all NA
+df_2014_15 &lt;- df_2014_15 %&gt;%
+  mutate(
+    across(c(admit_date, discharge_date, LOSbeforeCx, LOS_after_cx),
+           ~ if_else(LOSbeforeCx &lt; 0, NA, .))
+  ) 
+
+paste0(&quot;Recoded the initial isolate to have NA admit date: &quot;)</code></pre>
 <pre><code>[1] &quot;Recoded the initial isolate to have NA admit date: &quot;</code></pre>
+<pre class="r"><code>df_2014_15%&gt;% subset(participant_id %in% wrong_Cx_data$Patient_ID) %&gt;% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx)  %&gt;% gontjesr::favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -722,19 +739,51 @@ PCMP_H306
 </tr>
 </tbody>
 </table>
+<pre class="r"><code># Create a flag
+df_2014_15$has_full_metadata &lt;- !df_2014_15$isolate_no %in% wrong_Cx_data$isolate_no</code></pre>
 </div>
 </div>
 <div id="resitance" class="section level1">
 <h1>Resitance</h1>
 <div id="load-data-1" class="section level2">
 <h2>Load data</h2>
+<pre class="r"><code>SENSITITRE &lt;- readxl::read_excel(&quot;~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Antibiotic_resistance/data/SENSITITRE MICs.xlsx&quot;, range = &quot;B1:N460&quot;) %&gt;% as.data.frame
+SENSITITRE &lt;- SENSITITRE %&gt;% mutate(isolate_no = paste0(&quot;PCMP_H&quot;,str_remove(gsub(&#39;CRKP_&#39;,&#39;&#39;,SENSITITRE$ISOLATES),&quot;^0+&quot;))) %&gt;% `rownames&lt;-`(.$isolate_no)
+
+# PCMP_H472 &amp; PCMP_H473 were excluded due to data reporting issues
+SENSITITRE &lt;- subset(SENSITITRE,!isolate_no %in% c(&quot;PCMP_H472&quot;,&quot;PCMP_H473&quot;))</code></pre>
 </div>
 <div id="clean-variables" class="section level2">
 <h2>Clean variables</h2>
+<pre class="r"><code>## Convert names
+SENSITITRE &lt;-  dplyr::rename(SENSITITRE,MVB = &quot;MEV&quot;,IR = &quot;IMK&quot;, CST = &quot;COL&quot;, AMK = &quot;AMI&quot;, FOS = &quot;FOS+&quot;,PT = &quot;P/T4&quot;)
+
+## Fix MVB data due to miscoding (vaborbactom is a constant 8 µg/mL not 4 µg/mL)
+paste0(&quot;MVB has some issues that needed recoding: &quot;)</code></pre>
 <pre><code>[1] &quot;MVB has some issues that needed recoding: &quot;</code></pre>
+<pre class="r"><code>table(SENSITITRE$MVB)</code></pre>
 <pre><code>
   &gt;32/8 ≤0.25/8   0.5/8     1/8    16/8     2/4     2/8    32/8     4/8     8/8 
       3     266      22      59      10       1      44       7      24      22 </code></pre>
+<pre class="r"><code>SENSITITRE &lt;- SENSITITRE %&gt;% mutate(MVB = dplyr::recode(MVB,&quot;2/4&quot; = &quot;2/8&quot;))
+
+## Create MIC Variable
+MIC_variables &lt;- c(&quot;Ceftazidime-avibactam&quot;=&quot;CZA&quot;,&quot;Meropenem-vaborbactam&quot;=&quot;MVB&quot;,&quot;Imipenem-relebactam&quot;=&quot;IR&quot;,&quot;Tigeycline&quot;=&quot;TGC&quot;,&quot;Colistin&quot;=&quot;CST&quot;,&quot;Amikacin&quot;=&quot;AMK&quot;,&quot;Plazomicin&quot;=&quot;PLZ&quot;,&quot;MERO&quot;,&quot;IMI&quot;,&quot;FOS&quot;)
+
+## Numerize MIC Data
+for(i in MIC_variables){
+  SENSITITRE[,paste0(i,&quot;_num&quot;)] &lt;- SENSITITRE[,paste0(i)]  %&gt;% gsub(&quot;≤&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;&gt;&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;/.&quot;,&quot;&quot;,.) %&gt;% trimws(.,&#39;both&#39;) %&gt;% as.numeric
+}
+
+## Factorize Raw MIC Data
+for(i in MIC_variables){
+  SENSITITRE[,i] &lt;- factorize_MIC(SENSITITRE,i)
+}
+
+## Log-2 Transform Data
+for(i in MIC_variables){
+  SENSITITRE[,paste0(i,&quot;_log_2&quot;)] &lt;- log2(SENSITITRE[,paste0(i,&quot;_num&quot;)])
+}</code></pre>
 </div>
 <div id="convert-raw-mic-data-to-phenotypic-resistance-categories" class="section level2">
 <h2>Convert Raw MIC data to phenotypic resistance categories</h2>
@@ -743,32 +792,106 @@ PCMP_H306
 <li><p><a href="https://academic.oup.com/cid/article/72/8/1484/5868454?login=true" class="uri">https://academic.oup.com/cid/article/72/8/1484/5868454?login=true</a></p></li>
 <li><p><a href="https://www.sciencedirect.com/science/article/pii/S0255085721041062" class="uri">https://www.sciencedirect.com/science/article/pii/S0255085721041062</a></p></li>
 </ol>
+<pre class="r"><code>SENSITITRE &lt;- SENSITITRE %&gt;% mutate(
+  ### Meropenem (MERO): ≤1/2/≥4
+  MERO_cat = ifelse(MERO_num &lt;= 1,&quot;S&quot;,ifelse(MERO_num &gt;= 4,&quot;R&quot;,&quot;I&quot;)),
+  ### Imipenem (IMI): ≤1/2/≥4
+  IMI_cat = ifelse(IMI_num &lt;= 1,&quot;S&quot;,ifelse(IMI_num &gt;= 4,&quot;R&quot;,&quot;I&quot;)),
+  ### Ceftazidime-avibactam: Susceptible (MIC≤8/4), Resistant (MIC≥16/4)  
+  CZA_cat = ifelse(CZA_num &lt;= 8,&quot;S&quot;,ifelse(CZA_num &gt;= 16,&quot;R&quot;,&quot;&quot;)),
+  ### Meropenem-vaborbactam (MVB): Susceptible (MIC≤4/8), Intermediate (MIC=8/8), Resistant (MIC≥16/8)  
+  MVB_cat = ifelse(MVB_num &lt;= 4,&quot;S&quot;,ifelse(MVB_num == 8,&quot;I&quot;,&quot;R&quot;)),
+  ### Imipenem-relebactam (I-R): Susceptible (MIC≤1/4), Intermediate (MIC=2/4), Resistant (MIC≥4/4)  
+  IR_cat = ifelse(IR_num &lt;= 1,&quot;S&quot;,ifelse(IR_num == 2,&quot;I&quot;,&quot;R&quot;)),
+  ### Tigecycline (TGC): Susceptible (MIC≤2), Intermediate (MIC=4), Resistant (MIC≥8)  
+  TGC_cat = ifelse(TGC_num &lt;= 2,&quot;S&quot;,ifelse(TGC_num == 4,&quot;I&quot;,&quot;R&quot;)),
+  ### Colistin (CST): Intermediate (MIC≤2), Resistant (MIC≥4)
+  CST_cat = ifelse(CST_num &lt;= 2,&quot;I&quot;,ifelse(CST_num &gt;= 4,&quot;R&quot;,&quot;&quot;)),
+  ### Amikacin (AMK): Susceptible (MIC≤16), Intermediate (MIC=32), Resistant (MIC≥64)   
+  AMK_cat =  ifelse(AMK_num &lt;= 16,&quot;S&quot;,ifelse(AMK_num == 32,&quot;I&quot;,&quot;R&quot;)),
+  ### Plazomicin (PLZ): Susceptible (MIC≤2), Intermediate (MIC=4), Resistant (MIC≥8) 
+  PLZ_cat = ifelse(PLZ_num &lt;= 2,&quot;S&quot;,ifelse(PLZ_num == 4,&quot;I&quot;,&quot;R&quot;)),
+  FOS_cat = ifelse(FOS == &quot;&gt;64&quot;,&quot;I&quot;,&quot;S&quot;)) 
+
+## Factorize Categorical Data
+MIC_variables_cat &lt;- paste0(MIC_variables,&quot;_cat&quot;) 
+for(i in MIC_variables_cat){
+  SENSITITRE[,i] &lt;- factor(as.vector(SENSITITRE[,i]),
+                           levels = c(&quot;S&quot;,&quot;I&quot;,&quot;R&quot;),
+                           labels = c(&quot;Susceptible&quot;,&quot;Intermediate&quot;,&quot;Resistant&quot;))
+}
+
+## Create Binary Non-Susceptible Variable 
+MIC_variables_no_CST&lt;- c(&quot;MERO&quot;,&quot;IMI&quot;,&quot;MVB&quot;,&quot;IR&quot;,&quot;CZA&quot;,&quot;AMK&quot;,&quot;PLZ&quot;,&quot;TGC&quot;,&quot;FOS&quot;)
+for(i in MIC_variables_no_CST){
+  SENSITITRE[,paste0(i,&quot;_dich&quot;)] &lt;- binarize_MIC(SENSITITRE,paste0(i,&quot;_cat&quot;))
+}
+SENSITITRE$CST_dich &lt;- ifelse(SENSITITRE$CST_cat == &quot;Resistant&quot;,&quot;Non-Susceptible&quot;,&quot;Susceptible&quot;)
+
+## Factorize Dichotomous Data
+MIC_variables_dich &lt;- paste0(MIC_variables,&quot;_dich&quot;) 
+for(i in MIC_variables_dich){
+  SENSITITRE[,i] &lt;- factor(as.vector(SENSITITRE[,i]),
+                           levels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;),
+                           labels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;))
+}
+
+## Numerical Dichotemous Variable for Resistance
+for(i in MIC_variables_dich){
+  SENSITITRE[,paste0(i,&quot;_num&quot;)] &lt;- ifelse(SENSITITRE[,i] == &quot;Susceptible&quot;,0,1)
+}</code></pre>
 </div>
 <div id="create-blbli-combination-therapy-outcome" class="section level2">
 <h2>Create BL/BLI combination therapy outcome</h2>
+<pre class="r"><code>SENSITITRE$blbli_dich &lt;- ifelse(SENSITITRE$MVB_dich==&quot;Non-Susceptible&quot; | SENSITITRE$IR_dich==&quot;Non-Susceptible&quot;  | SENSITITRE$CZA_dich == &quot;Non-Susceptible&quot;,&quot;Non-Susceptible&quot;,&quot;Susceptible&quot;)  %&gt;% factor(.,levels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;),labels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;))
+SENSITITRE$blbli_dich_num &lt;- ifelse(SENSITITRE$blbli_dich == &quot;Non-Susceptible&quot;,1,0) </code></pre>
 </div>
 <div id="merge-resistance-data" class="section level2">
 <h2>Merge resistance data</h2>
+<pre class="r"><code>df_2014_15 &lt;- left_join(SENSITITRE,df_2014_15) %&gt;% subset(state==&#39;CA&#39;)</code></pre>
 </div>
 </div>
 <div id="merge-with-qcd-data" class="section level1">
 <h1>Merge with QCD data</h1>
 <div id="load-and-curate" class="section level2">
 <h2>Load and curate</h2>
+<pre class="r"><code>escre_list &lt;- read.csv(&quot;./Project_INTEGRATE/Analysis/data/INTEGRATE_MERLIN_WGS_Species_calls_030925_LLC.csv&quot;)
+escre_species &lt;- subset(escre_list,Enterobacterales == T) %&gt;% .$Species
+qcd_201415 &lt;- read.csv(&quot;./Project_Penn_KPC/Sequence_data/illumina_fastq/master_qc_summary.csv&quot;)  %&gt;% subset(grepl(&quot;NEG_CTL&quot;,Sample)==F) 
+colnames(qcd_201415) &lt;- snakecase::to_snake_case(colnames(qcd_201415))
+qcd_201415$qc_pass &lt;- qcd_201415$qc_check==&quot;PASS&quot; 
+
+qcd_201415$CRE &lt;- qcd_201415$species %in% escre_species 
+qcd_201415$isolate_no &lt;- qcd_201415$sample
+
+df_2014_15 &lt;- left_join(df_2014_15,qcd_201415) </code></pre>
 </div>
 </div>
 <div id="prioritize-st-data-via-kleborate" class="section level1">
 <h1>Prioritize ST data via kleborate</h1>
+<pre class="r"><code>kleborate_kpsc_penn &lt;- read_delim(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt&quot;)  %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
+
+ST_data_201415 &lt;- lapply(df_2014_15$isolate_no,FUN=function(x){
+  kleb_sub &lt;- kleborate_kpsc_penn %&gt;% subset(isolate_no ==x)
+  kleb_sub %&gt;% select(isolate_no,ST)
+}) %&gt;% do.call(rbind,.)
+
+df_2014_15 &lt;- left_join(df_2014_15,ST_data_201415) %&gt;% rename(mlst_st=st)</code></pre>
 </div>
 <div id="overall-summary" class="section level1">
 <h1>Overall summary</h1>
+<pre class="r"><code>paste0(&quot;Number of isolates: &quot;,nrow(df_2014_15))</code></pre>
 <pre><code>[1] &quot;Number of isolates: 417&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of qc_passing isolates: &quot;,sum(df_2014_15$qc_pass==TRUE))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing isolates: 408&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of qc_passing CRE isolates: &quot;,sum(df_2014_15$qc_pass==TRUE &amp; df_2014_15$CRE==TRUE))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing CRE isolates: 408&quot;</code></pre>
+<pre class="r"><code>paste0(&quot;Number of qc_passing CRE isolates &amp; full metadata: &quot;,sum(df_2014_15$qc_pass==TRUE &amp; df_2014_15$CRE==TRUE &amp; df_2014_15$has_full_metadata==T))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing CRE isolates &amp; full metadata: 407&quot;</code></pre>
 </div>
 <div id="save" class="section level1">
 <h1>Save</h1>
+<pre class="r"><code>saveRDS(df_2014_15,&quot;./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.RDS&quot;)</code></pre>
 </div>
 
 

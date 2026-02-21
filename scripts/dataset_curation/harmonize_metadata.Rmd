@@ -8,8 +8,8 @@ output: html_document
  
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
-opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/')
 ```
 
@@ -101,6 +101,12 @@ df_201415$participant_race <- rep(NA,nrow(df_201415))
 # Ethnicity
 df_202123$participant_ethnicity <- df_202123$patient_ethnicity
 df_201415$participant_ethnicity <- rep(NA,nrow(df_201415))
+```
+
+# Lab vantage ID
+## Not found in 2014-15 study
+```{r}
+df_201415$labvantage_id = NA
 ```
 
 # Merge datasets 

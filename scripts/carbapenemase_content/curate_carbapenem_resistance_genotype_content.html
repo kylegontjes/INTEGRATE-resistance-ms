@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-12-02" />
+<meta name="date" content="2026-02-21" />
 
 <title>Curate betalactamase and OMP mutation matrix</title>
 
@@ -353,36 +353,45 @@ display: none;
 <h1 class="title toc-ignore">Curate betalactamase and OMP mutation
 matrix</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-12-02</h4>
+<h4 class="date">2026-02-21</h4>
 
 </div>
 
 
 <div id="environment" class="section level1">
 <h1>Environment</h1>
+<pre class="r"><code># Packages
+packages &lt;- c(&quot;tidyverse&quot;)
+lapply(packages,library,character.only=T)</code></pre>
 <pre><code>[[1]]
  [1] &quot;lubridate&quot; &quot;forcats&quot;   &quot;stringr&quot;   &quot;dplyr&quot;     &quot;purrr&quot;     &quot;readr&quot;    
  [7] &quot;tidyr&quot;     &quot;tibble&quot;    &quot;ggplot2&quot;   &quot;tidyverse&quot; &quot;knitr&quot;     &quot;stats&quot;    
 [13] &quot;graphics&quot;  &quot;grDevices&quot; &quot;utils&quot;     &quot;datasets&quot;  &quot;methods&quot;   &quot;base&quot;     </code></pre>
-<pre><code>                                                                                                    sysname 
-                                                                                                   &quot;Darwin&quot; 
-                                                                                                    release 
-                                                                                                   &quot;24.6.0&quot; 
-                                                                                                    version 
-&quot;Darwin Kernel Version 24.6.0: Wed Oct 15 21:12:21 PDT 2025; root:xnu-11417.140.69.703.14~1/RELEASE_X86_64&quot; 
-                                                                                                   nodename 
-                                                                              &quot;msla0572.wifi.med.umich.edu&quot; 
-                                                                                                    machine 
-                                                                                                   &quot;x86_64&quot; 
-                                                                                                      login 
-                                                                                                     &quot;root&quot; 
-                                                                                                       user 
-                                                                                                 &quot;kgontjes&quot; 
-                                                                                             effective_user 
-                                                                                                 &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code># Functions
+source(&quot;./lib/consistent_themes.R&quot;)
+
+# Print environment
+Sys.info()</code></pre>
+<pre><code>                                                                                           sysname 
+                                                                                          &quot;Darwin&quot; 
+                                                                                           release 
+                                                                                          &quot;25.3.0&quot; 
+                                                                                           version 
+&quot;Darwin Kernel Version 25.3.0: Wed Jan 28 20:53:14 PST 2026; root:xnu-12377.81.4~5/RELEASE_X86_64&quot; 
+                                                                                          nodename 
+                                                                        &quot;0587671349.vpn.umich.net&quot; 
+                                                                                           machine 
+                                                                                          &quot;x86_64&quot; 
+                                                                                             login 
+                                                                                            &quot;root&quot; 
+                                                                                              user 
+                                                                                        &quot;kgontjes&quot; 
+                                                                                    effective_user 
+                                                                                        &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>sessionInfo() </code></pre>
 <pre><code>R version 4.5.2 (2025-10-31)
 Platform: x86_64-apple-darwin20
-Running under: macOS Sequoia 15.7.2
+Running under: macOS Tahoe 26.3
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.5-x86_64/Resources/lib/libRblas.0.dylib 
@@ -418,21 +427,70 @@ loaded via a namespace (and not attached):
 </div>
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
+<pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)   
+df_first &lt;- readRDS(&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;)   </code></pre>
 </div>
 <div id="load-amrfinder" class="section level1">
 <h1>Load amrfinder</h1>
+<pre class="r"><code>amrfinder &lt;- readRDS(&quot;./data/amrfinder/amrfinder_curated.RDS&quot;)
+amrfinder &lt;- subset(amrfinder,amrfinder$isolate_no %in% df$isolate_no) </code></pre>
 </div>
 <div id="get-list-of-blactamases" class="section level1">
 <h1>Get list of blactamases</h1>
+<pre class="r"><code>amrfinder_beta &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;)
+amrfinder_beta_bla &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;&amp; grepl(&quot;bla&quot;,element_symbol_renamed))
+ 
+amrfinder_carb_bla &lt;- amrfinder %&gt;% subset(subclass == &quot;CARBAPENEM&quot; &amp; grepl(&quot;bla&quot;,element_symbol_renamed) | grepl(&quot;KPC|NDM|VIM|IMP&quot;,element_symbol_renamed) | grepl(&quot;OXA-48 family&quot;,element_symbol_renamed))
+amrfinder_carb_ompK &lt;- amrfinder %&gt;% subset(subclass == &quot;CARBAPENEM&quot; &amp; ! element_symbol_renamed %in% amrfinder_carb_bla$element_symbol_renamed)
+amrfinder_matrix &lt;- readRDS(&quot;./data/amrfinder/amrfinder_matrix.RDS&quot;)  %&gt;% subset(rownames(.) %in% df$isolate_no) 
+amrfinder_matrix_beta &lt;- amrfinder_matrix %&gt;% select(any_of(sort(c(unique(amrfinder_beta$element_symbol_renamed)))))
+amrfinder_matrix_carb &lt;- amrfinder_matrix %&gt;% select(any_of(sort(c(unique(amrfinder_carb_bla$element_symbol_renamed)))))</code></pre>
 </div>
 <div id="load-kleborate" class="section level1">
 <h1>Load kleborate</h1>
+<pre class="r"><code>kleborate_matrix &lt;- readRDS(&quot;./data/kleborate/kleborate_kpsc_both_studies_matrix.RDS&quot;) %&gt;% select_if(!colnames(.) %in% c(&quot;OmpK36GD&quot;,&quot;OmpK36TD&quot;)) 
+kleborate_matrix$isolate_no &lt;- rownames(kleborate_matrix) </code></pre>
 </div>
 <div id="merge-with-amrfinder-matrix" class="section level1">
 <h1>Merge with amrfinder matrix</h1>
+<pre class="r"><code>df &lt;- left_join(df,kleborate_matrix) %&gt;% left_join(amrfinder_matrix_beta %&gt;% mutate(isolate_no = rownames(.))) %&gt;% as.data.frame
+rownames(df) &lt;- df$isolate_no 
+df_carb_omp &lt;- df %&gt;% select(any_of(c(unique(amrfinder_beta$element_symbol) ,colnames(kleborate_matrix))))   
+
+saveRDS(df_carb_omp,&quot;./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_datasets.RDS&quot;)</code></pre>
 </div>
 <div id="first-isolate-curation" class="section level1">
 <h1>First isolate curation</h1>
+<pre class="r"><code>df_carb_omp_first &lt;- subset(df_carb_omp,isolate_no %in% df_first$isolate_no)  %&gt;% select(-isolate_no) %&gt;% select_if(colSums(.)&gt;0)</code></pre>
+<pre class="r"><code># Omp mutations
+kleb_matrix_count &lt;- df_carb_omp_first %&gt;% select(any_of(colnames(kleborate_matrix))) %&gt;% colSums() %&gt;% sort
+mutations_over_4 &lt;- names(subset(kleb_matrix_count,kleb_matrix_count&gt;4))
+muts_under &lt;- subset(names(kleb_matrix_count),!names(kleb_matrix_count) %in% mutations_over_4)
+ompK35_truncations_under_4 &lt;- subset(muts_under,grepl(&quot;K35-&quot;,muts_under))
+ompK36_truncations_under_4 &lt;- subset(muts_under,grepl(&quot;K36-&quot;,muts_under))
+
+df_carb_omp_first$ompK35_rare_truncation &lt;- df_carb_omp_first %&gt;% select(ompK35_truncations_under_4) %&gt;% rowSums(.) %&gt;% {ifelse(.&gt;0,1,0)}
+df_carb_omp_first$ompK36_rare_truncation &lt;- df_carb_omp_first %&gt;% select(ompK36_truncations_under_4) %&gt;% rowSums(.) %&gt;% {ifelse(.&gt;0,1,0)}
+
+df_carb_omp_first &lt;- df_carb_omp_first %&gt;% select(-muts_under)
+
+# bla genotpyes
+bla_count &lt;- df_carb_omp_first %&gt;% select(any_of(colnames(amrfinder_matrix_beta))) %&gt;% colSums() %&gt;% sort
+bla_over_4 &lt;- names(bla_count)[bla_count&gt;4] 
+bla_under_4 &lt;- names(bla_count)[bla_count&lt;4]
+
+families_under_four &lt;- str_split(bla_under_4,&quot;-&quot;,simplify = T) %&gt;% .[,1] %&gt;% gsub(&quot;bla&quot;,&quot;&quot;,.)  %&gt;% str_split(.,&quot;_&quot;,simplify=T) %&gt;% .[,1]%&gt;% unique %&gt;% sort
+
+store_thes &lt;- lapply(families_under_four,FUN=function(x,df_carb_omp_first,bla_under_4){
+  cols_of_family &lt;- bla_under_4[grepl(x,bla_under_4)]
+  new_col_name &lt;- ifelse(x == &quot;ompK35&quot;,
+                         &quot;Rare_ompK35_insertion&quot;,
+                         ifelse(x==&quot;ompK36&quot;,&quot;Rare_ompK36_insertion&quot;,paste0(&quot;Rare_bla&quot;,x))) 
+  df_carb_omp_first[[new_col_name]] &lt;&lt;- df_carb_omp_first %&gt;% select(all_of(cols_of_family)) %&gt;% rowSums() %&gt;% {ifelse(.&gt;0,1,0)}
+},df_carb_omp_first,bla_under_4)  
+
+df_carb_omp_first &lt;- df_carb_omp_first %&gt;% select(-bla_under_4)</code></pre>
+<pre class="r"><code>saveRDS(df_carb_omp_first,&quot;./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.RDS&quot;)</code></pre>
 </div>
 
 

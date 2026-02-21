@@ -7,8 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA) 
-opts_chunk$set(echo = F,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/')
 ```
 
@@ -167,7 +167,6 @@ SENSITITRE$blbli_dich_num <- ifelse(SENSITITRE$blbli_dich == "Non-Susceptible",1
 ```{r}
 df_2014_15 <- left_join(SENSITITRE,df_2014_15) %>% subset(state=='CA')
 ```
-
 
 # Merge with QCD data
 ## Load and curate

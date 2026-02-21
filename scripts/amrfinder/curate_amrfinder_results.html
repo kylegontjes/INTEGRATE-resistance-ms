@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2025-12-01" />
+<meta name="date" content="2026-02-21" />
 
 <title>curate_amrfinder_data</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">curate_amrfinder_data</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2025-12-01</h4>
+<h4 class="date">2026-02-21</h4>
 
 </div>
 
@@ -368,26 +368,26 @@ invisible(lapply(packages,library,character.only=T,quietly=T))
 # Print environment
 set.seed(45) 
 Sys.info()</code></pre>
-<pre><code>                                                                                                    sysname 
-                                                                                                   &quot;Darwin&quot; 
-                                                                                                    release 
-                                                                                                   &quot;24.6.0&quot; 
-                                                                                                    version 
-&quot;Darwin Kernel Version 24.6.0: Wed Oct 15 21:12:21 PDT 2025; root:xnu-11417.140.69.703.14~1/RELEASE_X86_64&quot; 
-                                                                                                   nodename 
-                                                                                           &quot;msla0572.local&quot; 
-                                                                                                    machine 
-                                                                                                   &quot;x86_64&quot; 
-                                                                                                      login 
-                                                                                                     &quot;root&quot; 
-                                                                                                       user 
-                                                                                                 &quot;kgontjes&quot; 
-                                                                                             effective_user 
-                                                                                                 &quot;kgontjes&quot; </code></pre>
+<pre><code>                                                                                           sysname 
+                                                                                          &quot;Darwin&quot; 
+                                                                                           release 
+                                                                                          &quot;25.3.0&quot; 
+                                                                                           version 
+&quot;Darwin Kernel Version 25.3.0: Wed Jan 28 20:53:14 PST 2026; root:xnu-12377.81.4~5/RELEASE_X86_64&quot; 
+                                                                                          nodename 
+                                                                        &quot;0587671349.vpn.umich.net&quot; 
+                                                                                           machine 
+                                                                                          &quot;x86_64&quot; 
+                                                                                             login 
+                                                                                            &quot;root&quot; 
+                                                                                              user 
+                                                                                        &quot;kgontjes&quot; 
+                                                                                    effective_user 
+                                                                                        &quot;kgontjes&quot; </code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 4.5.2 (2025-10-31)
 Platform: x86_64-apple-darwin20
-Running under: macOS Sequoia 15.7.2
+Running under: macOS Tahoe 26.3
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.5-x86_64/Resources/lib/libRblas.0.dylib 
@@ -420,12 +420,70 @@ loaded via a namespace (and not attached):
 </div>
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
+<pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)   
+isolates &lt;- df$isolate_no </code></pre>
 </div>
 <div id="load-amrfinder" class="section level1">
 <h1>Load amrfinder</h1>
+<pre class="r"><code>amrfinder_201415 &lt;- read_delim(&quot;./data/amrfinder/Penn_KPC_amrfinder_results.txt&quot;)
+amrfinder_202123 &lt;- read_delim(&quot;./data/amrfinder/INTEGRATE_amrfinder_results.txt&quot;)
+
+amrfinder &lt;- rbind.data.frame(amrfinder_201415,amrfinder_202123)
+colnames(amrfinder) &lt;- snakecase::to_snake_case(colnames(amrfinder) )%&gt;% gsub(&quot;x_&quot;,&quot;&quot;,.)</code></pre>
 </div>
 <div id="load-and-curate-amrfinder-dataset" class="section level1">
 <h1>Load and curate amrfinder dataset</h1>
+<pre class="r"><code>amrfinder$isolate_no &lt;- pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
+ x %&gt;% str_split(.,&quot;_&quot;) %&gt;% unlist %&gt;% .[1:(length(.)-1)] %&gt;% paste0(.,collapse = &quot;_&quot;)
+},mc.cores=5) %&gt;% unlist
+
+amrfinder$contig &lt;-  pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
+ x %&gt;% str_split(.,&quot;_&quot;) %&gt;% unlist %&gt;% .[length(.)]   
+},mc.cores=5) %&gt;% unlist
+ 
+amrfinder &lt;- amrfinder %&gt;% select(-protein_id,-hmm_accession,-hmm_description)  
+amrfinder &lt;- subset(amrfinder, isolate_no %in% isolates)
+
+# Curate new element_symbol
+amrfinder$element_symbol_renamed &lt;- apply(amrfinder,1,FUN=function(x){
+  name &lt;- x[[&quot;element_symbol&quot;]] 
+  # Get name
+    if(x[[&quot;type&quot;]] == &quot;AMR&quot; &amp; x[[&quot;class&quot;]] == &quot;BETA-LACTAM&quot; &amp; x[[&quot;subtype&quot;]] != &quot;POINT&quot;){
+      if(grepl(&quot;-&quot;,name) == F| str_split(name,&quot;-&quot;,simplify=T) %&gt;% .[,ncol(.)] %&gt;% grepl(&quot;[0-9]&quot;, .) ==F){
+        if(x[[&quot;coverage_of_reference&quot;]] &lt; 100 | x[[&quot;identity_to_reference&quot;]] &lt; 100){
+          name &lt;- str_split(x[[&quot;closest_reference_name&quot;]],pattern = &quot; &quot;,simplify = T) %&gt;% .[,ncol(.)] %&gt;% paste0(&#39;bla&#39;,.)
+        }
+      }
+    }
+    if(x[[&quot;element_symbol&quot;]] == &#39;ampC&#39;) {
+      name &lt;- x[[&quot;element_symbol&quot;]]
+    }
+    if(x[[&quot;coverage_of_reference&quot;]] &lt; 100){
+        name &lt;- paste0(name,&quot;?&quot;)
+    }
+    if(x[[&quot;identity_to_reference&quot;]] &lt;100) {
+        name &lt;- paste0(name,&quot;*&quot;)
+    }
+  # Point mutants
+  if(x[[&quot;subtype&quot;]] == &quot;POINT&quot;){
+    name &lt;- x[[&quot;element_symbol&quot;]] 
+  }
+    return(name)
+})
+
+saveRDS(amrfinder,file=&quot;./data/amrfinder/amrfinder_curated.RDS&quot;)
+
+get_amrfinder_matrix &lt;- function(amrfinder,isolates){
+  unique_genes &lt;- amrfinder$element_symbol_renamed %&gt;% unique
+  pbmcapply::pbmclapply(unique_genes,FUN =function(x,amrfinder){
+    isolates_with_gene &lt;-  subset(amrfinder,element_symbol_renamed == x) %&gt;% select(isolate_no) %&gt;% unlist
+    row &lt;- assign(paste0(x),ifelse(isolates %in% isolates_with_gene,1,0))
+    return(row)},mc.cores=5,amrfinder) %&gt;% do.call(bind_cols,.) %&gt;% as.data.frame %&gt;% `colnames&lt;-`(unique_genes) %&gt;% `rownames&lt;-`(isolates)
+}
+
+amrfinder_mat &lt;- get_amrfinder_matrix(amrfinder = amrfinder,isolates = isolates)
+
+saveRDS(amrfinder_mat,file=&quot;./data/amrfinder/amrfinder_matrix.RDS&quot;)</code></pre>
 </div>
 
 
