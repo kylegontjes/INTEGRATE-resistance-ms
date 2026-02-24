@@ -30,4 +30,6 @@ dataset_for_creating_cb_scale$carbapenemase_md <- apply(carbapenemase_markdown,1
 genotypes <- c(table(dataset_for_creating_cb_scale$carbapenemase_md %>% subset(.!="No carbapenemase")) %>% sort(decreasing = T) %>% names,"No carbapenemase")
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
 
-genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(ncol=4, title.position = "top", label.position = "right")) 
+genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(ncol=4, title.position = "top", label.position = "right",order=2)) 
+
+genotype_scale_4_row <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(nrow=4, title.position = "top", label.position = "right",order=2)) 
