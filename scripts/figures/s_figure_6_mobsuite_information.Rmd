@@ -37,6 +37,32 @@ df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_m
 ```{r}
 carbapenemase_content <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
 df <- left_join(df,carbapenemase_content)
+
+format_blaKPC_md <- function(gene) {
+  gene <- trimws(gene,which='both')
+  if(grepl("^bla", gene)){
+    allele <- gsub("bla", "", gene)
+    paste0("<i>bla</i><sub>", allele, "</sub>") %>% trimws(.,which='both')
+  }  else {
+    if(grepl("No carbapenemase",gene) == T ){
+      paste0("No carbapenemase") 
+    } else {
+      paste0("") 
+    }
+  } 
+}
+
+carbapenemase_markdown <- str_split(df$carbapenemase,pattern = "&",simplify=T)
+carbapenemase_markdown[,1] <- sapply(carbapenemase_markdown[,1],format_blaKPC_md)
+carbapenemase_markdown[,2] <- sapply(carbapenemase_markdown[,2],format_blaKPC_md)
+colnames(carbapenemase_markdown) <- c("c1","c2")
+df$carbapenemase_md <- apply(carbapenemase_markdown,1,FUN=function(x){
+  if(x['c2']==''){
+    paste0(x['c1'])
+  } else {
+    paste0(x['c1']," & ",x['c2'])
+  }
+})
 ```
 
 # Load plasmid data
@@ -48,9 +74,11 @@ most_frequent_plasmids <- names(mobtyper_merged$primary_cluster_id  %>% table %>
 mobtyper_merged$primary_cluster_id <- factor(mobtyper_merged$primary_cluster_id,levels =most_frequent_plasmids)
 mobsuite_contigs <-  readRDS("./data/mobsuite/mobsuite_contig_merged_w_carbapenemase_data.RDS") %>% subset(isolate_no %in% df$isolate_no)  
 mobsuite_contigs$primary_cluster_id <- factor(mobsuite_contigs$primary_cluster_id,levels =most_frequent_plasmids)
+
+mobtyper_merged$carbapenemase_md <-  sapply(mobtyper_merged$carbapenemase,format_blaKPC_md)   
 ```
 
-# Study distribution
+# A. Study distribution
 
 ```{r}
 mobtyper_sum <- mobtyper_merged %>% group_by(primary_cluster_id) %>% summarise(n=n(),carbapenemase_plasmid = sum(carbapenemase_plasmid),Non_carbapenemase_plasmid = n-carbapenemase_plasmid)  
@@ -70,14 +98,14 @@ A
 # Carbapenemase data
 
 ```{r}
-genotypes <- c(table(df$carbapenemase %>% subset(.!="No carbapenemase")) %>% sort(decreasing = T) %>% names,"No carbapenemase")
+genotypes <- c(table(df$carbapenemase_md %>% subset(.!="No carbapenemase")) %>% sort(decreasing = T) %>% names,"No carbapenemase")
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
 
 genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(nrow=2, title.position = "top", label.position = "right")) 
 
 
-B <- ggplot(data=mobtyper_merged %>% subset(primary_cluster_id %in% KPC_plasmids) %>% subset(carbapenemase_plasmid==1),aes(x=primary_cluster_id,fill=carbapenemase)) + geom_bar(stat='count')  + genotype_scale + 
-  theme_bw_me + theme(axis.text.x = element_text(angle=45,hjust=1)) + 
+B <- ggplot(data=mobtyper_merged %>% subset(primary_cluster_id %in% KPC_plasmids) %>% subset(carbapenemase_plasmid==1),aes(x=primary_cluster_id,fill=carbapenemase_md)) + geom_bar(stat='count')  + genotype_scale + 
+  theme_bw_me + theme(axis.text.x = element_text(angle=45,hjust=1),legend.text = element_markdown()) + 
   labs(x="Primary MOB-cluster",y="Isolates",fill="Carbapenemase")   + facet_grid(~study)  
 
 B

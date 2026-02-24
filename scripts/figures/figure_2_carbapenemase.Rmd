@@ -51,11 +51,37 @@ df_202123<- df%>% subset(study == "2021-23")
 ```{r}
 carbapenemase_content <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
 df <- left_join(df,carbapenemase_content)
+
+format_blaKPC_md <- function(gene) {
+  gene <- trimws(gene,which='both')
+  if(grepl("^bla", gene)){
+    allele <- gsub("bla", "", gene)
+    paste0("<i>bla</i><sub>", allele, "</sub>") %>% trimws(.,which='both')
+  }  else {
+    if(grepl("No carbapenemase",gene) == T ){
+      paste0("No carbapenemase") 
+    } else {
+      paste0("") 
+    }
+  } 
+}
+
+carbapenemase_markdown <- str_split(df$carbapenemase,pattern = "&",simplify=T)
+carbapenemase_markdown[,1] <- sapply(carbapenemase_markdown[,1],format_blaKPC_md)
+carbapenemase_markdown[,2] <- sapply(carbapenemase_markdown[,2],format_blaKPC_md)
+colnames(carbapenemase_markdown) <- c("c1","c2")
+df$carbapenemase_md <- apply(carbapenemase_markdown,1,FUN=function(x){
+  if(x['c2']==''){
+    paste0(x['c1'])
+  } else {
+    paste0(x['c1']," & ",x['c2'])
+  }
+})
 ```
 
 # A. Fill being carbapenemase
 ```{r}
-genotypes <- c(table(df$carbapenemase %>% subset(.!="No carbapenemase")) %>% sort(decreasing = T) %>% names,"No carbapenemase")
+genotypes <- c(table(df$carbapenemase_md %>% subset(.!="No carbapenemase")) %>% sort(decreasing = T) %>% names,"No carbapenemase")
 genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
 
 genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(ncol=4, title.position = "top", label.position = "right")) 
@@ -67,16 +93,16 @@ get_factor_order_carb <- function(ST_dist,var){
 }
 
 carb_dist <-  df  %>%
-  count(study, carbapenemase) %>%
-  complete(study, carbapenemase, fill = list(n = 0)) %>%
+  count(study, carbapenemase_md) %>%
+  complete(study, carbapenemase_md, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
 
-df$carbapenemase <- factor(df$carbapenemase,levels = get_factor_order_carb(carb_dist,'carbapenemase'))
-df <- df %>% arrange(carbapenemase)  
+df$carbapenemase_md <- factor(df$carbapenemase_md,levels = get_factor_order_carb(carb_dist,'carbapenemase_md'))
+df <- df %>% arrange(carbapenemase_md)  
 
 A <- ggplot(data=df,
-       aes(y=carbapenemase, fill=carbapenemase)) +
+       aes(y=carbapenemase_md, fill=carbapenemase_md)) +
   geom_bar()  + genotype_scale + facet_wrap(~study) +
   geom_text(stat='count',
             aes(label=..count..),
@@ -87,7 +113,7 @@ A <- ggplot(data=df,
   xlab("Isolates") + ylab("") +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
-    axis.text.y = element_text(size=12, color="black"),
+    axis.text.y = element_markdown(size=12, color="black"),
     axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=12, color="black"),
                   legend.title = element_text(size = 12, color="black"),
@@ -117,14 +143,13 @@ ST_dist <-  df  %>%
 df$Species_ST_recode <- factor(df$Species_ST_recode,levels = get_factor_order(ST_dist,'Species_ST_recode'))
 
 C <- ggplot(data=df,
-       aes(y=Species_ST_recode, fill=carbapenemase)) +
-  geom_bar() +
-  xlim(NA, 220.1) +
+       aes(y=Species_ST_recode, fill=carbapenemase_md)) +
+  geom_bar()  +
   theme_bw_me +
   xlab("Isolates") + ylab("") +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
-    axis.text.y = element_text(size=12, color="black"),
+    axis.text.y = element_markdown(size=12, color="black"),
     axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=12, color="black"),
                   legend.title = element_text(size = 12, color="black"),
@@ -138,8 +163,8 @@ C
 # B. Compare carbapenemase genotypes between studies
 ```{r} 
 ST_dist <-  df  %>%
-  count(study, carbapenemase) %>%
-  complete(study, carbapenemase, fill = list(n = 0)) %>%
+  count(study, carbapenemase_md) %>%
+  complete(study, carbapenemase_md, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
    
@@ -149,13 +174,13 @@ get_factor_order_carb <- function(ST_dist,var){
   c(c(new_order,zero_new_order_old) %>% subset(.!="No carbapenemase"),"No carbapenemase")
 }
    
-B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
-  geom_alluvium(aes(fill = carbapenemase),width=0.66,alpha=0.75) +
+B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = carbapenemase_md,alluvium = carbapenemase_md,y=prop,fill = carbapenemase_md)) +
+  geom_alluvium(aes(fill = carbapenemase_md),width=0.66,alpha=0.75) +
   geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + genotype_scale + theme(legend.position = "bottom",
-                  axis.text =   element_text(size=12, color="black"),
+                  axis.text =   element_markdown(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
-                  legend.text =   element_text(size=8, color="black"),
-                  legend.title = element_text(size = 10, color="black"),
+                  legend.text =   element_markdown(size=8, color="black"),
+                  legend.title = element_markdown(size = 10, color="black"),
                   plot.title = element_text(size = 14, color="black")) + ggtitle("All isolates")
 
 B
@@ -164,14 +189,14 @@ B
 # D. Compare carbapenemases among Kpn ST258
 ```{r}
 ST_dist_ST258 <-  df %>% subset(Species_ST == "Klebsiella pneumoniae ST258") %>%
-  count(study, carbapenemase) %>%
-  complete(study, carbapenemase, fill = list(n = 0)) %>%
+  count(study, carbapenemase_md) %>%
+  complete(study, carbapenemase_md, fill = list(n = 0)) %>%
   group_by(study) %>%
   mutate(prop = n / sum(n) * 100)
     
 
-D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase,alluvium = carbapenemase,y=prop,fill = carbapenemase)) +
-  geom_alluvium(aes(fill = carbapenemase),width=0.66,alpha=0.75) +
+D <- ggplot(ST_dist_ST258 %>% subset(n>0),aes(x = study,stratum = carbapenemase_md,alluvium = carbapenemase_md,y=prop,fill = carbapenemase_md)) +
+  geom_alluvium(aes(fill = carbapenemase_md),width=0.66,alpha=0.75) +
   geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + genotype_scale + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
@@ -183,7 +208,7 @@ D
 ```
 
 # Construct the figure 
-```{r,fig.width=9,fig.height=7.2} 
+```{r,fig.width=8.75,fig.height=7} 
 AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=14)  
 CD <-  cowplot::plot_grid(C + theme(legend.position = 'none'),D + theme(legend.position = 'none'),ncol=2,labels = c("C","D"),label_size = 14,rel_widths = c(1,.33))
 
@@ -193,5 +218,5 @@ figure_2
 ``` 
 
 ```{r}
-ggsave(filename = "./figures/figure_2_carbapenemase.png", plot=figure_2, width = 9, height = 7.2, dpi=900, bg = 'white')
+ggsave(filename = "./figures/figure_2_carbapenemase.png", plot=figure_2, width = 8.75, height = 7, dpi=900, bg = 'white')
 ```

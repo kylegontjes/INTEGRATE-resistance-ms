@@ -81,17 +81,42 @@ melted_row_summary$proportion <- ifelse(melted_row_summary$study =='2021-23',mel
 melted_row_summary$variable <- recode(melted_row_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in ompK36","Rare_ompK35_insertion" = "Rare ompK356 insertion",'Rare_ompK36_insertion' = 'Rare ompK36 insertion', "ompK36_T136TDT" = 'ompK36 T136TDT', "ompK36_D135DGD" = "ompK36 D135DGD","ompK36_D135DD" ="ompK36 D135DD","blaSHV_C-112A" = 'blaSHV C112A') %>% gsub("Rare_","Rare ",.)
 melted_row_summary$variable <- factor(melted_row_summary$variable,levels = melted_row_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
 melted_row_summary$major_STs <- factor(melted_row_summary$major_STs,levels = )
-A <- ggplot(data=melted_row_summary,aes(y=variable,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage (%)") + ylab(NULL) + xlim(NA,1.01) +  
+
+
+format_blaKPC_md <- function(gene) {
+  gene <- trimws(gene,which='both')
+  if(grepl("^bla", gene)){
+    allele <- gsub("bla", "", gene)
+    final <- paste0("<i>bla</i><sub>", allele, "</sub>") %>% trimws(.,which='both')
+  } 
+  if(grepl("Rare bla",gene)==T){
+      allele <- gsub("Rare bla", "", gene)
+      final <- paste0("Rare <i>bla</i><sub>",allele,"</sub>")   %>% trimws(.,which='both') 
+  } 
+  if(grepl("ompK",gene) == T){
+    final <- gsub("ompK35","<i>ompK35</i>",gene) %>% gsub("ompK36","<i>ompK36</i>",.)
+  } 
+  
+  if(grepl("OmpK",gene)==T){
+    final <- gene
+  }
+  final 
+}
+
+
+melted_row_summary$variable_md <- sapply(melted_row_summary$variable,format_blaKPC_md)  
+
+A <- ggplot(data=melted_row_summary,aes(y=variable_md,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage (%)") + ylab(NULL) + xlim(NA,1.01) +  
   geom_text(
-  data = melted_row_summary %>% ungroup %>% select(-major_STs) %>% group_by(study,variable) %>% summarise(sumar= sum(proportion),count=sum(n)),
+  data = melted_row_summary %>% ungroup %>% select(-major_STs) %>% group_by(study,variable_md) %>% summarise(sumar= sum(proportion),count=sum(n)),
   inherit.aes = F,  
   aes(
     label = count,
     x = sumar+.026,
-    y= variable
+    y= variable_md
   ),
   size = 2.5,
-) + scale_x_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1),labels = c('0','20','40','60','80','100'),limits = c(0,1.01)) + ggtitle("All isolates")  + theme(legend.title.position = 'top')
+) + scale_x_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1),labels = c('0','20','40','60','80','100'),limits = c(0,1.01)) + ggtitle("All isolates")  + theme(legend.title.position = 'top',axis.text.y = element_markdown())
 A
 ```
 
@@ -110,17 +135,19 @@ melted_row_no_carb_summary$proportion <- ifelse(melted_row_no_carb_summary$study
 melted_row_no_carb_summary$variable <- recode(melted_row_no_carb_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in ompK36","Rare_ompK35_insertion" = "Rare ompK356 insertion",'Rare_ompK36_insertion' = 'Rare ompK36 insertion', "ompK36_T136TDT" = 'ompK36 T136TDT', "ompK36_D135DGD" = "ompK36 D135DGD","ompK36_D135DD" ="ompK36 D135DD","blaSHV_C-112A" = 'blaSHV C112A') %>% gsub("Rare_","Rare ",.)
 melted_row_no_carb_summary$variable <- factor(melted_row_no_carb_summary$variable,levels = melted_row_no_carb_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
 
-B <- ggplot(data=melted_row_no_carb_summary,aes(y=variable,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage (%)") + ylab(NULL) + xlim(NA,1.01) +  
+melted_row_no_carb_summary$variable_md <- sapply(melted_row_no_carb_summary$variable,format_blaKPC_md)  
+
+B <- ggplot(data=melted_row_no_carb_summary,aes(y=variable_md,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage (%)") + ylab(NULL) + xlim(NA,1.01) +  
   geom_text(
-  data = melted_row_no_carb_summary %>% ungroup %>% select(-major_STs) %>% group_by(study,variable) %>% summarise(sumar= sum(proportion),count=sum(n)),
+  data = melted_row_no_carb_summary %>% ungroup %>% select(-major_STs) %>% group_by(study,variable_md) %>% summarise(sumar= sum(proportion),count=sum(n)),
   inherit.aes = F,  
   aes(
     label = count,
     x = sumar+.0225,
-    y= variable
+    y= variable_md
   ),
   size = 2.5,
-) + scale_x_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1),labels = c('0','20','40','60','80','100'),limits = c(0,1.01)) + ggtitle("Non-carbapenemase-containing isolates") + theme(legend.title.position = 'top')
+) + scale_x_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1),labels = c('0','20','40','60','80','100'),limits = c(0,1.01)) + ggtitle("Non-carbapenemase-containing isolates") + theme(legend.title.position = 'top',axis.text.y = element_markdown())
 B
 ```
 
