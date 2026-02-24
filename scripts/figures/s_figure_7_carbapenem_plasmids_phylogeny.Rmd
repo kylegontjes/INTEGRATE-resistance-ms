@@ -21,6 +21,7 @@ lapply(packages,library,character.only=T)
 
 # Functions
 source("./lib/consistent_themes.R")
+source("./lib/carbapenemase_scale.R")
 
 # Print environment
 Sys.info()
@@ -96,10 +97,6 @@ feature_colors <- c(`1` = "black",`0`="white")
 feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Carbapanemase", guide = guide_legend(nrow=2, title.position = "top", label.position = "right",order=3))
 geno_vars <- colnames(KPC_plasmid_matrix %>% select_if(colSums(.)>0)) %>% subset(!.%in% c("study","major_STs","No carbapenemase"))
 genotype <- KPC_plasmid_matrix %>% subset(rownames(.) %in% tr$tip.label) %>% select(geno_vars) %>% drop_na()  %>% select_if(colSums(.) >0) %>% ComplexHeatmap::Heatmap()
-
-genotypes <- unique(df$carbapenemase_md) %>% sort
-genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
-genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Carbapenemase", guide = guide_legend(nrow=4, title.position = "top", label.position = "right",order=2)) 
 ```
 
 ## Phylogeny creation

@@ -21,6 +21,7 @@ lapply(packages,library,character.only=T)
 
 # Functions
 source("./lib/consistent_themes.R")
+source("./lib/carbapenemase_scale.R")
 
 # Print environment
 Sys.info()
@@ -78,12 +79,6 @@ break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
        
 ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type (ST)", guide = guide_legend(ncol=4, title.position = "top", label.position = "right",order=1))
-
-# Carbapenemase scale
-genotypes <- unique(df$carbapenemase_md) %>% sort
-genotype_colors <- setNames(c(hues::iwanthue(length(genotypes)-1,hmin = 5,cmin = 5,lmin = 5),"gray"), genotypes)
-
-genotype_scale <- scale_fill_manual(breaks = genotypes,values = genotype_colors,name = "Genotype", guide = guide_legend(ncol=3, title.position = "top", label.position = "right",order=2))   
 ``` 
 
 # Fill scales 
