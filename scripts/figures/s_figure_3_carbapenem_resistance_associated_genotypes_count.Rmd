@@ -105,6 +105,7 @@ format_blaKPC_md <- function(gene) {
 
 
 melted_row_summary$variable_md <- sapply(melted_row_summary$variable,format_blaKPC_md)  
+melted_row_summary$variable_md <- factor(melted_row_summary$variable_md,levels = melted_row_summary %>% group_by(variable_md) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable_md)
 
 A <- ggplot(data=melted_row_summary,aes(y=variable_md,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage (%)") + ylab(NULL) + xlim(NA,1.01) +  
   geom_text(
@@ -136,6 +137,7 @@ melted_row_no_carb_summary$variable <- recode(melted_row_no_carb_summary$variabl
 melted_row_no_carb_summary$variable <- factor(melted_row_no_carb_summary$variable,levels = melted_row_no_carb_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
 
 melted_row_no_carb_summary$variable_md <- sapply(melted_row_no_carb_summary$variable,format_blaKPC_md)  
+melted_row_no_carb_summary$variable_md <- factor(melted_row_no_carb_summary$variable_md,levels = melted_row_no_carb_summary %>% group_by(variable_md) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable_md)
 
 B <- ggplot(data=melted_row_no_carb_summary,aes(y=variable_md,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage (%)") + ylab(NULL) + xlim(NA,1.01) +  
   geom_text(
