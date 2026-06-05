@@ -16,11 +16,12 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r} 
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr")
+packages <- c("tidyverse","gridExtra","kableExtra","tableone")
 lapply(packages,library,character.only=T)
 
 # Functions
 source("./lib/consistent_themes.R")
+source("./lib/common_functions.R")
 
 # Print environment
 Sys.info()
@@ -73,7 +74,6 @@ paste0("Proportion of isolates with metadata: ",round(nrow(df_202123_w_metadata)
 convert_tableone_into_df(dataset=df_202123_w_metadata,vars = "source_simplified") 
 ``` 
 
-
 # Age & sex differences
 1. Preferentially select first isolate with metadata
 ```{r}
@@ -113,7 +113,6 @@ table(df_w_metadata$study)
 paste0("Wilcox test for length of stay")
 median_IQR("los_before_culture",df_w_metadata)
 ```
-
 
 # Source data 
 ```{r}

@@ -15,10 +15,14 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 # Environment
 
 ```{r}
-packages <- c("tidyverse",'kableExtra','tableone','gontjesr') 
+packages <- c("tidyverse",'kableExtra','tableone') 
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
+
+#Load functions
+source("./lib/consistent_themes.R")
+source("./lib/common_functions.R")
 
 # Print environment
 set.seed(45) 
