@@ -1,0 +1,105 @@
+---
+title: "create_master_scale"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
+```
+
+# Environment
+
+```{r, environment}
+# Packages
+packages <- c("tidyverse","gridExtra","kableExtra","colorspace",'hues')
+lapply(packages,library,character.only=T)
+
+# Functions
+source("./lib/consistent_themes.R")
+source("./lib/common_functions.R")
+
+# Print environment
+Sys.info()
+sessionInfo()
+```
+
+# Load dataset
+```{r}
+dataset_for_creating_cb_scale <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS") 
+carb_dataset <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
+dataset_for_creating_cb_scale <- left_join(dataset_for_creating_cb_scale,carb_dataset)
+dataset_for_creating_cb_scale$carbapenemase_md <-  format_carbapenemase(dataset_for_creating_cb_scale$carbapenemase)
+```
+
+# Create palette
+```{r}
+iwant_hues_overall <- list( hmin = 0, hmax = 360, 
+                            cmin = 35, cmax = 160, 
+                            lmin = 25, lmax = 92
+  )
+
+# STs
+ST_other_groups <- setNames(c("lightgray"),"Singleton STs")
+ST_ranking <- get_ranking(dataset_for_creating_cb_scale,"Species_ST_recode",names(ST_other_groups))
+n_STs <- length(ST_ranking) - length(ST_other_groups)
+
+# Carbapenemases
+carbapenemase_other_groups <- setNames(c("gray"),"No carbapenemase") 
+carbapenemase_ranking <- get_ranking(dataset_for_creating_cb_scale,"carbapenemase_md",names(carbapenemase_other_groups))
+n_carbapenemases <- length(carbapenemase_ranking) - length(carbapenemase_other_groups)
+
+# Carbapenemase plasmids
+carbapenemase_plasmid_other_groups <- setNames(c("darkgray",'lightgray'),c("Chromosome","No carbapenemase"))
+carbapenemase_plasmid_ranking <- get_ranking(dataset_for_creating_cb_scale,"carbapenemase_plasmid",names(carbapenemase_plasmid_other_groups))
+n_carbapenemase_plasmids <- length(carbapenemase_plasmid_ranking) - length(carbapenemase_plasmid_other_groups) 
+
+other_groups <- c(names(ST_other_groups),names(carbapenemase_other_groups),names(carbapenemase_plasmid_other_groups)) %>% unique
+n_colors <- length(c(ST_ranking,carbapenemase_ranking,carbapenemase_plasmid_ranking) %>% subset(!. %in% c(other_groups)))
+
+overall_palette <- build_color_palette_global(dataset_for_creating_cb_scale,variables = c("Species_ST_recode","carbapenemase_md","carbapenemase_plasmid"),other_groups = other_groups,iwanthues_specs = iwant_hues_overall,color_num = n_colors+5,starting_method = 'min_median',distance = 'colorblind',group_locked = T,group_sizes = c(n_STs,n_carbapenemases,n_carbapenemase_plasmids),group_method='connected')
+overall_palette
+overall_palette %>% swatch
+```
+
+# ST palette
+```{r} 
+ST_colors <- overall_palette[1:n_STs] 
+ST_full_color_pallete <- c(ST_colors,ST_other_groups) 
+
+ST_palette <- setNames(ST_full_color_pallete, ST_ranking)
+ST_palette
+ST_palette %>% swatch
+saveRDS(ST_palette,"./lib/ST_palette.RDS")
+```
+
+# Carbapenemase palette
+```{r}
+carb_starting_point <- n_STs+1
+carb_end_point <- carb_starting_point + n_carbapenemases -1
+carb_colors <- overall_palette[carb_starting_point:carb_end_point] 
+carb_full_color_pallete <- c(carb_colors,carbapenemase_other_groups)
+
+carbapenemase_palette <- setNames(carb_full_color_pallete,  carbapenemase_ranking)
+carbapenemase_palette
+carbapenemase_palette %>% swatch
+saveRDS(carbapenemase_palette,"./lib/carbapenemase_palette.RDS") 
+```
+
+
+# Carbapenemase plasmid
+```{r}
+plasmid_starting_point <- carb_end_point +1  
+plasmid_end_point <-  plasmid_starting_point + n_carbapenemase_plasmids -1
+carb_plasmid_colors <- overall_palette[plasmid_starting_point:plasmid_end_point] 
+carb_plasmid_full_color_pallete <- c(carb_plasmid_colors,carbapenemase_plasmid_other_groups)
+
+carbapenemase_plasmid_palette <- setNames(carb_plasmid_full_color_pallete, carbapenemase_plasmid_ranking)
+carbapenemase_plasmid_palette
+carbapenemase_plasmid_palette %>% swatch
+saveRDS(carbapenemase_plasmid_palette,"./lib/carbapenemase_plasmid_palette.RDS")
+```

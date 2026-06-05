@@ -1,0 +1,63 @@
+---
+title: "create_carbapenemase_plasmid_replicon_scale"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
+```
+
+# Environment
+
+```{r, environment}
+# Packages
+packages <- c("tidyverse","gridExtra","kableExtra","colorspace",'hues')
+lapply(packages,library,character.only=T)
+
+# Functions 
+source("./lib/common_functions.R")
+
+# Print environment
+Sys.info()
+sessionInfo()
+```
+
+# Load dataset
+```{r} 
+dataset_for_creating_cb_scale <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS") 
+carb_dataset <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
+dataset_for_creating_cb_scale <- left_join(dataset_for_creating_cb_scale,carb_dataset) 
+```
+
+# Create palette
+```{r}
+iwant_hues_overall <- list( hmin = 0, hmax = 360, 
+                            cmin = 8, cmax = 160, 
+                            lmin = 20, lmax = 95
+  )
+
+
+replicon_other_groups <- setNames(c("black","darkgray",'lightgray'),c("Unresolved","Chromosome","No carbapenemase"))
+replicon_ranking <- get_ranking(dataset_for_creating_cb_scale,"carbapenemase_plasmid_replicon_type",names(replicon_other_groups))
+n_replicons <- length(replicon_ranking) - length(replicon_other_groups) 
+
+overall_palette <- build_color_palette_global(df = dataset_for_creating_cb_scale,variables = c("carbapenemase_plasmid_replicon_type"),other_groups = names(replicon_other_groups),iwanthues_specs = iwant_hues_overall,color_num = n_replicons,starting_method = 'farthest_neighbor',distance = 'colorblind',group_locked = F,group_sizes = c(n_replicons),group_method='connected',string_split = "& ")
+
+overall_palette
+overall_palette %>% swatch
+```
+
+# plasmid_replicon palette
+```{r}  
+full_color_pallete <- c(overall_palette,replicon_other_groups) 
+
+palette <- setNames(full_color_pallete,replicon_ranking)
+palette
+palette %>% swatch
+saveRDS(palette,"./lib/plasmid_replicon_palette.RDS")
+```

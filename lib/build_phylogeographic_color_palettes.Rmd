@@ -1,0 +1,145 @@
+---
+title: "Curate phylogeographic scales"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=F, results=F}
+#Packages
+packages <- c("tidyverse",'ape','ggtree','phytools','hues','colorspace')
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+#Load functions
+source("./lib/common_functions.R")
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+
+# Sample assembly list
+```{r}
+public_dataset <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/NCBI_metadata/NCBI_Pathogens_Kpn_metadata_isolates_w_spatiotemporal_data_121025.RDS")
+public_dataset$assembly_name <- public_dataset$Assembly
+paste0("Public genomes with isolate and spatiotemporal data: ",nrow(public_dataset))
+kleborate_genome_list <- readr::read_lines("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/partitions/NCBI_pathogens_genome_assembly_list.txt")
+kleborate_genome_name <- str_split(kleborate_genome_list,pattern = '/',simplify = T) %>% .[,15]
+paste0("Public genomes tested for Kleborate: ",length(kleborate_genome_list))
+kleborate <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/kleborate/results/NCBI_pathogens_Kpn_kleborate.txt")
+kleborate$assembly_name <- str_split(kleborate$strain,pattern = '_',simplify = T)   %>% .[,c(1,2)] %>% apply(.,1,paste0,collapse='_')
+paste0("Public genomes with Kleborate Kpn species complex entry: ",nrow(kleborate))
+paste0("Public genomes without Kleborate Kpn species complex entry: ",length(kleborate_genome_list) - nrow(kleborate))
+public_dataset <- left_join(public_dataset,kleborate)
+```
+
+# Load QCD data
+```{r}
+qcd <- read_csv("~/Desktop/gl_nfs/Project_INTEGRATE/Public_datasets/2025-12-15_all_Kleb_NCBI_Pathogen/illumina/master_qc_summary_assembly.csv")
+qcd$Assembly <- qcd$Sample
+qcd <- qcd %>% rename('mlst_ST'= 'ST' ,
+                      "pubQCD_N50"="N50")
+public_dataset <- left_join(public_dataset,qcd)
+public_dataset$isolate_no <- public_dataset$Assembly 
+public_dataset$participant_id <- public_dataset$Assembly
+```
+
+# Load integrate data
+```{r}
+df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
+df_kleborate <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kleborate_kpsc_both_studies.RDS") 
+df <- left_join(df,df_kleborate )
+df$country <- "United States"
+df$california <- TRUE
+df$continent <- "Americas"
+df$collection_date <- df$date
+df$collection_year <- df$year
+```
+
+# Merge dataset
+```{r}
+voi <- c('isolate_no','participant_id','ST','collection_date','collection_year','continent','country','california')
+combined_phylogeographic_df <- bind_rows(public_dataset %>% select(any_of(voi)),df %>% select(any_of(voi))) %>% as.data.frame
+rownames(combined_phylogeographic_df) <- combined_phylogeographic_df$isolate_no 
+combined_phylogeographic_df$collection_decade <- floor(combined_phylogeographic_df$collection_year/10)*10
+combined_phylogeographic_df$collection_year_fct <- as.factor(combined_phylogeographic_df$collection_year)
+combined_phylogeographic_df$type <- ifelse(grepl("PCMP_H",combined_phylogeographic_df$isolate_no),"2014-15 Study",
+                                           ifelse(grepl("INT_CRE_",combined_phylogeographic_df$isolate_no),"2021-23 Study","Public genomes"))
+combined_phylogeographic_df$california_bin <- ifelse(combined_phylogeographic_df$california==T,1,0)
+combined_phylogeographic_df$type_CA <- ifelse(combined_phylogeographic_df$type %in% c("2014-15 Study","2021-23 Study"),combined_phylogeographic_df$type,
+                                              ifelse(combined_phylogeographic_df$type == "Public genomes" & combined_phylogeographic_df$california ==F,"Other public genomes","Public California genomes"))
+
+# Factor
+combined_phylogeographic_df$collection_decade <- factor(combined_phylogeographic_df$collection_decade,levels = c("1980",'1990','2000','2010','2020'))
+combined_phylogeographic_df$continent <- factor(combined_phylogeographic_df$continent,levels = c("Africa","Americas","Asia","Europe","Oceania"))
+combined_phylogeographic_df$california <- factor(combined_phylogeographic_df$california,levels = c(TRUE,FALSE))
+combined_phylogeographic_df$type <- factor(combined_phylogeographic_df$type,levels = c("2014-15 Study","2021-23 Study","Public genomes")) 
+combined_phylogeographic_df$type_CA <- factor(combined_phylogeographic_df$type_CA,levels = c("2014-15 Study","2021-23 Study","Public California genomes","Other public genomes"))
+# California tips
+CA_tips <- combined_phylogeographic_df %>% subset(california==T) %>% .$isolate_no
+```
+
+# Curate palette
+
+```{r}
+# Decade 
+Decades_order <- combined_phylogeographic_df %>% subset(ST %in% c("ST258","ST14","ST17","ST307")) %>% .$collection_decade %>% sort(decreasing=T) %>% unique 
+n_decades <- length(Decades_order)
+
+# Continent 
+Continents_order <- table(combined_phylogeographic_df %>% subset(ST %in% c("ST258","ST14","ST17","ST307")) %>% .$continent) %>% sort(decreasing=T) %>% names 
+n_continent <- length(Continents_order)
+
+# Number of colors
+n_colors <- sum(n_decades,n_continent)
+
+# Hues specs
+iwant_hues_overall <- list(hmin = 0, hmax = 360, 
+                            cmin = 5, cmax = 180, 
+                            lmin = 5, lmax = 99)
+
+# Palette
+overall_palette <- build_color_palette_global(combined_phylogeographic_df,variables = c("collection_decade","continent"),other_groups = NA,iwanthues_specs = iwant_hues_overall,color_num = n_colors+1,starting_method = 'min_mean',distance = 'normal',group_locked = T,group_sizes = c(n_decades,n_continent),group_method='connected')
+
+overall_palette
+overall_palette %>% swatch
+```
+
+# Decade scale
+
+```{r}
+Decade_colors <- overall_palette[1:n_decades]  
+
+decade_palette <- setNames(Decade_colors, Decades_order)
+decade_palette
+decade_palette %>% swatch
+saveRDS(decade_palette,"./lib/decades_palette.RDS")
+```
+
+# Continent
+
+```{r}
+continent_start <- n_decades+1
+content_end <- continent_start + n_continent-1
+
+continent_colors <- overall_palette[continent_start:content_end]  
+
+continent_palette <- setNames(continent_colors, Continents_order)
+continent_palette
+continent_palette %>% swatch
+
+saveRDS(continent_palette,"./lib/continent_palette.RDS")
+``` 
