@@ -54,7 +54,7 @@ colnames(isolate_data_merged) <- recode(colnames(isolate_data_merged),
                                         "n_50" = "N50",
                                         "coverage" = "Coverage",
                                         "species" = "Species",
-                                        "ST" = "Sequence type"
+                                        "ST" = "Sequence type (ST)"
                                         )
 
 isolate_data_merged$`Source category` <- recode(isolate_data_merged$`Source category`,

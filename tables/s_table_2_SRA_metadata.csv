@@ -1,4 +1,4 @@
-"","Isolate","Accession","Instrument","Study","Source category","Facility","Assembly length (bp)","Number of contigs","N50","Coverage","Species","Sequence type"
+"","Isolate","Accession","Instrument","Study","Source category","Facility","Assembly length (bp)","Number of contigs","N50","Coverage","Species","Sequence type (ST)"
 "1","PCMP_H112","SRR10116538","Illumina HiSeq 2500","2014-15","Urine","LTACH 4",5577476,79,270452,154.852,"Klebsiella pneumoniae","ST258"
 "2","PCMP_H113","SRR10116537","Illumina HiSeq 2500","2014-15","Respiratory","LTACH 7",5945568,102,213658,255.965,"Klebsiella pneumoniae","ST258"
 "3","PCMP_H338","SRR10116641","Illumina HiSeq 2500","2014-15","Blood","LTACH 7",5950498,101,210971,109.962,"Klebsiella pneumoniae","ST258"
