@@ -20,6 +20,9 @@ packages <- c("tidyverse")
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
 
+#Load functions
+source("./lib/common_functions.R")
+
 # Print environment
 set.seed(45) 
 Sys.info()
@@ -45,8 +48,7 @@ saveRDS(kleborate_joint,"./data/kleborate/kleborate_kpsc_both_studies.RDS")
 # Kleborate matrix of omp mutations
 ```{r}
 rownames(kleborate_joint) <- kleborate_joint$isolate_no
-kleborate_matrix <- gontjesr::get_presence_absence_matrix(kleborate_joint,'Omp_mutations') %>% as.data.frame
+kleborate_matrix <- get_presence_absence_matrix(df = kleborate_joint,variable = 'Omp_mutations') %>% as.data.frame
 
 saveRDS(kleborate_matrix,"./data/kleborate/kleborate_kpsc_both_studies_matrix.RDS")
 ```
-

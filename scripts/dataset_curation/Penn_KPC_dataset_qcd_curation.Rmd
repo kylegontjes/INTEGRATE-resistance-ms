@@ -16,23 +16,25 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/')
 # Environment
 
 #Packages
-packages <- c("tidyverse",'kableExtra','gontjesr') 
+packages <- c("tidyverse",'kableExtra') 
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Functions
+setwd("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms")
+source("./lib/consistent_themes.R") 
+source("./lib/metadata_curation_functions.R")
 
 # Print environment
 set.seed(45) 
 Sys.info()
 sessionInfo()
-
-# Functions
-source("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/scripts/dataset_curation/metadata_curation_functions.R")
 ```
 
 # Load data
 ```{r} 
-df_2014_15 <- readxl::read_excel("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/data/459_patients_data_for_posting.xls")  %>% as.data.frame
+df_2014_15 <- readxl::read_excel("./Project_Penn_KPC/Analysis/data/459_patients_data_for_posting.xls")  %>% as.data.frame
 df_2014_15 <- df_2014_15 %>% subset(state == 'CA')  
 df_2014_15$sample_id <- as.character(df_2014_15$isolate_no)
 df_2014_15$isolate_no <-  paste0("PCMP_H",df_2014_15$isolate_no)   
@@ -44,7 +46,7 @@ df_2014_15$participant_id <- as.character(df_2014_15$Patient_ID)
 ```{r}
 wrong_Cx_data <- df_2014_15 %>% subset(LOSbeforeCx <0) %>% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx)
 paste0("Incorrect isolate with bad admit and discharge data: ")
-wrong_Cx_data %>% gontjesr::favorite_kable()
+wrong_Cx_data %>% favorite_kable()
 
 # Recode df when LOSbeforeCx variable is less than 0, make the admit_date, discharge_date, LOSbeforeCx, and LOS_after_cx variables all NA
 df_2014_15 <- df_2014_15 %>%
@@ -54,7 +56,7 @@ df_2014_15 <- df_2014_15 %>%
   ) 
 
 paste0("Recoded the initial isolate to have NA admit date: ")
-df_2014_15%>% subset(participant_id %in% wrong_Cx_data$Patient_ID) %>% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx)  %>% gontjesr::favorite_kable()
+df_2014_15%>% subset(participant_id %in% wrong_Cx_data$Patient_ID) %>% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx) %>% favorite_kable()
 
 # Create a flag
 df_2014_15$has_full_metadata <- !df_2014_15$isolate_no %in% wrong_Cx_data$isolate_no
@@ -63,7 +65,7 @@ df_2014_15$has_full_metadata <- !df_2014_15$isolate_no %in% wrong_Cx_data$isolat
 # Resitance 
 ## Load data
 ```{r}
-SENSITITRE <- readxl::read_excel("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Antibiotic_resistance/data/SENSITITRE MICs.xlsx", range = "B1:N460") %>% as.data.frame
+SENSITITRE <- readxl::read_excel("./Project_Penn_KPC/Analysis/Antibiotic_resistance/data/SENSITITRE MICs.xlsx", range = "B1:N460") %>% as.data.frame
 SENSITITRE <- SENSITITRE %>% mutate(isolate_no = paste0("PCMP_H",str_remove(gsub('CRKP_','',SENSITITRE$ISOLATES),"^0+"))) %>% `rownames<-`(.$isolate_no)
 
 # PCMP_H472 & PCMP_H473 were excluded due to data reporting issues
@@ -185,7 +187,7 @@ df_2014_15 <- left_join(df_2014_15,qcd_201415)
 
 # Prioritize ST data via kleborate
 ```{r}
-kleborate_kpsc_penn <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt")  %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
+kleborate_kpsc_penn <- read_delim("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt")  %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
 
 ST_data_201415 <- lapply(df_2014_15$isolate_no,FUN=function(x){
   kleb_sub <- kleborate_kpsc_penn %>% subset(isolate_no ==x)

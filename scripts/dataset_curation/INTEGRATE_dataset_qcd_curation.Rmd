@@ -6,11 +6,18 @@ output: html_document
 ---
 
 Update: 
+
 1. 12/01/25: 
+
 a. New metadata with LoS data (11/24/25 dataset update)
+
 b. Removed 24 due to ouside patient's LoS (12/01/25 dataset update)
+
 c. Dnsured dropped isoaltes were removed
+
 d. Dropped one INT_1259 entry as it was a duplicate!
+
+2. 06/05/26: Removed gontjesr functions
 
 ```{r setup, include=FALSE}
 require(knitr)
@@ -22,10 +29,13 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 ```{r environment, echo=F, message=FALSE, include=F, results=F}
 # Environment
 #Packages
-packages <- c("tidyverse",'kableExtra','gontjesr') 
+packages <- c("tidyverse",'kableExtra',"readxl") 
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Functions
+source("./lib/consistent_themes.R") 
 
 # Print environment
 set.seed(45) 
@@ -64,7 +74,7 @@ qcd %>% subset(qc_pass==T & CRE==F) %>% group_by(species) %>% summarize(n=n())  
 
 ## Filtering #2: Mismatches
 ```{r}
-mismatches <- readxl::read_xlsx("../../data/INTEGRATE_lab_WGS_species_mismatches_021025_llc.xlsx")  %>% .[-nrow(.),] 
+mismatches <- read_xlsx("../../data/INTEGRATE_lab_WGS_species_mismatches_021025_llc.xlsx")  %>% .[-nrow(.),] 
 
 paste0("Number of isolates with species-level differences: ", nrow(mismatches))
 paste0("Proportion of isolates with species-level differences: ", round(nrow(mismatches) / sum(qcd$qc_pass)*100,2))
@@ -92,7 +102,7 @@ qcd$sample_id <- sapply(qcd$sample,get_sample_id,sample_lookup) %>% as.character
 1. See ./data/
 ```{r}
 duplicated_metadata_entries <- read_csv("../../data/INTEGRATE_duplicated_metadata_entries_120125.csv")
-duplicated_metadata_entries %>% gontjesr::favorite_kable()
+duplicated_metadata_entries %>% favorite_kable()
 
 drop_worst_duplicated_entry <- duplicated_metadata_entries$drop_isolates %>% str_split(pattern = ";") %>% unlist
 paste0("Drop the following genomes from qcd file: ",paste0(drop_worst_duplicated_entry,collapse=";"))

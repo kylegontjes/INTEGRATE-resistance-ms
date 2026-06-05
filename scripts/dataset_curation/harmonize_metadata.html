@@ -11,9 +11,9 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-02-21" />
+<meta name="date" content="2026-06-05" />
 
-<title>harmonize_metadata</title>
+<title>Haromonize the metadata</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,18 +350,21 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">harmonize_metadata</h1>
+<h1 class="title toc-ignore">Haromonize the metadata</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-02-21</h4>
+<h4 class="date">2026-06-05</h4>
 
 </div>
 
 
+<div id="update-removed-absolute-paths" class="section level1">
+<h1>Update: Removed absolute paths</h1>
 <pre class="r"><code>## Old
-df_201415 &lt;- readRDS(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.RDS&quot;) %&gt;% as.data.frame() %&gt;% subset(qc_pass==T  &amp; CRE==T)
+df_201415 &lt;- readRDS(&quot;./data/dataset/Penn_KPC_metadata_qcd_merged.RDS&quot;) %&gt;% as.data.frame() %&gt;% subset(qc_pass==T  &amp; CRE==T)
 
 ## New
-df_202123 &lt;-  readRDS(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/INTEGRATE_metadata_qcd_merged.RDS&quot;) %&gt;% as.data.frame()%&gt;% subset(qc_pass==T &amp; CRE==T)</code></pre>
+df_202123 &lt;-  readRDS(&quot;./data/dataset/INTEGRATE_metadata_qcd_merged.RDS&quot;) %&gt;% as.data.frame()%&gt;% subset(qc_pass==T &amp; CRE==T)</code></pre>
+</div>
 <div id="source" class="section level1">
 <h1>Source</h1>
 <pre class="r"><code># Old
@@ -638,7 +641,7 @@ paste0(&quot;Number of final rows: &quot;, nrow(df_metadata_all))</code></pre>
 </div>
 <div id="save-dataset" class="section level1">
 <h1>Save dataset</h1>
-<pre class="r"><code>saveRDS(df_metadata_all,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)</code></pre>
+<pre class="r"><code>saveRDS(df_metadata_all,&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)</code></pre>
 </div>
 
 

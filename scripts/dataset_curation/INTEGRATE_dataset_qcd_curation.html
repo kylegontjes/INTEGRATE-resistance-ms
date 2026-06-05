@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-02-21" />
+<meta name="date" content="2026-06-05" />
 
 <title>INTEGRATE dataset curation</title>
 
@@ -576,15 +576,25 @@ display: none;
 
 <h1 class="title toc-ignore">INTEGRATE dataset curation</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-02-21</h4>
+<h4 class="date">2026-06-05</h4>
 
 </div>
 
 
-<p>Update: 1. 12/01/25: a. New metadata with LoS data (11/24/25 dataset
-update) b. Removed 24 due to ouside patient’s LoS (12/01/25 dataset
-update) c. Dnsured dropped isoaltes were removed d. Dropped one INT_1259
-entry as it was a duplicate!</p>
+<p>Update:</p>
+<ol style="list-style-type: decimal">
+<li>12/01/25:</li>
+</ol>
+<ol style="list-style-type: lower-alpha">
+<li><p>New metadata with LoS data (11/24/25 dataset update)</p></li>
+<li><p>Removed 24 due to ouside patient’s LoS (12/01/25 dataset
+update)</p></li>
+<li><p>Dnsured dropped isoaltes were removed</p></li>
+<li><p>Dropped one INT_1259 entry as it was a duplicate!</p></li>
+</ol>
+<ol start="2" style="list-style-type: decimal">
+<li>06/05/26: Removed gontjesr functions</li>
+</ol>
 <div id="sequencing-data" class="section level1">
 <h1>Sequencing data</h1>
 <pre class="r"><code># Sample lookup
@@ -627,7 +637,7 @@ paste0(&quot;Number of QC-passing isolates that were ESCrE: &quot;, sum(qcd$qc_p
 6 Paenibacillus sp            1</code></pre>
 <div id="filtering-2-mismatches" class="section level2">
 <h2>Filtering #2: Mismatches</h2>
-<pre class="r"><code>mismatches &lt;- readxl::read_xlsx(&quot;../../data/INTEGRATE_lab_WGS_species_mismatches_021025_llc.xlsx&quot;)  %&gt;% .[-nrow(.),] 
+<pre class="r"><code>mismatches &lt;- read_xlsx(&quot;../../data/INTEGRATE_lab_WGS_species_mismatches_021025_llc.xlsx&quot;)  %&gt;% .[-nrow(.),] 
 
 paste0(&quot;Number of isolates with species-level differences: &quot;, nrow(mismatches))</code></pre>
 <pre><code>[1] &quot;Number of isolates with species-level differences: 105&quot;</code></pre>
@@ -658,7 +668,7 @@ qcd$sample_id &lt;- sapply(qcd$sample,get_sample_id,sample_lookup) %&gt;% as.cha
 <li>See ./data/</li>
 </ol>
 <pre class="r"><code>duplicated_metadata_entries &lt;- read_csv(&quot;../../data/INTEGRATE_duplicated_metadata_entries_120125.csv&quot;)
-duplicated_metadata_entries %&gt;% gontjesr::favorite_kable()</code></pre>
+duplicated_metadata_entries %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>

@@ -1,16 +1,17 @@
 ---
-title: "harmonize_metadata"
+title: "Haromonize the metadata"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
+# Update: Removed absolute paths
  
 ```{r setup, include=FALSE}
 require(knitr)
 opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
 opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
-opts_knit$set(root.dir='~/Desktop/gl_nfs/')
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
 ```
 
 ```{r environment, echo=F, message=FALSE, include=F, results=F}
@@ -28,15 +29,15 @@ Sys.info()
 sessionInfo()
 
 # Functions
-source("~/Desktop/gl_nfs/Project_Penn_KPC/Analysis/Combination_resistance/pre-intro-blbli-resistance-ms/scripts/dataset_curation/metadata_curation_functions.R")
+source("./lib/metadata_curation_functions.R")
 ```
 
 ```{r}
 ## Old
-df_201415 <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.RDS") %>% as.data.frame() %>% subset(qc_pass==T  & CRE==T)
+df_201415 <- readRDS("./data/dataset/Penn_KPC_metadata_qcd_merged.RDS") %>% as.data.frame() %>% subset(qc_pass==T  & CRE==T)
 
 ## New
-df_202123 <-  readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/INTEGRATE_metadata_qcd_merged.RDS") %>% as.data.frame()%>% subset(qc_pass==T & CRE==T)
+df_202123 <-  readRDS("./data/dataset/INTEGRATE_metadata_qcd_merged.RDS") %>% as.data.frame()%>% subset(qc_pass==T & CRE==T)
 ```
 
 # Source
@@ -168,5 +169,5 @@ colnames(df_metadata_all)
 
 # Save dataset
 ```{r}
-saveRDS(df_metadata_all,"~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")
+saveRDS(df_metadata_all,"./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")
 ```

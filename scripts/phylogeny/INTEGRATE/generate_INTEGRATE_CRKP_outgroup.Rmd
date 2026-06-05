@@ -16,11 +16,12 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ComplexHeatmap",'ggalluvial','ape','ggtree','phytools')
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","cowplot","ComplexHeatmap",'ggalluvial','ape','ggtree','phytools')
 lapply(packages,library,character.only=T)
 
 # Functions
 source("./lib/consistent_themes.R")
+source("./lib/common_functions.R")
 
 # Print environment
 Sys.info()

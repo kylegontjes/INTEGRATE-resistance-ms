@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-02-21" />
+<meta name="date" content="2026-06-05" />
 
 <title>Make final CA CRKP clinical and first isolate dataset</title>
 
@@ -353,14 +353,17 @@ display: none;
 <h1 class="title toc-ignore">Make final CA CRKP clinical and first
 isolate dataset</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-02-21</h4>
+<h4 class="date">2026-06-05</h4>
 
 </div>
 
 
+<div id="update-remove-absolute-paths" class="section level1">
+<h1>Update: Remove absolute paths</h1>
+</div>
 <div id="load-merged-dataset" class="section level1">
 <h1>Load merged dataset</h1>
-<pre class="r"><code>df_metadata_all &lt;- readRDS(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)
+<pre class="r"><code>df_metadata_all &lt;- readRDS(&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)
 paste0(&quot;Total number of isolates: &quot;,nrow(df_metadata_all))</code></pre>
 <pre><code>[1] &quot;Total number of isolates: 1780&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Breakdown by study: &quot;)</code></pre>
@@ -373,8 +376,8 @@ paste0(&quot;Total number of isolates: &quot;,nrow(df_metadata_all))</code></pre
 <div id="clinical-cre" class="section level1">
 <h1>Clinical CRE</h1>
 <pre class="r"><code>df_metadata_all_clinical &lt;- subset(df_metadata_all, rectal_logical==F)
-saveRDS(df_metadata_all_clinical,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.RDS&quot;)
-write_csv(df_metadata_all_clinical,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.csv&quot;)
+saveRDS(df_metadata_all_clinical,&quot;./data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.RDS&quot;)
+write_csv(df_metadata_all_clinical,&quot;./data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.csv&quot;)
 
 # Summary
 paste0(&quot;Total number of clinical CRE isolates: &quot;,nrow(df_metadata_all_clinical))</code></pre>
@@ -402,8 +405,8 @@ df_metadata_all_clinical_kpn$first_isolate &lt;- df_metadata_all_clinical_kpn$is
 df_metadata_all_clinical_kpn$first_isolate_per_quarter &lt;- df_metadata_all_clinical_kpn$isolate_no %in% df_metadata_all_clinical_kpn_first_isolate_per_Q$isolate_no
 
 # All clinical isolates
-saveRDS(df_metadata_all_clinical_kpn,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.RDS&quot;) 
-write_csv(df_metadata_all_clinical_kpn,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.csv&quot;) 
+saveRDS(df_metadata_all_clinical_kpn,&quot;./data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.RDS&quot;) 
+write_csv(df_metadata_all_clinical_kpn,&quot;./data/dataset/CA_LTACH_clinical_CRKP_genomes_merged_studies_metadata.csv&quot;) 
 
 # Summary
 paste0(&quot;Total number of clinical CRKP isolates: &quot;,nrow(df_metadata_all_clinical_kpn))</code></pre>
@@ -434,16 +437,16 @@ df_metadata_all_clinical_kpn_first_isolate_per_Q &lt;- df_metadata_all_clinical_
 df_metadata_all_clinical_kpn_first_isolate$major_STs &lt;- ifelse(df_metadata_all_clinical_kpn_first_isolate$ST %in% c(&quot;ST11&quot;,&quot;ST15&quot;,&quot;ST25&quot;,&quot;ST35&quot;,&quot;ST987&quot;,&quot;ST17&quot;,&quot;ST307&quot;,&quot;ST14&quot;,&quot;ST258&quot;),df_metadata_all_clinical_kpn_first_isolate$Species_ST %&gt;% gsub(&quot;Klebsiella pneumoniae &quot;,&quot;&quot;,.),&quot;Other STs&quot;)
 df_metadata_all_clinical_kpn_first_isolate_per_Q$major_STs &lt;- ifelse(df_metadata_all_clinical_kpn_first_isolate_per_Q$ST %in% c(&quot;ST11&quot;,&quot;ST15&quot;,&quot;ST25&quot;,&quot;ST35&quot;,&quot;ST987&quot;,&quot;ST17&quot;,&quot;ST307&quot;,&quot;ST14&quot;,&quot;ST258&quot;),df_metadata_all_clinical_kpn_first_isolate_per_Q$Species_ST %&gt;% gsub(&quot;Klebsiella pneumoniae &quot;,&quot;&quot;,.),&quot;Other STs&quot;)
 
-# First isolate + NA clinical isolates
-saveRDS(df_metadata_all_clinical_kpn_first_isolate,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS&quot;) 
-write_csv(df_metadata_all_clinical_kpn_first_isolate,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.csv&quot;) 
+# First isolate  
+saveRDS(df_metadata_all_clinical_kpn_first_isolate,&quot;./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS&quot;) 
+write_csv(df_metadata_all_clinical_kpn_first_isolate,&quot;./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.csv&quot;) 
 
-# First isolate + NA clinical isolates
-saveRDS(df_metadata_all_clinical_kpn_first_isolate_per_Q,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;) 
-write_csv(df_metadata_all_clinical_kpn_first_isolate_per_Q,&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.csv&quot;) 
+# First isolate per quarter
+saveRDS(df_metadata_all_clinical_kpn_first_isolate_per_Q,&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;) 
+write_csv(df_metadata_all_clinical_kpn_first_isolate_per_Q,&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.csv&quot;) 
 
 # Summary
-paste0(&quot;Total number of first-quarter clinical CRKP isolates: &quot;,nrow(df_metadata_all_clinical_kpn_first_isolate_per_Q))</code></pre>
+paste0(&quot;Total number of first-quarter clinical CRKP isolates: &quot;, nrow(df_metadata_all_clinical_kpn_first_isolate_per_Q))</code></pre>
 <pre><code>[1] &quot;Total number of first-quarter clinical CRKP isolates: 881&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Breakdown by study and follow-up status: &quot;)</code></pre>
 <pre><code>[1] &quot;Breakdown by study and follow-up status: &quot;</code></pre>
