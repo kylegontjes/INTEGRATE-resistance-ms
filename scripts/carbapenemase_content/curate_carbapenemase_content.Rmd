@@ -20,6 +20,7 @@ lapply(packages,library,character.only=T)
 
 # Functions
 source("./lib/consistent_themes.R")
+source("./lib/common_functions.R")
 
 # Print environment
 Sys.info()
@@ -37,39 +38,45 @@ df <- readRDS("./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")
 # Mobsuite contig
 mobsuite_contig <- read_delim("./data/mobsuite/INTEGRATE_MOB_suite_contig_report.txt")
 mobsuite_contig$isolate_no <- gsub("_contigs_l1000","",mobsuite_contig$sample_id) 
-mobsuite_contig <- subset(mobsuite_contig,isolate_no %in% df$isolate_no)
+mobsuite_contig <- subset(mobsuite_contig,isolate_no %in% df$isolate_no) 
+mobsuite_contig$rep_types <- mobsuite_contig$`rep_type(s)`
 # Mobtyer
 mobtyper <- read_delim("./data/mobsuite/INTEGRATE_mobtyper_results.txt")
 mobtyper$isolate_no <- mobtyper$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
 mobtyper <- subset(mobtyper,isolate_no %in% df$isolate_no)
+mobtyper$rep_types <- mobtyper$`rep_type(s)`
 ```
 
 ## Penn KPC LTACH
 ```{r}
-# Mobtyer
-mobtyper_old <-  read_delim("./data/mobsuite/Penn_KPC_mobtyper_results.txt")
-mobtyper_old$isolate_no <-mobtyper_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
-mobtyper_old <- subset(mobtyper_old,isolate_no %in% df$isolate_no)
 # Mobsuite contig
 mobsuite_contig_old <-  read_delim("./data/mobsuite/Penn_KPC_MOB_suite_contig_report.txt")
 mobsuite_contig_old$isolate_no <-mobsuite_contig_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
 mobsuite_contig_old <- subset(mobsuite_contig_old,isolate_no %in% df$isolate_no)
+mobsuite_contig_old$rep_types <- mobsuite_contig_old$`rep_type(s)`
+# Mobtyer
+mobtyper_old <-  read_delim("./data/mobsuite/Penn_KPC_mobtyper_results.txt")
+mobtyper_old$isolate_no <-mobtyper_old$sample_id %>% str_split(.,":",simplify=T) %>% .[,1] %>%  gsub("_contigs_l1000","",.)
+mobtyper_old <- subset(mobtyper_old,isolate_no %in% df$isolate_no)
+mobtyper_old$rep_types <- mobtyper_old$`rep_type(s)`
 ```
 
 ## Merge Mobtyper
 ```{r}
-mobtyper_merged <- bind_rows(mobtyper_old %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor,observed_host_range_ncbi_name, predicted_mobility, `rep_type(s)`,`relaxase_type(s)`, 'mpf_type','orit_type(s)'),
-                             mobtyper %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor,observed_host_range_ncbi_name, predicted_mobility, `rep_type(s)`,`relaxase_type(s)`, 'mpf_type','orit_type(s)')) %>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
+# Mobtyper
+mobtyper_merged <- bind_rows(mobtyper_old %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor,observed_host_range_ncbi_name, predicted_mobility, rep_types,`rep_type(s)`,`relaxase_type(s)`, 'mpf_type','orit_type(s)'),
+                             mobtyper %>% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor,observed_host_range_ncbi_name, predicted_mobility,rep_types, `rep_type(s)`,`relaxase_type(s)`, 'mpf_type','orit_type(s)')) %>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
 
-mobsuite_contig_merged <- bind_rows(mobsuite_contig_old %>% select(isolate_no,contig_id,size,gc,primary_cluster_id,mash_nearest_neighbor),
-                             mobsuite_contig %>% select(isolate_no,contig_id,size,gc,primary_cluster_id,mash_nearest_neighbor))%>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
+# Mobsuite contig reports
+mobsuite_contig_merged <- bind_rows(mobsuite_contig_old %>% select(isolate_no,contig_id,size,gc,rep_types,primary_cluster_id,mash_nearest_neighbor),
+                             mobsuite_contig %>% select(isolate_no,contig_id,size,gc,rep_types,primary_cluster_id,mash_nearest_neighbor))%>% mutate(study =ifelse( grepl("INT",isolate_no),"2021-23",'2014-15'))
 ```
 
 # Create plasmid and mash nn matrix
 ## Create
 ```{r}
-mobtyper_cluster_matrix <- gontjesr::get_mobtyper_cluster_matrix(df,mobtyper_merged)
-mobtyper_mash_nn_mat <- gontjesr:::get_mobtyper_mash_nn_matrix(df,mobtyper_merged)
+mobtyper_cluster_matrix <- get_mobtyper_cluster_matrix(df,mobtyper_merged)
+mobtyper_mash_nn_mat <- get_mobtyper_mash_nn_matrix(df,mobtyper_merged)
 ```
 
 ## Save 
@@ -84,28 +91,31 @@ amrfinder_mat <- readRDS("./data/amrfinder/amrfinder_matrix.RDS")
 amrfinder_mat <- subset(amrfinder_mat,rownames(amrfinder_mat) %in% df$isolate_no)
 amrfinder <- readRDS("./data/amrfinder/amrfinder_curated.RDS") 
 amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
-amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla",element_symbol_renamed))
+amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla|ampC",element_symbol_renamed) )
 amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol_renamed) | grepl("carbapenemase|NDM|VIM|IMP",element_symbol_renamed) | grepl("OXA-48 family",element_name))
 amrfinder_beta_bla_non_carb <- amrfinder %>% subset(class == "BETA-LACTAM" & grepl("bla",element_symbol_renamed) & !element_symbol_renamed %in% c(unique(amrfinder_carb_bla$element_symbol_renamed))) 
 ``` 
 
 # Create carbapenemase data
 ```{r} 
-# Get an isolate's carbapenemase genes
+# B lactamase gene
 df$blactamase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_beta_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% unique %>% paste0(collapse=" & ")
+  amrfinder_beta_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% unique %>% sort %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No blactamase",.)}
 
+# B lactamase non-carbapenemase genes
 df$blactamase_non_carbapenemase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_beta_bla_non_carb %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% unique %>% paste0(collapse=" & ")
+  amrfinder_beta_bla_non_carb %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% unique %>% sort %>% paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No blactamase",.)}
 
+# Carbapenemases
 df$carbapenemase <- sapply(df$isolate_no,FUN=function(x){
-  amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% unique %>%  paste0(collapse=" & ")
+  amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% unique %>% sort %>%  paste0(collapse=" & ")
 }) %>% {ifelse(.=="","No carbapenemase",.)}
 
+# Carbapenemase family
 df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
-    carbapenemase <- amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed
+    carbapenemase <- amrfinder_carb_bla %>% subset(isolate_no == x) %>% .$element_symbol_renamed %>% sort
      if(is_empty(carbapenemase)){
       "No carbapenemase"
     } else {
@@ -115,42 +125,119 @@ df$carbapenemase_family <- sapply(df$isolate_no,FUN=function(x){
     }
 })     
 
-# Get carbapenemase Plasmid as data frame
+# Get carbapenemase plasmid  
 get_carbapenemase_plasmid <- function(isolate,amrfinder_carb,mobsuite_contig){
-  amrfinder_sub <- amrfinder_carb %>% subset(isolate_no == isolate)
-  mobsuite_contig_merged <- mobsuite_contig %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id)
-  mobsuite_contig_merged$primary_cluster_id %>% unique %>%  paste0(collapse=' & ') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
+  amrfinder_sub <- amrfinder_carb[amrfinder_carb$isolate_no == isolate,]  %>% arrange(element_symbol_renamed)
+  mobsuite_contig_merged_sub <- mobsuite_contig %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id) 
+  if(nrow(mobsuite_contig_merged_sub)>1){
+  mobsuite_contig_merged_sub <- mobsuite_contig_merged_sub %>% arrange(match(contig_id, amrfinder_sub$contig_id))
+  }
+  
+  mobsuite_contig_merged_sub$primary_cluster_id %>% unique  %>% paste0(collapse=' & ') %>% {ifelse(.=="","No carbapenemase",.)} %>% {ifelse(.=="-","Chromosome",.)}
 }
 
-df$carbapenemase_plasmid <- lapply(df$isolate_no,get_carbapenemase_plasmid,amrfinder_carb_bla,mobsuite_contig_merged) %>% unlist
+df$carbapenemase_plasmid <-  pbmcapply::pbmclapply(df$isolate_no,get_carbapenemase_plasmid,amrfinder_carb = amrfinder_carb_bla,mobsuite_contig =  mobsuite_contig_merged,mc.cores=7) %>% unlist
 
-carbapenemase_data <- df %>% select(isolate_no,blactamase,blactamase_non_carbapenemase,carbapenemase,carbapenemase_family,carbapenemase_plasmid)
+# Get carbapenemase plasmid group 
+get_carbapenemase_plasmid_group <- function(isolate,amrfinder_carb_report,mobsuite_contig_report,mobtyper_report){
+  # Amrfinder
+  amrfinder_sub <- amrfinder_carb_report[amrfinder_carb_report$isolate_no == isolate,]  %>% arrange(element_symbol_renamed)
+  # Mobsuite contig data
+  mobsuite_contig_sub <- mobsuite_contig_report %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id)
+  
+  # Arrange mobsuite conts
+   if(nrow(mobsuite_contig_sub)>1){
+  mobsuite_contig_sub <- mobsuite_contig_sub %>% arrange(match(contig_id, amrfinder_sub$contig_id))
+   }
+  
+  # For contigs more than 0 
+  if(nrow(mobsuite_contig_sub)>0){
+    # Get replicon and primary cluster data
+    mobsuite_contig_sub$plasmid_merged <- apply(mobsuite_contig_sub,1,FUN=function(x){
+    primary_cluster <- x[['primary_cluster_id']] 
+    primary_cluster <- ifelse(primary_cluster == "-", "Chromosome", primary_cluster)
+    
+    # Replicon type determination
+    rep_type <- mobtyper_report %>% subset(isolate_no == isolate & primary_cluster_id == x[['primary_cluster_id']]) %>% .$rep_types
+    # Clean replicon types
+    rep_type_clean <- rep_type %>%    str_split(",")  %>% unlist %>% str_trim() %>% unique %>% sort()
+
+    if (primary_cluster == "Chromosome") {
+          results <-  primary_cluster
+          } else {
+          rep_type_clean[rep_type_clean == "-"] <- "Unresolved"
+          rep_type_clean <- paste0(rep_type_clean,collapse = ',')
+          results <-  paste0(rep_type_clean,":",primary_cluster)
+          } 
+    results
+  }) %>% paste0(collapse = " & ") 
+  } else{ 
+    paste0("No carbapenemase")
+  } 
+}
+
+df$carbapenemase_plasmid_group <- pbmcapply::pbmclapply(df$isolate_no,get_carbapenemase_plasmid_group,amrfinder_carb_report = amrfinder_carb_bla,mobsuite_contig_report = mobsuite_contig_merged,mobtyper_report = mobtyper_merged,mc.cores=7) %>% unlist
+
+get_carbapenemase_plasmid_rep_type <- function(isolate,amrfinder_carb_report,mobsuite_contig_report,mobtyper_report){ 
+  amrfinder_sub <- amrfinder_carb_report[amrfinder_carb_report$isolate_no == isolate,]  %>% arrange(element_symbol_renamed)
+  mobsuite_contig_sub <- mobsuite_contig_report %>% subset(isolate_no == isolate & contig_id %in% amrfinder_sub$contig_id)
+    if(nrow(mobsuite_contig_sub)>1){
+  mobsuite_contig_sub <- mobsuite_contig_sub %>% arrange(match(contig_id, amrfinder_sub$contig_id))
+     }
+  if(nrow(mobsuite_contig_sub)>0){
+    
+    # Get replicon and primary cluster data
+    mobsuite_contig_sub$plasmid_merged <- apply(mobsuite_contig_sub,1,FUN=function(x){
+    primary_cluster <- x[['primary_cluster_id']] 
+    primary_cluster <- ifelse(primary_cluster == "-", "Chromosome", primary_cluster)
+    
+    # Replicon type determination
+    rep_type <- mobtyper_report %>% subset(isolate_no == isolate & primary_cluster_id == x[['primary_cluster_id']]) %>% .$rep_types
+    # Clean replicon types
+    rep_type_clean <- rep_type %>%    str_split(",")  %>% unlist %>% str_trim() %>% unique %>% sort()
+
+    if (primary_cluster == "Chromosome") {
+          results <-  "Chromosome"
+          } else {
+          rep_type_clean[rep_type_clean == "-"] <- "Unresolved"
+          results <- paste0(rep_type_clean,collapse = ',') 
+          } 
+    results
+  }) %>% paste0(collapse = " & ") }  else{ 
+    paste0("No carbapenemase")
+  } 
+}
+
+df$carbapenemase_plasmid_replicon_type <-  pbmcapply::pbmclapply(df$isolate_no,get_carbapenemase_plasmid_rep_type,amrfinder_carb_bla,mobsuite_contig_merged,mobtyper_merged,mc.cores=7) %>% unlist
+
+carbapenemase_data <- df %>% select(isolate_no,blactamase,blactamase_non_carbapenemase,carbapenemase,carbapenemase_family,carbapenemase_plasmid,carbapenemase_plasmid_replicon_type,carbapenemase_plasmid_group)
 
 saveRDS(carbapenemase_data,"./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
 ```
 
 # Create carbapenemase plasmid matrix
 ```{r}
-# carbapenemase plasmid 
+# Carbapenemase plasmid 
 mobtyper_merged$carbapenemase_plasmid <- apply(mobtyper_merged,1,FUN=function(x){
   isolate_carbapenemase <- df %>% subset(isolate_no == x[['isolate_no']]) %>% .$carbapenemase_plasmid %>% str_split(.," & " ) %>% unlist
   sum(x[['primary_cluster_id']] %in% isolate_carbapenemase) 
 })
 
-mobtyper_merged$carbapenemase <-apply(mobtyper_merged,1,FUN=function(x){
+# Carbapnemease
+mobtyper_merged$carbapenemase <- apply(mobtyper_merged,1,FUN=function(x){
   mobsuite_contigs <- mobsuite_contig_merged %>% subset(primary_cluster_id == x[["primary_cluster_id"]] & isolate_no == x[["isolate_no"]]) %>% .$contig_id
   amrfinder_sub <- amrfinder_carb_bla %>% subset(contig_id %in% mobsuite_contigs)
   if(nrow(amrfinder_sub)==0){
     ""
   } else{
-  paste0(amrfinder_sub$element_symbol_renamed,collapse=' & ')
+  paste0(amrfinder_sub$element_symbol_renamed %>% sort,collapse=' & ')
   }
 })
 
 ## Save
 saveRDS(mobtyper_merged,"./data/mobsuite/mobtyper_merged_w_carbapenemase_data.RDS")
 
-# carbapenemase contig labeled
+# Carbapenemase contig labeled
 mobsuite_contig_merged$carbapenemase_contig <- apply(mobsuite_contig_merged,1,FUN=function(x){
   contig <- x[["contig_id"]]
   amrfinder_sub <- amrfinder_carb_bla %>% subset(isolate_no  %in% x[["isolate_no"]])
