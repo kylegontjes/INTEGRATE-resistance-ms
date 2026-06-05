@@ -17,7 +17,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ComplexHeatmap",'ggalluvial')
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","cowplot","ComplexHeatmap",'ggalluvial')
 lapply(packages,library,character.only=T)
 
 # Functions
@@ -37,11 +37,6 @@ df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_m
 # Coordinate sequence type data
 
 ```{r} 
-break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
-break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
-       
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
-
 df$Species_ST_recode_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
  
 df_201415 <- df%>% subset(study == "2014-15")
@@ -60,30 +55,23 @@ mobtyper_merged <- readRDS("./data/mobsuite/mobtyper_merged_w_carbapenemase_data
 ```
 
 # A. KPC plasmids
-```{r}
-carbapenemase_plasmids <- c(mobtyper_merged  %>% subset(carbapenemase_plasmid ==1) %>% .$primary_cluster_id %>% unique %>% sort)
-plasmid_fill <- scale_fill_manual(breaks = c(carbapenemase_plasmids,"Chromosome","No carbapenemase"),values = c(hues::iwanthue(length(carbapenemase_plasmids)),"darkgray",'lightgray'),name="Carbapenemase-containing plasmid",guide = guide_legend(title.position = "top", label.position = "right"))
+```{r} 
+df_split <-  df %>%
+  separate_rows(carbapenemase_plasmid, sep = " & ")
 
-mobtyper_prop <-  df   %>%
+mobtyper_perc <-  df_split   %>%
   count(study, carbapenemase_plasmid) %>%
   complete(study, carbapenemase_plasmid, fill = list(n = 0)) %>%
   group_by(study) %>%
-  mutate(prop = n / sum(n) * 100) 
-
-get_factor_order_plasmid <- function(ST_dist,var){
-  new_order <- ST_dist %>% subset(study =='2021-23') %>% arrange(-n) %>% subset(n>0) %>% .[[var]] 
-  zero_new_order_old <- ST_dist %>% subset(study =='2014-15') %>% subset(!get(var) %in% new_order) %>% arrange(-n) %>% .[[var]]
-  c(c(new_order,zero_new_order_old) %>% subset(!.%in% c("Chromosome","No carbapenemase")),"Chromosome","No carbapenemase")
-}
+  mutate(perc = n / sum(n) * 100) 
  
-df$carbapenemase_plasmid <- factor(df$carbapenemase_plasmid,levels = get_factor_order_plasmid(mobtyper_prop,'carbapenemase_plasmid'))
-mobtyper_prop$carbapenemase_plasmid <- factor(mobtyper_prop$carbapenemase_plasmid,levels = get_factor_order_plasmid(mobtyper_prop,'carbapenemase_plasmid'))
+df_split$carbapenemase_plasmid <- factor(df_split$carbapenemase_plasmid,levels = plasmid_fill_scale$breaks)
 
-A <- ggplot(data=df ,aes(y=carbapenemase_plasmid,fill=carbapenemase_plasmid)) + geom_bar(stat='count')  + theme_bw_me + ylab("") + labs(fill="carbapenemase_plasmid") + facet_wrap(~study) + plasmid_fill  + xlab("Isolates") + theme(legend.position = 'none') +
+A <- ggplot(data=df_split ,aes(y=carbapenemase_plasmid,fill=carbapenemase_plasmid)) + geom_bar(stat='count')  + theme_bw_me + ylab("") + facet_wrap(~study) + plasmid_fill_scale  + xlab("Isolates") + theme(legend.position = 'none') +
   geom_text(stat='count',
             aes(label=..count..),
             hjust=-0.05, 
-            size=3.5)  + xlim(NA,100.1) +
+            size=3.5)  + xlim(NA,140.1) +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
@@ -92,33 +80,48 @@ A <- ggplot(data=df ,aes(y=carbapenemase_plasmid,fill=carbapenemase_plasmid)) + 
                   legend.title = element_text(size = 12, color="black"),
     plot.title = element_text(size = 0, color="black"),
     legend.position = "none",
-    strip.text = element_text(size=14,color='black')
-  )
+    strip.text = element_text(size=14,color='black' )
+  )   + scale_x_continuous(breaks = scales::pretty_breaks(6),limits = c(0,max(mobtyper_perc$n)+8))
 A
 ```
 
 ## C. Species ST
-```{r} 
-get_factor_order <- function(ST_dist,var){
-  new_order <- ST_dist %>% subset(study =='2021-23') %>% arrange(-n) %>% subset(n>0) %>% .[[var]] 
-  zero_new_order_old <- ST_dist %>% subset(study =='2014-15') %>% subset(!get(var) %in% new_order) %>% arrange(-n) %>% .[[var]]
-  c(c(new_order,zero_new_order_old) %>% subset(.!="Singleton STs"),"Singleton STs")
-}
- 
-ST_dist <-  df  %>%
-  count(study, Species_ST_recode) %>%
-  complete(study, Species_ST_recode, fill = list(n = 0)) %>%
-  group_by(study) %>%
-  mutate(prop = n / sum(n) * 100)
-   
-df$Species_ST_recode <- factor(df$Species_ST_recode,levels = get_factor_order(ST_dist,'Species_ST_recode'))
+```{r}  
+df$Species_ST_recode <- factor(df$Species_ST_recode,levels = ST_scale$breaks)
 
-C <- ggplot(data=df,
-       aes(y=Species_ST_recode, fill=carbapenemase_plasmid)) +
-  geom_bar() +
-  xlim(NA, 220.1) +
+carbapenemase_plasmid_percentage_ST_data <- df  %>%
+  count(study, Species_ST_recode,carbapenemase_plasmid) %>%
+  complete(study, Species_ST_recode, fill = list(n = 0)) %>%
+  group_by(study,Species_ST_recode) %>%
+  mutate(perc = n / sum(n) * 100)  
+
+carbapenemase_plasmid_percentage_ST_data <- carbapenemase_plasmid_percentage_ST_data %>%
+  mutate(
+    carb_parts = str_split(carbapenemase_plasmid, " & "),
+    carb_plasmid_primary = map_chr(carb_parts, 1),
+    carb_secondary_raw = map_chr(carb_parts, ~ if (length(.) > 1) .[2] else NA_character_),
+    carb_plasmid_secondary = ifelse(is.na(carb_secondary_raw), NA_character_, carb_secondary_raw)
+  ) %>%
+  select(-carb_parts, -carb_secondary_raw)
+
+carbapenemase_plasmid_percentage_ST_data$carb_plasmid_primary <-  factor(carbapenemase_plasmid_percentage_ST_data$carb_plasmid_primary,levels =plasmid_fill_scale$breaks)
+
+carbapenemase_plasmid_percentage_ST_data$Species_ST_recode <- factor(carbapenemase_plasmid_percentage_ST_data$Species_ST_recode,levels = ST_scale$breaks)
+
+carbapenemase_plasmid_percentage_ST_data <- subset(carbapenemase_plasmid_percentage_ST_data,perc>0)
+
+C <- ggplot(
+  data = carbapenemase_plasmid_percentage_ST_data,
+  aes(
+    y = Species_ST_recode,
+    x = perc,
+    fill = carb_plasmid_primary,
+    colour = carb_plasmid_secondary
+  )
+) +
+  geom_bar(stat = "identity",linewidth = 0.66)  +  plasmid_color_scale +
   theme_bw_me +
-  xlab("Isolates") + ylab("") +
+  xlab("Percentage of isolates") + ylab("") +
   theme(
     axis.text.x = element_text(hjust = 0.5, size=12, color="black"),
     axis.text.y = element_text(size=12, color="black"),
@@ -129,49 +132,73 @@ C <- ggplot(data=df,
     legend.position = "none",
     strip.text = element_text(size=14,color='black')
         
-  ) + plasmid_fill + facet_wrap(~study)
-
-C
+  ) + plasmid_fill_scale + facet_wrap(~study)
+ 
+C 
 ```
 
-# B. Proportion of plasmids over study periods
+# B. percortion of plasmids over study periods
 ```{r}
-B <-  ggplot(mobtyper_prop  ,aes(x = study,stratum = carbapenemase_plasmid,alluvium = carbapenemase_plasmid,y=prop,fill = carbapenemase_plasmid)) +
+df_plasmid_long <- df %>%
+  separate_rows(carbapenemase_plasmid, sep = " & ") %>%   # split multi-genotypes
+  group_by(isolate_no) %>%
+  mutate(weight = 1 / n()) %>%               # fractional allocation
+  ungroup()
+
+df_plasmid_plot <- df_plasmid_long %>%
+  group_by(study, carbapenemase_plasmid) %>%
+  summarise(weighted_n = sum(weight), .groups = "drop") %>%
+  group_by(study) %>%
+  mutate(weighted_pct = 100 * weighted_n / sum(weighted_n))
+ 
+df_plasmid_plot$carbapenemase_plasmid <-  factor(df_plasmid_plot$carbapenemase_plasmid,levels = plasmid_fill_scale$breaks)
+
+B <-  ggplot(df_plasmid_plot  ,aes(x = study,stratum = carbapenemase_plasmid,alluvium = carbapenemase_plasmid,y=weighted_pct,fill = carbapenemase_plasmid)) +
   geom_alluvium(aes(fill = carbapenemase_plasmid),width=0.66,alpha=0.75) +
-  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage (%)")  + theme(legend.position = "bottom",
+  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Weighted percentage of isolates")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
-                  plot.title = element_text(size = 14, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100)) +  plasmid_fill+ ggtitle("All isolates") 
+                  plot.title = element_text(size = 14, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100)) +  plasmid_fill_scale + ggtitle("All isolates") 
 
 B
 ```
 
 # D. ST258 genomes
 ```{r}
-ST258_genomes <- df %>% subset(ST=="ST258") %>% .$isolate_no
-mobtyper_prop_ST258 <-  df %>% subset(ST=="ST258")   %>%
-  count(study, carbapenemase_plasmid) %>%
-  complete(study, carbapenemase_plasmid, fill = list(n = 0)) %>%
+df_long_plasmid_ST258 <- df  %>% subset(Species_ST == "Klebsiella pneumoniae ST258")  %>% 
+  separate_rows(carbapenemase_plasmid, sep = " & ") %>%   # split multi-genotypes
+  group_by(isolate_no) %>%
+  mutate(weight = 1 / n()) %>%               # fractional allocation
+  ungroup()
+
+df_plot_plasmid_ST258 <- df_long_plasmid_ST258 %>%
+  group_by(study, carbapenemase_plasmid) %>%
+  summarise(weighted_n = sum(weight), .groups = "drop") %>%
   group_by(study) %>%
-  mutate(prop = n / sum(n) * 100)
+  mutate(weighted_pct = 100 * weighted_n / sum(weighted_n))
  
-D <-  ggplot(mobtyper_prop_ST258  ,aes(x = study,stratum = carbapenemase_plasmid,alluvium = carbapenemase_plasmid,y=prop,fill = carbapenemase_plasmid)) +
+df_plot_plasmid_ST258$carbapenemase_plasmid <-  factor(df_plot_plasmid_ST258$carbapenemase_plasmid,levels = plasmid_fill_scale$breaks)
+
+D <-  ggplot(df_plot_plasmid_ST258  ,aes(x = study,stratum = carbapenemase_plasmid,alluvium = carbapenemase_plasmid,y=weighted_pct,fill = carbapenemase_plasmid)) +
   geom_alluvium(aes(fill = carbapenemase_plasmid),width=0.66,alpha=0.75) +
-  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage (%)")  + theme(legend.position = "bottom",
+  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage of isolates")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
                   legend.title = element_text(size = 10, color="black"),
-                  plot.title = element_text(size = 14, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100)) +  plasmid_fill + ggtitle("ST258 isolates") 
+                  plot.title = element_text(size = 14, color="black")) + scale_y_continuous(breaks = c(0,20,40,60,80,100)) +  plasmid_fill_scale+ ggtitle("ST258 isolates") 
+  
 D
 ```  
 
-```{r,fig.width=9,fig.height=9}  
-AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"), label_size=14)  
+```{r,fig.width=9,fig.height=9} 
+AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=14)  
 CD <-  cowplot::plot_grid(C + theme(legend.position = 'none'),D + theme(legend.position = 'none'),ncol=2,labels = c("C","D"),label_size = 14,rel_widths = c(1,.33))
+
 figure_3 <-  cowplot::plot_grid(AB,CD,ncol=1,rel_heights = c(1,1),labels = c("",""),label_size=14)  
+
 figure_3
 ```
 

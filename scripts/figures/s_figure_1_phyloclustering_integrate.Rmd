@@ -99,25 +99,7 @@ tr_ST14 <- read.tree("./data/phylogeny/phylogeographic/ST14/phylogeographic_ST14
 tr_ST17 <- read.tree("./data/phylogeny/phylogeographic/ST17/phylogeographic_ST17_pruned.treefile") %>% drop.tip("INT_CRE_1243")  
 tr_ST307 <- read.tree("./data/phylogeny/phylogeographic/ST307/phylogeographic_ST307_pruned.treefile") %>% drop.tip("INT_CRE_1243") 
 tr_ST258 <- read.tree("./data/phylogeny/phylogeographic/ST258/phylogeographic_ST258_pruned.treefile") %>% drop.tip("INT_CRE_1243")  
-``` 
-
-# Scales
-```{r}
-total_colors <- 10
-all_colors <- hues::iwanthue(total_colors,plot = T)
-
-decade_scale <- scale_fill_manual(breaks = c("1980","1990","2000","2010","2020"),values = all_colors[c(1,2,4,5,8)],name = "Decade",guide = guide_legend(nrow=3,order=1),drop=FALSE) 
-
-continent_scale <- scale_fill_manual(breaks = c("Africa","Americas","Asia","Europe","Oceania"),values = all_colors[c(3,7,6,9,10)],name = "Continent",guide = guide_legend(nrow=3,order=2),drop=FALSE)
-
-california_scale <- scale_fill_manual(breaks = c(TRUE,FALSE),values = c("red","#CCCCCC"),labels = c("California","Other"),name = "Location",guide = guide_legend(nrow=3,order=3),drop=FALSE)
-
-study_scale <- scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public California genomes","Other public genomes"),values = c("blue","brown","black","white"),name = "Type of assembly",guide = guide_legend(nrow=4,order=4),drop=FALSE)
-
-study_scale_color <- scale_color_manual(breaks = c("2014-15 Study","2021-23 Study","Public California genomes","Other public genomes"),values = c("blue","brown","black","white"),name = "Type of assembly",guide = guide_legend(nrow=4,order=4),drop=FALSE)
-
-study_scale_color <- scale_color_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown","black"),name = "California assemblies",guide = guide_legend(nrow=3,order=4),drop=FALSE)
-```
+```  
 
 # Reconstructions
 ```{r}

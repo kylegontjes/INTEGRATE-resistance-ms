@@ -16,12 +16,11 @@ opts_knit$set(root.dir = '~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance
 
 ```{r}
 # Packages
-packages <- c("tidyverse","ComplexHeatmap",'ggalluvial','ape','ggtree')
+packages <- c("tidyverse","ComplexHeatmap",'ape','ggtree')
 lapply(packages,library,character.only=T)
 
 # Functions
-source("./lib/consistent_themes.R")
-source("./lib/carbapenemase_scale.R")
+source("./lib/consistent_themes.R") 
 
 # Print environment
 Sys.info()
@@ -36,12 +35,7 @@ df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_m
 
 # Coordinate ST data
 
-```{r} 
-break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
-break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
-       
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type (ST)", guide = guide_legend(nrow=4, title.position = "top", label.position = "right",order=1))
-
+```{r}  
 df$Species_ST_recode_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
  
 df_201415 <- df%>% subset(study == "2014-15")
@@ -52,32 +46,7 @@ df_202123<- df%>% subset(study == "2021-23")
 ```{r}
 carbapenemase_content <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
 df <- left_join(df,carbapenemase_content)
-
-format_blaKPC_md <- function(gene) {
-  gene <- trimws(gene,which='both')
-  if(grepl("^bla", gene)){
-    allele <- gsub("bla", "", gene)
-    paste0("<i>bla</i><sub>", allele, "</sub>") %>% trimws(.,which='both')
-  }  else {
-    if(grepl("No carbapenemase",gene) == T ){
-      paste0("No carbapenemase") 
-    } else {
-      paste0("") 
-    }
-  } 
-}
-
-carbapenemase_markdown <- str_split(df$carbapenemase,pattern = "&",simplify=T)
-carbapenemase_markdown[,1] <- sapply(carbapenemase_markdown[,1],format_blaKPC_md)
-carbapenemase_markdown[,2] <- sapply(carbapenemase_markdown[,2],format_blaKPC_md)
-colnames(carbapenemase_markdown) <- c("c1","c2")
-df$carbapenemase_md <- apply(carbapenemase_markdown,1,FUN=function(x){
-  if(x['c2']==''){
-    paste0(x['c1'])
-  } else {
-    paste0(x['c1']," & ",x['c2'])
-  }
-})
+df$carbapenemase_md <- format_carbapenemase(df$carbapenemase) 
 ```
 
 # Load plasmid data
@@ -92,29 +61,33 @@ tr <- read.tree("./data/phylogeny/INTEGRATE/INTEGRATE_CRKP.treefile")
 ```
 
 ## Scale creation
-```{r}
-feature_colors <- c(`1` = "black",`0`="white")
-feature_scale <- scale_fill_manual(breaks = c(1,0), values = c('black','white') ,labels=c("Present","Absent"),name="Carbapanemase", guide = guide_legend(nrow=2, title.position = "top", label.position = "right",order=3))
+```{r} 
 geno_vars <- colnames(KPC_plasmid_matrix %>% select_if(colSums(.)>0)) %>% subset(!.%in% c("study","major_STs","No carbapenemase"))
 genotype <- KPC_plasmid_matrix %>% subset(rownames(.) %in% tr$tip.label) %>% select(geno_vars) %>% drop_na()  %>% select_if(colSums(.) >0) %>% ComplexHeatmap::Heatmap()
+plasmid_matrix <- KPC_plasmid_matrix %>% select(genotype@column_names_param$labels[ComplexHeatmap::column_order(genotype)]) %>% mutate_all(as.factor) 
+colnames(plasmid_matrix) <- recode_genotypes(colnames(plasmid_matrix))
 ```
 
 ## Phylogeny creation
 ```{r,fig.width=9.25,fig.height=9.25}  
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
-p0 <- gheatmap(ggtree(tr),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale  + theme(legend.key = element_rect(colour = c('black')))
-p01 <- p0 + ggnewscale::new_scale_fill()
-p1 <- gheatmap(p01,df %>% select(carbapenemase_md) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0035,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + genotype_scale_4_row + theme( legend.key = element_rect(colour = c('black')))
-p11 <- p1 + ggnewscale::new_scale_fill()
+p0 <- gheatmap(ggtree(tr),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale_3_row  + theme(legend.key = element_rect(colour = c('black'))) + ggnewscale::new_scale_fill() 
+p1 <- gheatmap(p0,df %>% select(carbapenemase_md) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0035,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_scale_4_row + theme( legend.key = element_rect(colour = c('black'))) + ggnewscale::new_scale_fill() 
+figure <- gheatmap(p1,plasmid_matrix,color = NULL,width=0.05*length(geno_vars),offset=0.007,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_presence_scale + ylim(NA,565) + theme(legend.position = 'bottom', legend.key = element_rect(colour = c('black')),legend.text=element_markdown())  + geom_treescale(y = -14, offset = 2)
+```
 
-figure <- gheatmap(p11,KPC_plasmid_matrix %>% select(genotype@column_names_param$labels[ComplexHeatmap::column_order(genotype)]) %>% mutate_all(as.factor)  %>% `colnames<-`(recode(colnames(.),"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation','Chromosome' = "Chromosomal gene(s)") %>% trimws(.,"both")),color = NULL,width=0.05*length(geno_vars),offset=0.007,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,625) + theme(legend.position = 'bottom', legend.key = element_rect(colour = c('black')),legend.text=element_markdown())  + geom_treescale(y = -14, offset = 2)
+# Edited figure
+```{r,fig.width=10.5,fig.height=10.5}  
+figure_legend <- cowplot::get_legend(figure + theme(legend.key.size = unit(0.5,"cm")))
 
-figure
+final_figure <- cowplot::plot_grid(figure + theme(legend.position = 'none',
+                                                  plot.margin = margin(b=-25)),figure_legend,ncol=1,rel_heights = c(1,0.15))
+final_figure
 ```
 
 # Save
 
 ```{r}
-ggsave(filename = "./figures/s_figure_7_carbapenem_plasmids_phylogeny.png",plot=figure,width = 9.25, height = 9.25 ,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_7_carbapenem_plasmids_phylogeny.png",plot=figure,width = 10.5, height = 10.5 ,dpi=900,bg = 'white')
 ```

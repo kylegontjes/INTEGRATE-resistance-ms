@@ -18,6 +18,7 @@ packages <- c("tidyverse",'ape','kableExtra','phytools','tableone','kableExtra',
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
+source("./lib/consistent_themes.R")
 
 # Print environment
 set.seed(45) 
@@ -37,9 +38,6 @@ df_202123<- df%>% subset(study == "2021-23")
 paste0("Number of isolates: ", nrow(df_202123))
 paste0("Number of individuals without metadata: ", nrow(df_202123 %>% subset(is.na(participant_id)))) 
 
-MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"CT","FDC","OMC","ERV","DLX","CST","PLZ","FOS") 
-resistance_vars <- c(paste0(MIC_variables,"_dich_num"))
-
 complete_case <- df_202123[df_202123 %>% select(resistance_vars) %>% is.na() %>% rowSums()  ==0  ,] 
 
 paste0("Number of considered individuals with complete resistance datafor this analysis: ", nrow(complete_case ))
@@ -47,8 +45,7 @@ paste0("Number of considered individuals with complete resistance datafor this a
 
 # Code for figure
 ```{r} 
-last_line_res_numeric <- complete_case %>% select(resistance_vars) 
-colnames(last_line_res_numeric) <- gsub("blbli","BL/BLI",colnames(last_line_res_numeric))
+last_line_res_numeric <- complete_case %>% select(resistance_vars %>% subset(.!='blbli_dich_num'))  
 
 # Get content
 total_occurrences <- colSums(last_line_res_numeric) 
@@ -61,17 +58,20 @@ for(i in 1:ncol(co_occurrence)){
 co_occurrence_merged[[i]] <- paste0(co_occurrence[,i]," (",round(co_occurrence_percent[,i],1),"%)")
 }
 
-co_occurrence_merged <- do.call(cbind,co_occurrence_merged) %>% as.data.frame %>% `colnames<-`(gsub("_dich_num","",colnames(co_occurrence))
-) %>% `rownames<-`(paste0(gsub("_dich_num","",rownames(co_occurrence))," Resistant (n = ",total_occurrences,")")) 
+co_occurrence_merged <- do.call(cbind,co_occurrence_merged) %>% as.data.frame %>% `rownames<-`(paste0(recode_resistance_variables(rownames(co_occurrence))," resistant (n = ",total_occurrences,")")) 
 
 # Complex heatmap
-drugs <- gsub("_dich_num","",colnames(co_occurrence_merged))
+rownames(co_occurrence_percent) <- recode_resistance_variables(rownames(co_occurrence_percent)) 
+colnames(co_occurrence_percent) <- recode_resistance_variables(colnames(co_occurrence_percent))
+colnames(co_occurrence_merged) <- recode_resistance_variables(colnames(co_occurrence_merged))
+
+
 ## Heatmap
-co_occurrence_heatmap <- ComplexHeatmap::pheatmap(co_occurrence_percent %>% as.matrix,border_color = "black",name ="Cross-resistance",legend=F,fontsize = 8.25,
-    row_names_max_width = max_text_width(rownames(co_occurrence_merged), gp = gpar(fontsize = 16)),
-    column_names_max_height = max_text_width(rownames(co_occurrence_merged), gp = gpar(fontsize = 16)),
+co_occurrence_heatmap <- ComplexHeatmap::pheatmap(co_occurrence_percent %>% as.matrix,border_color = "black",name ="Cross-resistance",legend=F,fontsize = 8,
+    row_names_max_width = max_text_width(rownames(co_occurrence_percent), gp = gpar(fontsize = 14)),
+    column_names_max_height = max_text_width(rownames(co_occurrence_percent), gp = gpar(fontsize = 14)),
     legend_breaks = c(0, 25, 50, 75, 100),legend_labels = c("0%", "25%", "50%", "75%", "100%"),
-    cluster_rows=F,cluster_cols = F,display_numbers = as.matrix(co_occurrence_merged),labels_row = rownames(co_occurrence_merged),labels_col = drugs,number_color = "black")
+    cluster_rows=F,cluster_cols = F,display_numbers = as.matrix(co_occurrence_merged),labels_row = rownames(co_occurrence_merged),number_color = "black")
 
 ## Complex heatmap legend
 one_hundred_breaks <- c()
@@ -79,7 +79,7 @@ for(i in 1:100){
   one_hundred_breaks[i] <- 1*i
 }  
 
-fig_legend <- Legend(at = c(0, 25, 50, 75, 100),labels = c("0%", "25%", "50%", "75%", "100%"),title = "Cross-resistance",direction = "horizontal",col_fun = colorRamp2(breaks = one_hundred_breaks,colors = colorRampPalette(rev(brewer.pal(n = 7, name =  "RdYlBu")))(100)), title_gp = gpar(fontsize = 12),labels_gp=gpar(fontsize=12),legend_width = unit(15, "cm"),title_position = 'topcenter')
+fig_legend <- Legend(at = c(0, 25, 50, 75, 100),labels = c("0%", "25%", "50%", "75%", "100%"),title = "Cross-resistance",direction = "horizontal",col_fun = colorRamp2(breaks = one_hundred_breaks,colors = colorRampPalette(rev(brewer.pal(n = 7, name =  "RdYlBu")))(100)), title_gp = gpar(fontsize = 10),labels_gp=gpar(fontsize=10),legend_width = unit(12, "cm"),title_position = 'topcenter')
 
 # Print heatmap
 fig_heatmap_image <- grid.grabExpr(draw(co_occurrence_heatmap))
@@ -89,10 +89,10 @@ figure <- plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="h
 ```
 
 # Print & Save
-```{r,message=F,error=F,warning=F,fig.width=9,fig.height=4}
+```{r,message=F,error=F,warning=F,fig.width=9,fig.height=5}
 figure
 ```
 
 ```{r}
-ggsave(plot = figure, filename = "./figures/s_figure_10_cross_resistance.png", width = 9, height = 4, bg = "white",dpi=900)
+ggsave(plot = figure, filename = "./figures/s_figure_10_cross_resistance.png", width = 9, height = 5, bg = "white",dpi=900)
 ```

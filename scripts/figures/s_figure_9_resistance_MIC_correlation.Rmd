@@ -16,7 +16,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r}
 # Packages
-packages <- c("tidyverse","ComplexHeatmap",'ggalluvial','ape','ggtree',"colorRamp2","cowplot")
+packages <- c("tidyverse","ComplexHeatmap",'ape','ggtree',"colorRamp2","cowplot",'kableExtra')
 lapply(packages,library,character.only=T)
 
 # Functions
@@ -39,10 +39,7 @@ df_202123<- df%>% subset(study == "2021-23")
 
 ```{r}
 paste0("Number of isolates: ", nrow(df_202123))
-paste0("Number of individuals without metadata: ", nrow(df_202123 %>% subset(is.na(participant_id)))) 
-
-MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"CT","FDC","OMC","ERV","DLX","CST","PLZ","FOS") 
-resistance_vars <- c(paste0(MIC_variables,"_dich_num"))
+paste0("Number of individuals without metadata: ", nrow(df_202123 %>% subset(is.na(participant_id))))  
 
 complete_case <- df_202123[df_202123 %>% select(resistance_vars) %>% is.na() %>% rowSums()  ==0  ,] 
 
@@ -52,16 +49,19 @@ paste0("Number of considered individuals with complete resistance datafor this a
 
 # Supplemental figure: Correlation matrix of MIC values
 
-```{r,message=F,error=F,warning=F,fig.width=8.5,fig.height=6}
-MIC_variables <- c('MERO',"IMI",'MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
-MIC_correlation <-  cor(complete_case %>% select(paste0(MIC_variables,"_log_2")) , method="spearman",use='pairwise.complete.obs') %>% round(.,2)
+```{r,message=F,error=F,warning=F,fig.width=8.5,fig.height=6} 
+MIC_variables_no_blbli <- subset(MIC_variables,MIC_variables != 'blbli')
+MIC_correlation <-  cor(complete_case %>% select(paste0(MIC_variables_no_blbli,"_log_2")) , method="spearman",use='pairwise.complete.obs') %>% round(.,2)
  
-drugs <-  rownames(MIC_correlation) %>% gsub("_log_2","",.)
+rownames(MIC_correlation) <-  rownames(MIC_correlation) %>% gsub("_log_2","_dich_num",.) %>% recode_resistance_variables()
+colnames(MIC_correlation) <-  colnames(MIC_correlation) %>% gsub("_log_2","_dich_num",.) %>% recode_resistance_variables() 
+
+MIC_correlation %>% kable()
 
 corr_heatmap <- ComplexHeatmap::pheatmap(MIC_correlation %>% as.matrix,border_color = "black",name ="Spearman's rank correlation coefficient",legend=F,fontsize = 12,
-    row_names_max_width = max_text_width(rownames(MIC_correlation), gp = gpar(fontsize = 14)),
-    column_names_max_height = max_text_width(rownames(MIC_correlation), gp = gpar(fontsize = 14)),
-    cluster_rows=T,cluster_cols = T,labels_row = drugs,labels_col=drugs,number_color = "black",breaks = c(-1,0,1),color=c("blue","white","red"),display_numbers = T)  
+    row_names_max_width = max_text_width(rownames(MIC_correlation), gp = gpar(fontsize = 12)),
+    column_names_max_height = max_text_width(colnames(MIC_correlation), gp = gpar(fontsize = 12)),
+    cluster_rows=T,cluster_cols = T,number_color = "black",breaks = c(-1,0,1),color=c("blue","white","red"),display_numbers = T)  
 
 ## Complex heatmap legend 
 fig_legend <- Legend(at = c(-1, -0.5, 0, 0.5, 1),labels = c("-1.00", "-0.50", "0.00", "0.50", "1.00"),title = "Spearman's rank correlation coefficient",direction = "horizontal",col_fun = colorRamp2(breaks = c(-1,  0,  1),colors = c("blue","white","red")), title_gp = gpar(fontsize = 14),labels_gp=gpar(fontsize=12),legend_width = unit(10, "cm"), title_position = 'topcenter')
@@ -75,12 +75,12 @@ corrfig <- plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="
 
 # Print figure
 
-```{r,message=F,error=F,warning=F,fig.width=6.25,fig.height=5}
+```{r,message=F,error=F,warning=F,fig.width=7.25,fig.height=7.25}
 corrfig
 ```
 
 # Save figure
 
 ```{r}
-ggsave(plot = corrfig, filename = "./figures/s_figure_9_resistance_MIC_correlations.png", width = 6.25, height = 5, bg = "white",dpi=900)
+ggsave(plot = corrfig, filename = "./figures/s_figure_9_resistance_MIC_correlations.png", width = 7.25, height = 7.25, bg = "white",dpi=900)
 ```

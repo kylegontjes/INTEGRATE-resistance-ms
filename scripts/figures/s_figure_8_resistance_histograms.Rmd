@@ -37,19 +37,7 @@ df_202123<- df%>% subset(study == "2021-23")
 
 # Figure 
 ## Code
-```{r,message=F,error=F,warning=F,fig.width=15,fig.height=7.5}
-MIC_variables <- c('MERO',"IMI",'MVB','IR','CZA',"FDC","CT","OMC","ERV","DLX","CST","PLZ","FOS") 
-# Manuscript Background theme
-theme_bw_me <- theme(panel.background = element_rect(fill = "white",colour = NA), panel.grid = element_blank(),
-                     strip.background = element_rect(fill = "white",colour = "black"),
-                     panel.grid.major = element_blank(),
-                     panel.grid.minor = element_blank(),
-                     axis.line = element_line(colour = "black"),legend.position = "bottom")
-
-resistance_cat_colors <- c("S" = "#005AB5","I"="#FFC20A","R" = "#DC3220")
-resistance_cat_scale <- scale_fill_manual(breaks = c(names(resistance_cat_colors)),values=resistance_cat_colors,labels = c("S"="Susceptible","I" ="Intermediate","R" = "Resistant"), name="Resistance category", guide = guide_legend(nrow=1, title.position = "top", label.position = "right"))
-
-
+```{r,message=F,error=F,warning=F,fig.width=15,fig.height=7.5} 
 create_MIC_histogram <- function(phenotype_cont, phenotype_log, phenotype_cat = NULL, phenotype_name) {
   # Combine log and cat data safely
   data <- tibble(phenotype_log = phenotype_log, phenotype_cat = phenotype_cat,phenotype_cont = phenotype_cont) %>% subset(phenotype_cat != "ERROR")
@@ -57,24 +45,9 @@ create_MIC_histogram <- function(phenotype_cont, phenotype_log, phenotype_cat = 
   # Create renaming vector to map log values to continuous (for better axis labels)
   renaming_vector <- unique(phenotype_cont) %>% subset(is.na(.)==F)
   names(renaming_vector) <- unique(phenotype_log) %>% subset(is.na(.)==F) %>% as.numeric
-  phenotype_name <-  phenotype_name  %>% recode(.,
-                         "CZA"='Ceftazidime-avibactam',
-                         "CST"='Colistin', 
-                         'MERO'='Meropenem',
-                         'IMI'='Imipenem',
-                         "blbli"='BL/BLI agents',
-                         "MVB"='Meropenem-vaborbactam',
-                         "IR"='Imipenem-relebactam',
-                         "PLZ"='Plazomicin',
-                         "TMP_SMX"='Trimethoprim-Sulfamethoxazole',
-                         "OMC" = "Omadacycline",
-                         "DLX" = "Delafloxacin",
-                         "ERV" = "Eravacycline",
-                         "FOS" = "Fosfomycin",
-                         "CT" = "Ceftolozane-tazobactam",
-                         "FDC"="Cefiderocol")
+  phenotype_name <-  recode_resistance_variables(paste0(phenotype_name,"_dich_num"))
   
-  x_axis_name <- ifelse(phenotype_name =="Cefiderocol", "Cefiderocol ZOI (mm)",paste0(phenotype_name, " (µg/mL)"))
+  x_axis_name <- ifelse(phenotype_name =="Cefiderocol", "Cefiderocol zone of inhibition (mm)",paste0(phenotype_name, " (µg/mL)"))
   
   # Plot
   if(phenotype_name == "Cefiderocol"){
@@ -82,21 +55,23 @@ create_MIC_histogram <- function(phenotype_cont, phenotype_log, phenotype_cat = 
   histogram <- ggplot(data, aes(x = phenotype_cont,fill=phenotype_cat)) +
     geom_histogram(bins = 33)  +
     ylab("Isolates") +
-    xlab(x_axis_name)  + theme_bw_me + resistance_cat_scale+ theme(axis.text = element_text(size=12),axis.title = element_text(size=14))
+    xlab(x_axis_name)  + theme_bw_me + resistance_cat_scale+ theme(axis.text = element_text(size=7),axis.title = element_text(size=10))
     
   } else {
   histogram <- ggplot(data, aes(x = phenotype_log,fill=phenotype_cat)) +
     geom_bar()  +
     ylab("Isolates") +
-    xlab(x_axis_name) + scale_x_continuous(breaks=as.numeric(names(renaming_vector)), labels=renaming_vector)  + theme_bw_me + resistance_cat_scale + theme(axis.text = element_text(size=12),axis.title = element_text(size=14))
+    xlab(x_axis_name) + scale_x_continuous(breaks=as.numeric(names(renaming_vector)), labels=renaming_vector)  + theme_bw_me + resistance_cat_scale + theme(axis.text = element_text(size=7),axis.title = element_text(size=10))
   }
   return(histogram)
 }
 
 # Figure
-figures <- lapply(MIC_variables,FUN=function(x){
+MIC_variables_no_blbli <- df_202123 %>% select(paste0(MIC_variables,"_dich_num")) %>% colSums(na.rm = T) %>% sort(decreasing = T) %>% names(.) %>% gsub("_dich_num","",.) %>% subset(. != 'blbli')
+ 
+figures <- lapply(MIC_variables_no_blbli,FUN=function(x){
   create_MIC_histogram(df_202123[[paste0(x,"_num")]],df_202123[[paste0(x,"_log_2")]],df_202123[[paste0(x,"_cat")]],phenotype_name = x) + theme(legend.position = 'none')
-}) %>% `names<-`(MIC_variables)
+}) %>% `names<-`(MIC_variables_no_blbli)
 
 fig_w_legend <-  create_MIC_histogram(df_202123[["MERO_num"]],df_202123[["MERO_log_2"]],df_202123[["MERO_cat"]],phenotype_name = "x")
 fig_legend <- cowplot::get_legend(fig_w_legend)
@@ -104,12 +79,12 @@ figures[["legend"]] <- fig_legend
 ``` 
 
 ## Figure
-```{r,message=F,error=F,warning=F,fig.width=16.5,fig.height=13.2} 
-histogram_figs <- cowplot::plot_grid(plotlist=figures,ncol=3,labels=c(LETTERS[1:length(figures) - 1],""))
+```{r,message=F,error=F,warning=F,fig.width=9.75,fig.height=9.75} 
+histogram_figs <- cowplot::plot_grid(plotlist=figures,ncol=3,labels=c(LETTERS[1:length(figures) - 1],""),label_size = 12)
 histogram_figs
 ```
 
 # Save figure
 ```{r}
-ggsave(plot = histogram_figs, filename = "./figures/s_figure_8_resistance_histograms.png", width = 16.5, height = 13.2, bg = "white",dpi=900)
+ggsave(plot = histogram_figs, filename = "./figures/s_figure_8_resistance_histograms.png", width = 9.75, height = 9.75, bg = "white",dpi=900)
 ```

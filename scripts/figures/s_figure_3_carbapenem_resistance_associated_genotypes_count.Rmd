@@ -16,11 +16,12 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot")
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","cowplot")
 lapply(packages,library,character.only=T)
 
 # Functions
 source("././lib/consistent_themes.R")
+source("././lib/common_functions.R")
 
 # Print environment
 Sys.info()
@@ -30,24 +31,11 @@ sessionInfo()
 # Load data
 
 ```{r}
-df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
-   
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
+
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23") 
-```
-
-# Coordinate ST data
-
-```{r} 
-break_of_sts <-  c(sort(unique(df$Species_ST_recode %>% subset(.!="Singleton STs"))),"Singleton STs")
-break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",break_of_sts)
-       
-ST_scale <- scale_fill_manual(breaks = break_of_sts,values = c(hues::iwanthue(n = length(unique(df$Species_ST_recode)) -1),"lightgray"),labels = break_of_sts_renamed,name = "Sequence type", guide = guide_legend(ncol=7, title.position = "top", label.position = "right"))
-
-ST_palette <- ST_scale$palette(1) 
-ST_palette <- c(ST_palette,"Other STs"='lightgray')
-ST_major_scale <- scale_fill_manual(values = ST_palette,name = "Major sequence types (STs)")
-```
+``` 
 
 # Load  carbapenemase content
 ```{r}
@@ -62,62 +50,42 @@ carb_omp <-  readRDS("./data/carbapenemase_content/carbapenem_resistance_genotyp
 
 # Supplemental Figure:
 ```{r,fig.width=9.5,height=6.7857}  
-df_carb_omp <- df %>% select(isolate_no,study,major_STs) %>% left_join(., carb_omp %>% mutate(isolate_no = rownames(.)))    %>% as.data.frame
+df_carb_omp <- df %>% select(isolate_no,study,Species_ST_recode) %>% left_join(., carb_omp %>% mutate(isolate_no = rownames(.)))    %>% as.data.frame
 rownames(df_carb_omp) <- df_carb_omp$isolate_no 
 ```
 
 # Figure A. Count datag
 ```{r}
-melted_row <- df_carb_omp %>% select(-isolate_no) %>% reshape2::melt(c("study","major_STs")) %>% subset(value == 1) 
+melted_row <- df_carb_omp %>% select(-isolate_no) %>% reshape2::melt(c("study","Species_ST_recode")) %>% subset(value == 1) 
 
 isolates_1415 <- sum(grepl("PCMP",rownames(df_carb_omp)))
 isolates_2123 <- sum(grepl("INT",rownames(df_carb_omp)))
 
 # Calculate proportion of isolates in study but retain the major_ST coloring
-melted_row_summary <- melted_row %>% group_by(study,major_STs,variable) %>% summarise(n=sum(value))
+melted_row_summary <- melted_row %>% group_by(study,Species_ST_recode,variable) %>% summarise(n=sum(value))
 melted_row_summary$proportion <- ifelse(melted_row_summary$study =='2021-23',melted_row_summary$n/isolates_2123,melted_row_summary$n/isolates_1415)
 
+melted_row_summary$percentage <- melted_row_summary$proportion * 100
+
 # How to normalize data by count in study 
-melted_row_summary$variable <- recode(melted_row_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in ompK36","Rare_ompK35_insertion" = "Rare ompK356 insertion",'Rare_ompK36_insertion' = 'Rare ompK36 insertion', "ompK36_T136TDT" = 'ompK36 T136TDT', "ompK36_D135DGD" = "ompK36 D135DGD","ompK36_D135DD" ="ompK36 D135DD","blaSHV_C-112A" = 'blaSHV C112A') %>% gsub("Rare_","Rare ",.)
-melted_row_summary$variable <- factor(melted_row_summary$variable,levels = melted_row_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
-melted_row_summary$major_STs <- factor(melted_row_summary$major_STs,levels = )
+melted_row_summary$variable <- recode_genotypes(melted_row_summary$variable)
+melted_row_summary$variable <- factor(melted_row_summary$variable,levels = melted_row_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable) 
 
-
-format_blaKPC_md <- function(gene) {
-  gene <- trimws(gene,which='both')
-  if(grepl("^bla", gene)){
-    allele <- gsub("bla", "", gene)
-    final <- paste0("<i>bla</i><sub>", allele, "</sub>") %>% trimws(.,which='both')
-  } 
-  if(grepl("Rare bla",gene)==T){
-      allele <- gsub("Rare bla", "", gene)
-      final <- paste0("Rare <i>bla</i><sub>",allele,"</sub>")   %>% trimws(.,which='both') 
-  } 
-  if(grepl("ompK",gene) == T){
-    final <- gsub("ompK35","<i>ompK35</i>",gene) %>% gsub("ompK36","<i>ompK36</i>",.)
-  } 
-  
-  if(grepl("OmpK",gene)==T){
-    final <- gene
-  }
-  final 
-}
-
-
-melted_row_summary$variable_md <- sapply(melted_row_summary$variable,format_blaKPC_md)  
+melted_row_summary$variable_md <- sapply(melted_row_summary$variable,format_blaKPC_genotypes_md)  
 melted_row_summary$variable_md <- factor(melted_row_summary$variable_md,levels = melted_row_summary %>% group_by(variable_md) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable_md)
 
-A <- ggplot(data=melted_row_summary,aes(y=variable_md,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage (%)") + ylab(NULL) + xlim(NA,1.01) +  
+A <- ggplot(data=melted_row_summary,aes(y=variable_md,fill=Species_ST_recode,x=percentage)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) + ST_scale_2_row + xlab("Percentage of isolates") + ylab(NULL) + xlim(NA,100.1) +  
   geom_text(
-  data = melted_row_summary %>% ungroup %>% select(-major_STs) %>% group_by(study,variable_md) %>% summarise(sumar= sum(proportion),count=sum(n)),
+  data = melted_row_summary %>% ungroup %>% select(-Species_ST_recode) %>% group_by(study,variable_md) %>% summarise(sumar= sum(percentage),count=sum(n)),
   inherit.aes = F,  
   aes(
     label = count,
-    x = sumar+.026,
+    x = ifelse(sumar >100,sumar+5,ifelse(sumar >10,sumar+3.5,sumar+2.5)) ,
     y= variable_md
   ),
   size = 2.5,
-) + scale_x_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1),labels = c('0','20','40','60','80','100'),limits = c(0,1.01)) + ggtitle("All isolates")  + theme(legend.title.position = 'top',axis.text.y = element_markdown())
+) + scale_x_continuous(breaks = c(0,20,40,60,80,100),labels = c('0','20','40','60','80','100'),limits = c(0,100.1)) + ggtitle("All isolates")  + theme(legend.title.position = 'top',axis.text.y = element_markdown())
+
 A
 ```
 
@@ -127,41 +95,44 @@ non_carbapenemase_isolates <- df %>% subset(carbapenemase=="No carbapenemase") %
 non_carbapenemase_isolates_1415 <- sum(grepl("PCMP",non_carbapenemase_isolates))
 non_carbapenemase_isolates_2123 <- sum(grepl("INT",non_carbapenemase_isolates))
 
-melted_row_no_carb<- df_carb_omp %>% select(-isolate_no) %>% subset(rownames(.) %in% non_carbapenemase_isolates) %>% reshape2::melt(c("study","major_STs")) %>% subset(value == 1)  
+melted_row_no_carb<- df_carb_omp %>% select(-isolate_no) %>% subset(rownames(.) %in% non_carbapenemase_isolates) %>% reshape2::melt(c("study","Species_ST_recode")) %>% subset(value == 1)  
 
-melted_row_no_carb_summary <- melted_row_no_carb %>% group_by(study,major_STs,variable) %>% summarise(n=sum(value))
+melted_row_no_carb_summary <- melted_row_no_carb %>% group_by(study,Species_ST_recode,variable) %>% summarise(n=sum(value))
 melted_row_no_carb_summary$proportion <- ifelse(melted_row_no_carb_summary$study =='2021-23',melted_row_no_carb_summary$n/non_carbapenemase_isolates_2123,melted_row_no_carb_summary$n/non_carbapenemase_isolates_1415)
+melted_row_no_carb_summary$percentage <- melted_row_no_carb_summary$proportion*100
 
 # How to normalize data by count in study 
-melted_row_no_carb_summary$variable <- recode(melted_row_no_carb_summary$variable,"ompK35_rare_truncation"='Rare ompK35 truncation',"ompK36_rare_truncation"='Rare ompK36 truncation',"OmpK36GD" = "GD loop 3 insertion in ompK36","OmpK36TD" = "TD loop 3 insertion in ompK36","OmpK36_c25t" = "C25T mutation in ompK36","Rare_ompK35_insertion" = "Rare ompK356 insertion",'Rare_ompK36_insertion' = 'Rare ompK36 insertion', "ompK36_T136TDT" = 'ompK36 T136TDT', "ompK36_D135DGD" = "ompK36 D135DGD","ompK36_D135DD" ="ompK36 D135DD","blaSHV_C-112A" = 'blaSHV C112A') %>% gsub("Rare_","Rare ",.)
+melted_row_no_carb_summary$variable <- recode_genotypes(melted_row_no_carb_summary$variable)
 melted_row_no_carb_summary$variable <- factor(melted_row_no_carb_summary$variable,levels = melted_row_no_carb_summary %>% group_by(variable) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable)
 
-melted_row_no_carb_summary$variable_md <- sapply(melted_row_no_carb_summary$variable,format_blaKPC_md)  
+melted_row_no_carb_summary$variable_md <- sapply(melted_row_no_carb_summary$variable,format_blaKPC_genotypes_md)  
 melted_row_no_carb_summary$variable_md <- factor(melted_row_no_carb_summary$variable_md,levels = melted_row_no_carb_summary %>% group_by(variable_md) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$variable_md)
 
-B <- ggplot(data=melted_row_no_carb_summary,aes(y=variable_md,fill=major_STs,x=proportion)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) +ST_major_scale + xlab("Percentage (%)") + ylab(NULL) + xlim(NA,1.01) +  
+B <- ggplot(data=melted_row_no_carb_summary,aes(y=variable_md,fill=Species_ST_recode,x=percentage)) + geom_bar(stat='identity') + facet_wrap(~study)  + theme_bw_me + theme(axis.text.x = element_text(angle=0, hjust = 1, vjust = 0.5)) + ST_scale_2_row + xlab("Percentage of isolates") + ylab(NULL) + xlim(NA,100.1) +  
   geom_text(
-  data = melted_row_no_carb_summary %>% ungroup %>% select(-major_STs) %>% group_by(study,variable_md) %>% summarise(sumar= sum(proportion),count=sum(n)),
+  data = melted_row_no_carb_summary %>% ungroup %>% select(-Species_ST_recode) %>% group_by(study,variable_md) %>% summarise(sumar= sum(percentage),count=sum(n)),
   inherit.aes = F,  
   aes(
     label = count,
-    x = sumar+.0225,
+    x = ifelse(sumar >100,sumar+5,ifelse(sumar >10,sumar+3.5,sumar+2.5)),
     y= variable_md
   ),
   size = 2.5,
-) + scale_x_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1),labels = c('0','20','40','60','80','100'),limits = c(0,1.01)) + ggtitle("Non-carbapenemase-containing isolates") + theme(legend.title.position = 'top',axis.text.y = element_markdown())
+) + scale_x_continuous(breaks = c(0,20,40,60,80,100),labels = c('0','20','40','60','80','100'),limits = c(0,100.1)) + ggtitle("Non-carbapenemase-producing isolates") + theme(legend.title.position = 'top',axis.text.y = element_markdown())
 B
 ```
 
 # Create figure
-```{r,fig.width=8,fig.height=12}
-legends <- cowplot::get_legend(A)
+```{r,fig.width=7.833333,fig.height=11.75}
+legends <- cowplot::get_legend(A + theme(legend.title = element_text(size=10),
+                                         legend.text = element_text(size=8),
+                                         legend.key.size = unit(0.5,"cm")))
 AB <- cowplot::plot_grid(A + theme(legend.position = 'none'),B+ theme(legend.position = 'none'),ncol=1,labels = c("A","B"),rel_heights = c(1,0.75))
-figure <- cowplot::plot_grid(AB,legends,rel_heights = c(1,0.075),ncol=1)
+figure <- cowplot::plot_grid(AB,legends,rel_heights = c(1,0.06667),ncol=1)
 
 figure
 ```
 
 ```{r}
-ggsave(filename = "./figures/s_figure_3_carbapenem_resistance_associated_genotypes_count.png",plot=figure,width = 8,height = 12,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_3_carbapenem_resistance_associated_genotypes_count.png",plot=figure,width = 7.833333,height = 11.75,dpi=900,bg = 'white')
 ```

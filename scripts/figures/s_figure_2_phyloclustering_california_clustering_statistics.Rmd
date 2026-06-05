@@ -16,7 +16,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr")
+packages <- c("tidyverse","gridExtra","kableExtra","tableone")
 lapply(packages,library,character.only=T)
 
 # Functions
@@ -26,6 +26,7 @@ source("./lib/consistent_themes.R")
 Sys.info()
 sessionInfo()
 ```
+
 # Phylogeographic analyses
 ## Reconstructions
 ```{r}
@@ -88,7 +89,7 @@ mytheme <- ttheme_minimal(core = list(fg_params = list(hjust=0, vjust = 0.5 ,x=0
 general_statistics <- rbind(phylogeographic_clustering_data$ST258$general_clustering_stats%>% mutate(ST='ST258'),phylogeographic_clustering_data$ST307$general_clustering_stats%>% mutate(ST='ST307')) %>% rbind(.,phylogeographic_clustering_data$ST14$general_clustering_stats%>% mutate(ST='ST14')) %>% rbind(.,phylogeographic_clustering_data$ST17$general_clustering_stats%>% mutate(ST='ST17'))
 
 general_statistics <- general_statistics %>%select(ST,present,no_feature,phylogenetic_events,singletons,singletons_PCMP,singletons_INTEGRATE,singletons_public, clusters, cluster_isolates, cluster_size_median,cluster_size_range) 
-general_statistics$cluster_median_range <- paste0(general_statistics$cluster_size_median," (",general_statistics$cluster_size_range,")")
+general_statistics$cluster_median_range <- ifelse(general_statistics$clusters ==1,general_statistics$cluster_size_median, paste0(general_statistics$cluster_size_median," (",general_statistics$cluster_size_range,")"))  
 general_statistics <- general_statistics %>% select(-cluster_size_median,-cluster_size_range)
 colnames(general_statistics) <- c("Sequence\ntype (ST)","California\nisolates","Other\ngenomes","Phylogenetic\n events","Singletons","Singletons\n(2014-15 study)","Singletons\n(2021-23 study)","Singletons\n(Public)","Clusters","Cluster\nisolates","Cluster size\nmedian (range)")
 rownames(general_statistics) <- NULL
@@ -100,7 +101,7 @@ A <-  general_statistics %>% tableGrob(rows = NULL,theme = mytheme)
 ```{r}
 clustering_data <- rbind(phylogeographic_clustering_data$ST258$clustering_info %>% mutate(ST='ST258'),phylogeographic_clustering_data$ST307$clustering_info %>% mutate(ST='ST307')) %>% rbind(phylogeographic_clustering_data$ST14$clustering_info %>% mutate(ST='ST14')) %>% rbind(phylogeographic_clustering_data$ST17$clustering_info %>% mutate(ST='ST17'))
  
-clustering_data_melt <- clustering_data %>% reshape2::melt(id.vars = c("ST","cluster_name"))  %>% subset(variable %in% c("n_PCMP","n_INTEGRATE","n_public"))
+clustering_data_melt <- clustering_data %>% select(-n_tips,n_participants,-type,-n_participants) %>%  reshape2::melt(id.vars = c("ST","cluster_name"))  %>% subset(variable %in% c("n_PCMP","n_INTEGRATE","n_public"))
 clustering_data_melt$value <- as.numeric(clustering_data_melt$value)
 clustering_data_melt$variable <- recode(clustering_data_melt$variable,
                                         "n_PCMP" = "2014-15 Study",
@@ -109,16 +110,15 @@ clustering_data_melt$variable <- recode(clustering_data_melt$variable,
 clustering_data_melt$cluster_name <- factor(clustering_data_melt$cluster_name,levels = c(paste0("Cluster ",7:1)))
                                          
 clustering_data_melt$ST <- factor(clustering_data_melt$ST,levels = c("ST258","ST307","ST14","ST17"))
-study_scale <- scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown",gray(0.2)),name = "California genome",guide = guide_legend(nrow=1,order=1),drop=FALSE)
-
-B <- ggplot(data=clustering_data_melt ,aes(x=value,fill=variable,y=cluster_name)) + geom_bar(stat='identity') + facet_wrap(~ST,scales = "free_x") + theme_bw_me + xlab("Number of isolates") + ylab("Phylogenetic clustering of California isolates") +  scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("blue","brown",gray(0.2)),name = "California genomes",guide = guide_legend(nrow=1,order=1))
+ 
+B <- ggplot(data=clustering_data_melt ,aes(x=value,fill=variable,y=cluster_name)) + geom_bar(stat='identity') + facet_wrap(~ST,scales = "free_x") + theme_bw_me + xlab("Isolates") + ylab("Phylogenetic clustering of California isolates") +   study_scale_fill
 ```
 
-```{r,fig.width=8.4,fig.height=6.72}
-figure <- cowplot::plot_grid(A,B,ncol=1,rel_heights = c(0.275,1),labels = c("A","B"),label_size = 12)
+```{r,fig.width=8.35,fig.height=6.68}
+figure <- cowplot::plot_grid(A,B + theme(legend.position='right'),ncol=1,rel_heights = c(0.275,1),labels = c("A","B"),label_size = 12)
 figure
 ```
 
 ```{r}
-ggsave(filename = "./figures/s_figure_2_phylogeographic_clustering_statistics.png",plot = figure,dpi=900,bg='white',height=6.72,width=8.4)
+ggsave(filename = "./figures/s_figure_2_phylogeographic_clustering_statistics.png",plot = figure,dpi=900,bg='white',height=6.88,width=8.35)
 ```

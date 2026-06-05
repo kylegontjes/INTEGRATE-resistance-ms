@@ -60,22 +60,7 @@ rownames(df_202123_wide) <- paste0(df_202123_wide$ST, " (n=",df_202123_wide$numb
 # Proportion data
 df_202123_count <- df_202123_melt %>% select(-prop) %>% pivot_wider(names_from = variable, values_from = count, values_fill = 0) 
 df_202123_count <- df_202123_count[match(species_count$ST,df_202123_count$ST),] %>% ungroup %>% select(-ST)
-colnames(df_202123_wide) <-  recode(colnames(df_202123_wide),
-                         "CZA_dich_num"='Ceftazidime-avibactam',
-                         "CST_dich_num"='Colistin', 
-                         'MERO_dich_num'='Meropenem',
-                         'IMI_dich_num'='Imipenem',
-                         "blbli_dich_num"='BL/BLI agents',
-                         "MVB_dich_num"='Meropenem-vaborbactam',
-                         "IR_dich_num"='Imipenem-relebactam',
-                         "PLZ_dich_num"='Plazomicin',
-                         "TMP_SMX_dich_num"='Trimethoprim-Sulfamethoxazole',
-                         "OMC_dich_num" = "Omadacycline",
-                         "DLX_dich_num" = "Delafloxacin",
-                         "ERV_dich_num" = "Eravacycline",
-                         "FOS_dich_num" = "Fosfomycin",
-                         "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")
+colnames(df_202123_wide) <-  recode_resistance_variables(colnames(df_202123_wide)) 
 
 df_202123_wide_mat <- df_202123_wide %>% select(-ST, -number_of_isolates)   
 
@@ -93,8 +78,8 @@ fig <- ComplexHeatmap::Heatmap(df_202123_wide_mat,
   cluster_rows = T, cluster_columns = T,
   show_row_dend = FALSE, show_column_dend = FALSE,
   show_row_names = TRUE, show_column_names = TRUE,
-  row_title_gp = gpar(fontsize = 6),
-  column_title_gp = gpar(fontsize = 6),
+  row_title_gp = gpar(fontsize = 10),
+  column_title_gp = gpar(fontsize = 10),
   cell_fun = function(j, i, x, y, width, height, fill) {
     val <-  df_202123_count[i, j]
     if(val >0){

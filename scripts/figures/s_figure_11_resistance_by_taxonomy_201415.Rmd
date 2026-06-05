@@ -17,7 +17,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","gontjesr","cowplot","ComplexHeatmap",'ggalluvial')
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","cowplot","ComplexHeatmap")
 lapply(packages,library,character.only=T)
 
 # Functions
@@ -62,22 +62,7 @@ rownames(df_201415_wide) <- paste0(df_201415_wide$ST, " (n=",df_201415_wide$numb
 # Proportion data
 df_201415_count <- df_201415_melt %>% select(-prop) %>% pivot_wider(names_from = variable, values_from = count, values_fill = 0) 
 df_201415_count <- df_201415_count[match(species_count$ST,df_201415_count$ST),] %>% ungroup %>% select(-ST)
-colnames(df_201415_wide) <-  recode(colnames(df_201415_wide),
-                         "CZA_dich_num"='Ceftazidime-avibactam',
-                         "CST_dich_num"='Colistin', 
-                         'MERO_dich_num'='Meropenem',
-                         'IMI_dich_num'='Imipenem',
-                         "blbli_dich_num"='BL/BLI agents',
-                         "MVB_dich_num"='Meropenem-vaborbactam',
-                         "IR_dich_num"='Imipenem-relebactam',
-                         "PLZ_dich_num"='Plazomicin',
-                         "TMP_SMX_dich_num"='Trimethoprim-Sulfamethoxazole',
-                         "OMC_dich_num" = "Omadacycline",
-                         "DLX_dich_num" = "Delafloxacin",
-                         "ERV_dich_num" = "Eravacycline",
-                         "FOS_dich_num" = "Fosfomycin",
-                         "CT_dich_num" = "Ceftolozane-tazobactam",
-                         "FDC_dich_num"="Cefiderocol")
+colnames(df_201415_wide) <-   recode_resistance_variables(colnames(df_201415_wide)) 
 
 df_201415_wide_mat <- df_201415_wide %>% select(-ST, -number_of_isolates)   
 
