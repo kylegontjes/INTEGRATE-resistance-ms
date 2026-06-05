@@ -61,11 +61,12 @@ amrfinder$element_symbol_renamed <- apply(amrfinder,1,FUN=function(x){
     if(x[["type"]] == "AMR" & x[["class"]] == "BETA-LACTAM" & x[["subtype"]] != "POINT"){
       if(grepl("-",name) == F| str_split(name,"-",simplify=T) %>% .[,ncol(.)] %>% grepl("[0-9]", .) ==F){
         if(x[["coverage_of_reference"]] < 100 | x[["identity_to_reference"]] < 100){
-          name <- str_split(x[["closest_reference_name"]],pattern = " ",simplify = T) %>% .[,ncol(.)] %>% paste0('bla',.)
+          name <- str_split(x[["closest_reference_name"]],pattern = " ",simplify = T) %>% .[,ncol(.)]  
+          name <- ifelse(name == 'beta-lactamase',x[["element_symbol"]],paste0('bla',name))
         }
       }
     }
-    if(x[["element_symbol"]] == 'ampC') {
+    if(grepl("ampC",x[["element_symbol"]])){
       name <- x[["element_symbol"]]
     }
     if(x[["coverage_of_reference"]] < 100){
@@ -88,7 +89,7 @@ get_amrfinder_matrix <- function(amrfinder,isolates){
   pbmcapply::pbmclapply(unique_genes,FUN =function(x,amrfinder){
     isolates_with_gene <-  subset(amrfinder,element_symbol_renamed == x) %>% select(isolate_no) %>% unlist
     row <- assign(paste0(x),ifelse(isolates %in% isolates_with_gene,1,0))
-    return(row)},mc.cores=5,amrfinder) %>% do.call(bind_cols,.) %>% as.data.frame %>% `colnames<-`(unique_genes) %>% `rownames<-`(isolates)
+    return(row)},mc.cores=7,amrfinder) %>% do.call(bind_cols,.) %>% as.data.frame %>% `colnames<-`(unique_genes) %>% `rownames<-`(isolates)
 }
 
 amrfinder_mat <- get_amrfinder_matrix(amrfinder = amrfinder,isolates = isolates)
