@@ -1,0 +1,23 @@
+#!/bin/sh
+# Job name
+#SBATCH --job-name=download_NCBI_info
+# User info
+#SBATCH --mail-user=kgontjes@umich.edu
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --export=ALL
+#SBATCH --partition=standard
+#SBATCH --account=esnitkin1
+#SBATCH --output=/nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/slurm_out/NCBI_info/download_NCBI_info.out
+#SBATCH --nodes=1  --ntasks=1 --cpus-per-task=1 --mem=5g --time=0:30:00
+
+# Set esearch path
+export PATH=${HOME}/edirect:${PATH}
+
+# Esearch downloaded using installation instructions on https://www.ncbi.nlm.nih.gov/books/NBK179288/ (04/23/2026)
+esearch -h
+
+# Move to NCBI folder
+cd /nfs/turbo/umms-esnitkin/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/NCBI_info
+
+esearch -db sra -query PRJNA415194 | esummary | xtract -pattern DocumentSummary -element Experiment@acc,Run@acc,Platform@instrument_model,Sample@acc,Title,LIBRARY_NAME > PRJNA415194_SRA_metadata.txt
+esearch -db sra -query PRJNA1429228 | esummary | xtract -pattern DocumentSummary -element Experiment@acc,Run@acc,Platform@instrument_model,Sample@acc,Title,LIBRARY_NAME > PRJNA1429228_SRA_metadata.txt

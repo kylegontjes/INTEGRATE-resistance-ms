@@ -1,0 +1,62 @@
+---
+title: "Generate NCBI data for isolates"
+author: "Kyle Gontjes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/')
+```
+ 
+# Environment
+
+```{r environment, echo=F, message=FALSE, include=T, results=T}
+#Packages
+packages <- c("tidyverse") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo() 
+```
+
+# Load QC data
+```{r}
+df_first_quarter <- readRDS("./Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
+```
+
+# Get relevant variables
+```{r}
+isolate_data <- df_first_quarter %>% select(isolate_no,study,source_simplified,hospital_location_recode,total_length,total_of_contigs,n_50,coverage, species, ST)
+```
+
+# Get accession data for isolate number
+```{r}
+metadata_column_names <- c("Experiment@acc","Run@acc","Platform@instrument_model","Sample@acc","Title","LIBRARY_NAME") %>% recode(.,
+                                                                                                                                  "LIBRARY_NAME" = "isolate_no",
+                                                                                                                                  "Run@acc" = "accession",
+                                                                                                                                  "Platform@instrument_model" = "instrument")
+metadata_202123 <- read_tsv("./Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/NCBI_info/PRJNA1429228_SRA_metadata.txt",col_names = F)  %>% `colnames<-`(metadata_column_names)
+
+metadata_201415 <- read_tsv("./Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/NCBI_info/PRJNA415194_SRA_metadata.txt",col_names = F) %>% `colnames<-`(metadata_column_names)
+
+metadata_merged <- rbind(metadata_202123,metadata_201415)
+```
+
+# Merge variables
+```{r}
+isolate_data_merged <- isolate_data %>% left_join(metadata_merged, by = "isolate_no") %>% select(isolate_no,accession,instrument,study,source_simplified,hospital_location_recode,total_length,total_of_contigs,n_50,coverage, species, ST)
+```
+
+# Save dataset
+```{r}
+saveRDS(isolate_data_merged,"./Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/NCBI_info/NCBI_merged_dataset.RDS")
+```
+ 
