@@ -84,7 +84,7 @@ p1 <- gheatmap(p0.1,df_carb_omp %>% select(carbapenemase_md) %>% `colnames<-`("C
 p1.1 <- p1 + ggnewscale::new_scale_fill()
 
 # Genotype matrix
-figure <- gheatmap(p1.1,genotype_matrix, color  = NULL,width=0.05*length(geno_vars), offset=0.007, colnames_position = 'top', colnames_angle = 90, hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,620) + theme(legend.position = 'bottom',legend.direction="horizontal",  legend.justification = "center", legend.key = element_rect(colour = c('black')),legend.text=element_markdown()) + geom_treescale(y = -11, offset = 2)
+figure <- gheatmap(p1.1,genotype_matrix, color  = NULL,width=0.05*length(geno_vars), offset=0.007, colnames_position = 'top', colnames_angle = 90, hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,618) + theme(legend.position = 'bottom',legend.direction="horizontal",  legend.justification = "center", legend.key = element_rect(colour = c('black')),legend.text=element_markdown()) + geom_treescale(y = -13, offset = 2)
 
 figure_legend <- cowplot::get_legend(figure + theme(legend.key.size = unit(0.5,"cm")))
 
