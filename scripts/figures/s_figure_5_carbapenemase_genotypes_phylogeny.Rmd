@@ -72,7 +72,7 @@ genotype_matrix <- df_carb_omp %>% select(genotype_heatmap@column_names_param$la
 colnames(genotype_matrix) <-  recode_genotypes(colnames(genotype_matrix))
 ```
 
-```{r,fig.width=10.5,fig.height=10.5}  
+```{r,fig.width=9.75,fig.height=9.75}  
 # Sequence type
 p0 <- gheatmap(ggtree(tr),df_carb_omp %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type (ST)"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale_3_row +  theme(legend.key = element_rect(colour = c('black')))
 
@@ -83,16 +83,17 @@ p1 <- gheatmap(p0.1,df_carb_omp %>% select(carbapenemase_md) %>% `colnames<-`("C
 
 p1.1 <- p1 + ggnewscale::new_scale_fill()
 
-figure <- gheatmap(p1.1,genotype_matrix, color  = NULL,width=0.05*length(geno_vars), offset=0.007, colnames_position = 'top', colnames_angle = 90, hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,601) + theme(legend.position = 'bottom',legend.direction="horizontal",  legend.justification = "center", legend.key = element_rect(colour = c('black')),legend.text=element_markdown()) + geom_treescale(y = -10, offset = 2)
+# Genotype matrix
+figure <- gheatmap(p1.1,genotype_matrix, color  = NULL,width=0.05*length(geno_vars), offset=0.007, colnames_position = 'top', colnames_angle = 90, hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,620) + theme(legend.position = 'bottom',legend.direction="horizontal",  legend.justification = "center", legend.key = element_rect(colour = c('black')),legend.text=element_markdown()) + geom_treescale(y = -10, offset = 2)
 
 figure_legend <- cowplot::get_legend(figure + theme(legend.key.size = unit(0.5,"cm")))
 
 final_figure <- cowplot::plot_grid(figure + theme(legend.position = 'none',
-                                                  plot.margin = margin(b=-25)),figure_legend,ncol=1,rel_heights = c(1,0.15))
+                                                  plot.margin = margin(b=-24)),figure_legend,ncol=1,rel_heights = c(1,0.15))
 final_figure
 ```
 
 # Save figure
 ```{r}
-ggsave(filename = "./figures/s_figure_5_carbapenem_resistance_associated_genotypes_phylogeny.png",plot=figure, width = 10.5,height = 10.5, dpi=900, bg = 'white')
+ggsave(filename = "./figures/s_figure_5_carbapenem_resistance_associated_genotypes_phylogeny.png",plot=final_figure, width = 9.75,height = 9.75, dpi=900, bg = 'white', unit = 'in')
 ``` 
