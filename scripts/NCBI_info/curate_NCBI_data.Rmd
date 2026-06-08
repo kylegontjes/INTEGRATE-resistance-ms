@@ -55,7 +55,19 @@ metadata_merged <- rbind(metadata_202123,metadata_201415)
 isolate_data_merged <- isolate_data %>% left_join(metadata_merged, by = "isolate_no") %>% select(isolate_no,accession,instrument,study,source_simplified,hospital_location_recode,total_length,total_of_contigs,n_50,coverage, species, ST)
 ```
 
+
+# All species are Kpn?
+
+```{r}
+paste0("As all isolates are Kpn, we can drop the species variable")
+table(isolate_data_merged$species,useNA = 'ifany')
+
+isolate_data_merged <- isolate_data_merged %>% select(-species)
+```
+
+
 # Save dataset
+
 ```{r}
 saveRDS(isolate_data_merged,"./Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/NCBI_info/NCBI_merged_dataset.RDS")
 ```

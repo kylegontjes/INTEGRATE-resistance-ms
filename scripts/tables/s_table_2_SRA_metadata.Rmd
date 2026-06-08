@@ -45,7 +45,7 @@ head(isolate_data_merged) %>% favorite_kable()
 colnames(isolate_data_merged) <- recode(colnames(isolate_data_merged),
                                         "isolate_no" = "Isolate",
                                         "accession" = "Accession",
-                                        'instrument' = "Instrument",
+                                        'instrument' = "Sequencing instrument",
                                         "study" ="Study",
                                         "source_simplified" = "Source category",
                                         "hospital_location_recode" = "Facility",
@@ -53,7 +53,6 @@ colnames(isolate_data_merged) <- recode(colnames(isolate_data_merged),
                                         "total_of_contigs" = "Number of contigs",
                                         "n_50" = "N50",
                                         "coverage" = "Coverage",
-                                        "species" = "Species",
                                         "ST" = "Sequence type (ST)"
                                         )
 
