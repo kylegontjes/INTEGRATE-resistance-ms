@@ -104,9 +104,11 @@ clustering_data <- rbind(phylogeographic_clustering_data$ST258$clustering_info %
 clustering_data_melt <- clustering_data %>% select(-n_tips,n_participants,-type,-n_participants) %>%  reshape2::melt(id.vars = c("ST","cluster_name"))  %>% subset(variable %in% c("n_PCMP","n_INTEGRATE","n_public"))
 clustering_data_melt$value <- as.numeric(clustering_data_melt$value)
 clustering_data_melt$variable <- recode(clustering_data_melt$variable,
-                                        "n_PCMP" = "2014-15 Study",
-                                        "n_INTEGRATE" = "2021-23 Study",
+                                        "n_PCMP" = "2014-15 study",
+                                        "n_INTEGRATE" = "2021-23 study",
                                         "n_public" = "Public genomes")
+clustering_data_melt$variable <- factor(clustering_data_melt$variable, levels = rev(c("2014-15 study",'2021-23 study','Public genomes')))
+
 clustering_data_melt$cluster_name <- factor(clustering_data_melt$cluster_name,levels = c(paste0("Cluster ",7:1)))
                                          
 clustering_data_melt$ST <- factor(clustering_data_melt$ST,levels = c("ST258","ST307","ST14","ST17"))

@@ -91,9 +91,9 @@ continent_scale <- scale_fill_manual(breaks = sort(continent_breaks),values = co
 california_scale <- scale_fill_manual(breaks = c(TRUE,FALSE),values = c("red","#CCCCCC"),labels = c("California","Other"),name = "Location",guide = guide_legend(nrow=3,order=3),drop=FALSE)
 
 ## Study scale
-study_scale <- scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public California genomes","Other public genomes"),values = c("#D55E00","#0072B3","#2B2B2B","white"),name = "Type of assembly",guide = guide_legend(nrow=4,order=4),drop=FALSE)
-study_scale_color <- scale_color_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("#D55E00","#0072B3","#2B2B2B"),name = "California assemblies",guide = guide_legend(nrow=3,order=4),drop=FALSE)
-study_scale_fill <- scale_fill_manual(breaks = c("2014-15 Study","2021-23 Study","Public genomes"),values = c("#D55E00","#0072B3","#2B2B2B"),name = "California assemblies",guide = guide_legend(nrow=3,order=4),drop=FALSE)
+study_scale <- scale_fill_manual(breaks = c("2014-15 study","2021-23 study","Public California genomes","Other public genomes"),values = c("#D55E00","#0072B3","#2B2B2B","white"),name = "Type of assembly",guide = guide_legend(nrow=4,order=4),drop=FALSE)
+study_scale_color <- scale_color_manual(breaks = c("2014-15 study","2021-23 study","Public genomes"),values = c("#D55E00","#0072B3","#2B2B2B"),name = "California assemblies",guide = guide_legend(nrow=3,order=4),drop=FALSE)
+study_scale_fill <- scale_fill_manual(breaks = c("2014-15 study","2021-23 study","Public genomes"),values = c("#D55E00","#0072B3","#2B2B2B"),name = "California assemblies",guide = guide_legend(nrow=3,order=4),drop=FALSE)
 study_comparison_scale_fill <- scale_fill_manual(breaks = c("2014-15","2021-23"),values = c("#D55E00","#0072B3"),name = "Study",guide = guide_legend(nrow=1,order=2),drop=FALSE)
 
 # Mobtyper scales
