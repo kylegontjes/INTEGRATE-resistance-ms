@@ -12,6 +12,7 @@ opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms')
 ```
 
+# Environment
 
 ```{r} 
 # Packages
@@ -64,6 +65,10 @@ table
 
 # Validate p-value for site and LTACH
 
+1. Updated LTACH to be shared p-value
+
+2. Updated sex p-value to 1.00 if p-value returned as 1.000
+
 ```{r}
 # Source of infection
 source_table <- table(df_w_metadata$source_simplified,df_w_metadata$study)
@@ -82,10 +87,13 @@ ltach_shared_table <- ltach_overall_table[rownames(ltach_overall_table) != 'LTAC
 ltach_shared_table
 ltach_shared_table_pvalue <-  fisher.test(ltach_shared_table,simulate.p.value = T)
 ltach_shared_table_pvalue$p.value
+ltach_shared_table_pvalue_rounded <- round(ltach_shared_table_pvalue$p.value ,digits = 2)
+ltach_shared_table_pvalue_rounded
 ```
 
 ```{r}
-table$`P-value` <- ifelse(table$Variable == "Long-term acute care hospital (LTACH)","-",table$`P-value`)
+table$`P-value` <- ifelse(table$Variable == "Long-term acute care hospital (LTACH)",ltach_shared_table_pvalue_rounded,table$`P-value`)
+table$`P-value` <- ifelse(table$`P-value` == "1.000","1.00",table$`P-value`)
 table[table=="0 (NaN)"] <- "-"  
 ```
 

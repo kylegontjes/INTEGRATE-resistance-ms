@@ -1,6 +1,6 @@
 Variable,Overall (n=707),2014-15 (n=328),2021-23 (n=379),P-value,Test
 "Age in years, median (IQR)","71.00 [62.00, 79.00]","73.00 [64.00, 82.00]","69.00 [61.00, 77.00]",<0.001,nonnorm
-Male sex,367 (51.9),170 (51.8),197 (52.0),1.000,
+Male sex,367 (51.9),170 (51.8),197 (52.0),1.00,
 Race,,,,NaN,
    African American,61 (16.1),-,61 (16.1),,
    American Indian,1 (0.3),-,1 (0.3),,
@@ -16,7 +16,7 @@ Site of infection,,,,<0.001,exact
    Urine,191 (27.0),111 (33.8),80 (21.1),,
    Wound,66 (9.3),6 (1.8),60 (15.8),,
 "Length of stay before culture, median [IQR]","25.00 [8.00, 55.00]","20.00 [5.00, 43.00]","32.00 [11.00, 71.00]",<0.001,nonnorm
-Long-term acute care hospital (LTACH),,,,-,exact
+Long-term acute care hospital (LTACH),,,,0.37,exact
    LTACH 1,97 (13.7),52 (15.9),45 (11.9),,
    LTACH 2,26 (3.7),13 (4.0),13 (3.4),,
    LTACH 3,63 (8.9),32 (9.8),31 (8.2),,
