@@ -11,9 +11,9 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-05" />
+<meta name="date" content="2026-06-09" />
 
-<title>Haromonize the metadata</title>
+<title>Haromonize metadata and merge datasets</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,29 +350,106 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Haromonize the metadata</h1>
+<h1 class="title toc-ignore">Haromonize metadata and merge datasets</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-05</h4>
+<h4 class="date">2026-06-09</h4>
 
 </div>
 
 
 <div id="update-removed-absolute-paths" class="section level1">
 <h1>Update: Removed absolute paths</h1>
-<pre class="r"><code>## Old
+</div>
+<div id="environment" class="section level1">
+<h1>Environment</h1>
+<pre class="r"><code>#Packages
+packages &lt;- c(&quot;tidyverse&quot;) 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))</code></pre>
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.2.1     ✔ readr     2.2.0
+✔ forcats   1.0.1     ✔ stringr   1.6.0
+✔ ggplot2   4.0.3     ✔ tibble    3.3.1
+✔ lubridate 1.9.5     ✔ tidyr     1.3.2
+✔ purrr     1.2.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<pre class="r"><code># Print environment
+set.seed(45) 
+Sys.info()</code></pre>
+<pre><code>                                                                                            sysname 
+                                                                                           &quot;Darwin&quot; 
+                                                                                            release 
+                                                                                           &quot;25.5.0&quot; 
+                                                                                            version 
+&quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
+                                                                                           nodename 
+                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                                            machine 
+                                                                                           &quot;x86_64&quot; 
+                                                                                              login 
+                                                                                             &quot;root&quot; 
+                                                                                               user 
+                                                                                         &quot;kgontjes&quot; 
+                                                                                     effective_user 
+                                                                                         &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.6.0 (2026-04-24)
+Platform: x86_64-apple-darwin20
+Running under: macOS Tahoe 26.5.1
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.6-x86_64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.6-x86_64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Detroit
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] lubridate_1.9.5 forcats_1.0.1   stringr_1.6.0   dplyr_1.2.1    
+ [5] purrr_1.2.2     readr_2.2.0     tidyr_1.3.2     tibble_3.3.1   
+ [9] ggplot2_4.0.3   tidyverse_2.0.0 knitr_1.51     
+
+loaded via a namespace (and not attached):
+ [1] gtable_0.3.6       jsonlite_2.0.0     compiler_4.6.0     tidyselect_1.2.1  
+ [5] jquerylib_0.1.4    scales_1.4.0       yaml_2.3.12        fastmap_1.2.0     
+ [9] R6_2.6.1           generics_0.1.4     bslib_0.10.0       pillar_1.11.1     
+[13] RColorBrewer_1.1-3 tzdb_0.5.0         rlang_1.2.0        stringi_1.8.7     
+[17] cachem_1.1.0       xfun_0.57          sass_0.4.10        S7_0.2.2          
+[21] otel_0.2.0         timechange_0.4.0   cli_3.6.6          withr_3.0.2       
+[25] magrittr_2.0.5     digest_0.6.39      grid_4.6.0         rstudioapi_0.18.0 
+[29] hms_1.1.4          lifecycle_1.0.5    vctrs_0.7.3        evaluate_1.0.5    
+[33] glue_1.8.1         farver_2.1.2       rmarkdown_2.31     tools_4.6.0       
+[37] pkgconfig_2.0.3    htmltools_0.5.9   </code></pre>
+<pre class="r"><code># Functions
+source(&quot;./lib/metadata_curation_functions.R&quot;)</code></pre>
+</div>
+<div id="load-datasets" class="section level1">
+<h1>Load datasets</h1>
+<pre class="r"><code># 2014-15 study
 df_201415 &lt;- readRDS(&quot;./data/dataset/Penn_KPC_metadata_qcd_merged.RDS&quot;) %&gt;% as.data.frame() %&gt;% subset(qc_pass==T  &amp; CRE==T)
 
-## New
+# 2021-23 study
 df_202123 &lt;-  readRDS(&quot;./data/dataset/INTEGRATE_metadata_qcd_merged.RDS&quot;) %&gt;% as.data.frame()%&gt;% subset(qc_pass==T &amp; CRE==T)</code></pre>
 </div>
 <div id="source" class="section level1">
 <h1>Source</h1>
-<pre class="r"><code># Old
+<pre class="r"><code># 2014-15
 table(df_201415$source)</code></pre>
 <pre><code>
 blood  resp urine wound 
    33   238   131     6 </code></pre>
 <pre class="r"><code>df_201415$source_site &lt;- df_201415$source
+# Rename to broad categories
 df_201415$source_simplified &lt;- recode(df_201415$source,&quot;blood&quot;=&#39;blood&#39;,&#39;resp&#39;=&#39;respiratory&#39;,&#39;urine&#39;=&#39;urine&#39;,&#39;wound&#39;=&#39;wound&#39;,&#39;Wound&#39;=&#39;wound&#39;)
 
 # INTEGRATE
@@ -406,21 +483,21 @@ table(df_202123$source_site)</code></pre>
                               126                                 1 </code></pre>
 <pre class="r"><code>df_202123$source_simplified &lt;- ifelse(df_202123$source_site %in% c(&quot;Wound&quot;,&quot;Wound Right Posterior Dorsal Hand&quot;,&quot;Sacrum&quot;,&quot;Buttock&quot;),&quot;wound&quot;,ifelse(df_202123$source_site %in% c(&quot;Bronchial&quot;,&quot;Bronchial Wash&quot;,&quot;Bronchial Washing&quot;,&quot;Bronchoalveolar Lavage&quot;,&quot;Trachael Aspirate&quot;,&quot;Tracheal Aspirate&quot;,&quot;Sputum&quot;,&quot;Pleural Fluid&quot;),&quot;respiratory&quot;,ifelse(df_202123$source_site %in% c(&quot;Urine&quot;,&quot;Urine Catheterized&quot;),&quot;urine&quot;,ifelse(df_202123$source_site %in% c(&quot;Rectal&quot;,&quot;Recal&quot;),&quot;rectal&quot;,ifelse(df_202123$source_site %in% c(&quot;Blood&quot;),&quot;blood&quot;,ifelse(is.na(df_202123$source_site),NA,&quot;other&quot;))))))</code></pre>
 </div>
-<div id="date" class="section level1">
-<h1>Date</h1>
-<pre class="r"><code># Old
+<div id="date-data" class="section level1">
+<h1>Date data</h1>
+<pre class="r"><code># 2014-15
 df_201415$date &lt;- lubridate::date(df_201415$Cx_date)
 df_201415$year &lt;- lubridate::year(df_201415$Cx_date)
 df_201415$year_quarter &lt;- paste0(df_201415$year,&quot;_&quot;,lubridate::quarter(df_201415$date),&quot;Q&quot;)
 
-# INTEGRATE
+# 2021-23
 df_202123$date &lt;- lubridate::date(df_202123$collect_date)
 df_202123$year &lt;- lubridate::year(df_202123$collect_date)
 df_202123$year_quarter &lt;- paste0(df_201415$year,&quot;_&quot;,lubridate::quarter(df_202123$date),&quot;Q&quot;)</code></pre>
 </div>
 <div id="location" class="section level1">
 <h1>Location</h1>
-<pre class="r"><code># Old
+<pre class="r"><code># 2014-15
 df_201415$hospital_location &lt;- df_201415$LTACH2 %&gt;% gsub(&quot; CA&quot;,&quot;&quot;,.)</code></pre>
 </div>
 <div id="culture-date-data" class="section level1">
@@ -443,7 +520,7 @@ df_202123$participant_sex &lt;- recode(df_202123$patient_sex,&#39;F&#39;=&#39;fe
 df_201415$participant_sex &lt;- df_201415$sex
 
 # Age
-df_202123$participant_age_at_first_enc &lt;-   df_202123$age_at_first_enc
+df_202123$participant_age_at_first_enc &lt;- df_202123$age_at_first_enc
 df_201415$participant_age_at_first_enc &lt;- round(df_201415$age,digits = 0)
 
 # Race
@@ -459,22 +536,28 @@ df_201415$participant_ethnicity &lt;- rep(NA,nrow(df_201415))</code></pre>
 <h1>Lab vantage ID</h1>
 <div id="not-found-in-2014-15-study" class="section level2">
 <h2>Not found in 2014-15 study</h2>
-<pre class="r"><code>df_201415$labvantage_id = NA</code></pre>
+<pre class="r"><code>df_201415$labvantage_id &lt;-  NA</code></pre>
 </div>
 </div>
 <div id="merge-datasets" class="section level1">
 <h1>Merge datasets</h1>
-<pre class="r"><code>MIC_variables &lt;- c(&#39;MERO&#39;,&quot;IMI&quot;,&#39;MVB&#39;,&#39;IR&#39;,&#39;PLZ&#39;,&#39;CST&#39;,&#39;OMC&#39;,&#39;DLX&#39;,&#39;ERV&#39;,&#39;CZA&#39;,&quot;FDC&quot;,&quot;CT&quot;,&quot;FOS&quot;)
+<pre class="r"><code># Resistance variables
+MIC_variables &lt;- c(&#39;MERO&#39;,&quot;IMI&quot;,&#39;MVB&#39;,&#39;IR&#39;,&#39;PLZ&#39;,&#39;CST&#39;,&#39;OMC&#39;,&#39;DLX&#39;,&#39;ERV&#39;,&#39;CZA&#39;,&quot;FDC&quot;,&quot;CT&quot;,&quot;FOS&quot;)
+## Add numeric, log2, categorical, and dichotomous variables
 resistance_variables &lt;- sort(c(MIC_variables,paste0(MIC_variables,&quot;_num&quot;),paste0(MIC_variables,&quot;_log_2&quot;),paste0(MIC_variables,&quot;_cat&quot;),paste0(MIC_variables,&quot;_dich_num&quot;),&quot;blbli_dich_num&quot;))
+
+# Shared variables 
 shared_new_variables_w_old_not_res &lt;- colnames(df_202123)[colnames(df_202123) %in% colnames(df_201415)] %&gt;% subset(!. %in% resistance_variables) 
 
+# Obtain the variables of interest
 variables_of_interest &lt;- unique(c(&quot;sample_id&quot;,&quot;isolate_no&quot;,shared_new_variables_w_old_not_res,resistance_variables))
 
+## Shared dataset
 df_202123_shared &lt;- df_202123 %&gt;% select(any_of(variables_of_interest))
 df_201415_shared &lt;- df_201415  %&gt;% select(any_of(variables_of_interest))</code></pre>
 </div>
-<div id="metadata-detining-before-merging" class="section level1">
-<h1>Metadata detining before merging</h1>
+<div id="metadata-harmonizing-before-merging" class="section level1">
+<h1>Metadata harmonizing before merging</h1>
 <pre class="r"><code># Numeric
 cols_to_make_numeric &lt;- c(&quot;total_reads&quot;, &quot;total_bp&quot;, &quot;mean_read_length&quot;,&quot;coverage&quot;,&quot;after_trim_gc&quot;,&quot;after_trim_total_bases&quot;,&quot;after_trim_total_sequences&quot;,&quot;after_trim_median_sequence_length&quot;,&quot;after_trim_avg_sequence_length&quot;,&quot;after_trim_total_deduplicated_percentage&quot;,&quot;n_50&quot;,&quot;total_length&quot;,&quot;total_of_contigs&quot;,&quot;ani&quot;,&quot;align_fraction_ref&quot;,&quot;align_fraction_query&quot;)
 
@@ -493,24 +576,35 @@ df_201415_shared &lt;- df_201415_shared %&gt;%
 df_202123_shared &lt;- df_202123_shared %&gt;%
   mutate(across(all_of(cols_to_make_logical), as.logical)) </code></pre>
 </div>
-<div id="merging" class="section level1">
-<h1>Merging</h1>
-<pre class="r"><code>df_metadata_all &lt;- bind_rows(df_201415_shared,df_202123_shared)
-
-# New data variables
+<div id="merging-the-two-datasets" class="section level1">
+<h1>Merging the two datasets</h1>
+<pre class="r"><code>df_metadata_all &lt;- bind_rows(df_201415_shared,df_202123_shared)</code></pre>
+</div>
+<div id="creating-useful-new-variables" class="section level1">
+<h1>Creating useful new variables</h1>
+<pre class="r"><code># Species
 df_metadata_all$Species_ST &lt;- paste0(df_metadata_all$species,&quot; &quot;,df_metadata_all$ST)
-df_metadata_all$study &lt;- ifelse(grepl(&quot;PCMP_H&quot;,df_metadata_all$isolate_no),&quot;2014-15&quot;,&quot;2021-23&quot;) %&gt;% factor(.,levels = c(&quot;2014-15&quot;,&quot;2021-23&quot;))
 df_metadata_all$genus &lt;- str_split(df_metadata_all$species,&quot; &quot;,simplify = T) %&gt;% .[,1] 
+
+# Study
+df_metadata_all$study &lt;- ifelse(grepl(&quot;PCMP_H&quot;,df_metadata_all$isolate_no),&quot;2014-15&quot;,&quot;2021-23&quot;) %&gt;% factor(.,levels = c(&quot;2014-15&quot;,&quot;2021-23&quot;))
+
+# Rectal status
 df_metadata_all$rectal &lt;-  ifelse(df_metadata_all$source_simplified == &quot;rectal&quot;,&quot;Rectal&quot;,&quot;Clinical&quot;)
 df_metadata_all$rectal_logical &lt;- ifelse(df_metadata_all$source_simplified == &quot;rectal&quot;,T,F)
 df_metadata_all$extraintestinal_logical &lt;- !df_metadata_all$rectal_logical  
+
+# Recode LTACH by sorting the names and giving them a new number
 recode_LTACH_string &lt;- sort(df_metadata_all$hospital_location) %&gt;% unique %&gt;% `names&lt;-`(paste0(&quot;LTACH &quot;,1:length(.))) %&gt;% setNames(names(.), .)
 
 df_metadata_all$hospital_location_recode &lt;- dplyr::recode(df_metadata_all$hospital_location, !!! recode_LTACH_string)   %&gt;% factor(.,levels = paste0(&quot;LTACH &quot;, 1:length(recode_LTACH_string)) )
 
-rownames(df_metadata_all) &lt;- df_metadata_all$isolate_no
-
-paste0(&quot;Number of final rows: &quot;, nrow(df_metadata_all))</code></pre>
+# Rownames
+rownames(df_metadata_all) &lt;- df_metadata_all$isolate_no</code></pre>
+</div>
+<div id="final-data-report" class="section level1">
+<h1>Final data report</h1>
+<pre class="r"><code>paste0(&quot;Number of final rows: &quot;, nrow(df_metadata_all))</code></pre>
 <pre><code>[1] &quot;Number of final rows: 1780&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Number of final columns: &quot;, ncol(df_metadata_all))</code></pre>
 <pre><code>[1] &quot;Number of final columns: 121&quot;</code></pre>
@@ -632,16 +726,17 @@ paste0(&quot;Number of final rows: &quot;, nrow(df_metadata_all))</code></pre>
 [113] &quot;OMC_log_2&quot;                               
 [114] &quot;OMC_num&quot;                                 
 [115] &quot;Species_ST&quot;                              
-[116] &quot;study&quot;                                   
-[117] &quot;genus&quot;                                   
+[116] &quot;genus&quot;                                   
+[117] &quot;study&quot;                                   
 [118] &quot;rectal&quot;                                  
 [119] &quot;rectal_logical&quot;                          
 [120] &quot;extraintestinal_logical&quot;                 
 [121] &quot;hospital_location_recode&quot;                </code></pre>
 </div>
-<div id="save-dataset" class="section level1">
-<h1>Save dataset</h1>
-<pre class="r"><code>saveRDS(df_metadata_all,&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)</code></pre>
+<div id="save-the-merged-dataset" class="section level1">
+<h1>Save the merged dataset</h1>
+<pre class="r"><code>saveRDS(df_metadata_all,&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)
+write_csv(df_metadata_all,&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.csv&quot;)</code></pre>
 </div>
 
 

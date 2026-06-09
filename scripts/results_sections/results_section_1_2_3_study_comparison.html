@@ -682,28 +682,36 @@ df_202123 &lt;- df%&gt;% subset(study == &quot;2021-23&quot;) </code></pre>
 </div>
 <div id="period-1-study" class="section level1">
 <h1>2014-15 (period 1) study</h1>
-<pre class="r"><code>paste0(&quot;Number of specimens: &quot;,nrow(df_201415))</code></pre>
+<ol style="list-style-type: decimal">
+<li>From August 1 to 25 July 2025</li>
+</ol>
+<pre class="r"><code># Specimens and patients
+paste0(&quot;Number of specimens: &quot;,nrow(df_201415))</code></pre>
 <pre><code>[1] &quot;Number of specimens: 374&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Number of patients: &quot;,length(unique(df_201415$participant_id)))</code></pre>
 <pre><code>[1] &quot;Number of patients: 329&quot;</code></pre>
-<pre class="r"><code>paste0(&quot;Minimum date: &quot;,min(df_201415$date,na.rm=T))</code></pre>
-<pre><code>[1] &quot;Minimum date: 2014-08-12&quot;</code></pre>
-<pre class="r"><code>paste0(&quot;Maximum date: &quot;,max(df_201415$date,na.rm=T))</code></pre>
-<pre><code>[1] &quot;Maximum date: 2015-07-24&quot;</code></pre>
-<pre class="r"><code>paste0(&quot;Number of facilities: &quot;,length(unique(df_201415$hospital_location %&gt;% subset(.!=&#39;NA&#39;),na.rm=T)))</code></pre>
+<pre class="r"><code># Facilities
+paste0(&quot;Number of facilities: &quot;,length(unique(df_201415$hospital_location %&gt;% subset(.!=&#39;NA&#39;),na.rm=T)))</code></pre>
 <pre><code>[1] &quot;Number of facilities: 12&quot;</code></pre>
 </div>
 <div id="overview-of-clinical-specimens-from-2021-23" class="section level1">
 <h1>Overview of clinical specimens from 2021-23</h1>
-<pre class="r"><code>paste0(&quot;Number of specimens: &quot;,nrow(df_202123))</code></pre>
+<ol style="list-style-type: decimal">
+<li>Per Leigh - Study was from June 7, 2021 to December 31, 2023.</li>
+</ol>
+<pre class="r"><code># Specimens and patients
+paste0(&quot;Number of specimens: &quot;,nrow(df_202123))</code></pre>
 <pre><code>[1] &quot;Number of specimens: 507&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Number of patients: &quot;,length(unique(df_202123$participant_id)))</code></pre>
 <pre><code>[1] &quot;Number of patients: 394&quot;</code></pre>
-<pre class="r"><code>paste0(&quot;Minimum date: &quot;,min(df_202123$date,na.rm=T))</code></pre>
+<pre class="r"><code># Date
+INTEGRATE_full_dataest &lt;- readRDS(&quot;./data/dataset/INTEGRATE_metadata_qcd_merged.RDS&quot;)
+paste0(&quot;Minimum date: &quot;,min(INTEGRATE_full_dataest$collect_date,na.rm=T))</code></pre>
 <pre><code>[1] &quot;Minimum date: 2021-06-07&quot;</code></pre>
-<pre class="r"><code>paste0(&quot;Maximum date: &quot;,max(df_202123$date,na.rm=T))</code></pre>
-<pre><code>[1] &quot;Maximum date: 2023-12-30&quot;</code></pre>
-<pre class="r"><code>paste0(&quot;Number of facilities: &quot;,length(unique(df_202123$hospital_location)))</code></pre>
+<pre class="r"><code>paste0(&quot;Maximum date: &quot;,max(INTEGRATE_full_dataest$collect_date,na.rm=T))</code></pre>
+<pre><code>[1] &quot;Maximum date: 2023-12-31&quot;</code></pre>
+<pre class="r"><code># Facilities
+paste0(&quot;Number of facilities: &quot;,length(unique(df_202123$hospital_location)))</code></pre>
 <pre><code>[1] &quot;Number of facilities: 13&quot;</code></pre>
 <div id="integrate-metadata-availability" class="section level2">
 <h2>INTEGRATE metadata availability</h2>
@@ -1033,7 +1041,7 @@ hospital_study_table_no_par</code></pre>
     replicates)
 
 data:  .
-X-squared = 11.105, df = NA, p-value = 0.4168</code></pre>
+X-squared = 11.105, df = NA, p-value = 0.4273</code></pre>
 </div>
 </div>
 <div id="source-data" class="section level1">

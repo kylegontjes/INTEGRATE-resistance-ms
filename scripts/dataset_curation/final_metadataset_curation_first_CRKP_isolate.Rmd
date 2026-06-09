@@ -1,11 +1,15 @@
 ---
-title: "Make final CA CRKP clinical and first isolate dataset"
+title: "Make final datasets"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
-# Update: Remove absolute paths
+# Updates: 
+
+1. Remove absolute paths
+
+2. Removed the 'major STs' category, cause that wasn't needed
 
 ```{r setup, include=FALSE}
 require(knitr)
@@ -14,9 +18,9 @@ opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
 ```
 
-```{r environment, echo=F, message=FALSE, include=F, results=F}
 # Environment
 
+```{r environment, echo=T, message=T, include=T, results=T}
 #Packages
 packages <- c("tidyverse") 
 
@@ -30,6 +34,7 @@ sessionInfo()
 ```
 
 # Load merged dataset
+
 ```{r}
 df_metadata_all <- readRDS("./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")
 paste0("Total number of isolates: ",nrow(df_metadata_all))
@@ -38,6 +43,9 @@ table(df_metadata_all$study)
 ```
 
 # Clinical CRE
+
+1. Subset dataset to non-rectal isolates
+
 ```{r} 
 df_metadata_all_clinical <- subset(df_metadata_all, rectal_logical==F)
 saveRDS(df_metadata_all_clinical,"./data/dataset/CA_LTACH_clinical_CRE_genomes_merged_studies_metadata.RDS")
@@ -50,6 +58,11 @@ table(df_metadata_all_clinical$study)
 ```
 
 # Clinical CRKP
+
+1. Subset dataset to Kpn isolates
+
+2. Label the participant's first isolate
+
 ```{r} 
 df_metadata_all_clinical_kpn <- subset(df_metadata_all_clinical,species == "Klebsiella pneumoniae")
 
@@ -74,7 +87,8 @@ paste0("Breakdown by study: ")
 table(df_metadata_all_clinical_kpn$study)
 ```
 
-# Add metadata
+# Add metadata to Kpn dataset
+
 ```{r}
 create_Kpn_Species_ST_variable <- function(dataset){
   df_201415 <- dataset %>% subset(study == "2014-15")
@@ -88,20 +102,29 @@ df_metadata_all_clinical_kpn_first_isolate <- df_metadata_all_clinical_kpn_first
   cbind(create_Kpn_Species_ST_variable(df_metadata_all_clinical_kpn_first_isolate) )
 
 df_metadata_all_clinical_kpn_first_isolate_per_Q <- df_metadata_all_clinical_kpn_first_isolate_per_Q %>% 
-  cbind(create_Kpn_Species_ST_variable(df_metadata_all_clinical_kpn_first_isolate_per_Q) )
- 
-df_metadata_all_clinical_kpn_first_isolate$major_STs <- ifelse(df_metadata_all_clinical_kpn_first_isolate$ST %in% c("ST11","ST15","ST25","ST35","ST987","ST17","ST307","ST14","ST258"),df_metadata_all_clinical_kpn_first_isolate$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
-df_metadata_all_clinical_kpn_first_isolate_per_Q$major_STs <- ifelse(df_metadata_all_clinical_kpn_first_isolate_per_Q$ST %in% c("ST11","ST15","ST25","ST35","ST987","ST17","ST307","ST14","ST258"),df_metadata_all_clinical_kpn_first_isolate_per_Q$Species_ST %>% gsub("Klebsiella pneumoniae ","",.),"Other STs")
+  cbind(create_Kpn_Species_ST_variable(df_metadata_all_clinical_kpn_first_isolate_per_Q) ) 
+```
 
+# First isolate
+
+```{r}
 # First isolate  
 saveRDS(df_metadata_all_clinical_kpn_first_isolate,"./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS") 
-write_csv(df_metadata_all_clinical_kpn_first_isolate,"./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.csv") 
+write_csv(df_metadata_all_clinical_kpn_first_isolate,"./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.csv")
+```
 
 # First isolate per quarter
+
+```{r}
+# First isolate per quarter
 saveRDS(df_metadata_all_clinical_kpn_first_isolate_per_Q,"./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS") 
-write_csv(df_metadata_all_clinical_kpn_first_isolate_per_Q,"./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.csv") 
+write_csv(df_metadata_all_clinical_kpn_first_isolate_per_Q,"./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.csv")
+```
+
 
 # Summary
+
+```{r}
 paste0("Total number of first-quarter clinical CRKP isolates: ", nrow(df_metadata_all_clinical_kpn_first_isolate_per_Q))
 
 paste0("Breakdown by study and follow-up status: ")

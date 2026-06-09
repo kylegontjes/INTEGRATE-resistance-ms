@@ -13,6 +13,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 ```
 
 # Environment
+
 ```{r}
 # Packages
 packages <- c("tidyverse")
@@ -27,36 +28,52 @@ sessionInfo()
 ```
 
 # Load data
+## Dataset
+
 ```{r}
 df <- readRDS("./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")   
 df_first <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
-# Load amrfinder
+## AMRFinder 
+
 ```{r}
 amrfinder <- readRDS("./data/amrfinder/amrfinder_curated.RDS")
 amrfinder <- subset(amrfinder,amrfinder$isolate_no %in% df$isolate_no) 
 ```
 
-# Get list of blactamases
+# Curate beta-lactamase genotype list from AMRFinder
+
 ```{r}
+# Betalactamase
 amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
+# Get bla
 amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla|ampC",element_symbol_renamed))
-amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol_renamed) | grepl("KPC|NDM|VIM|IMP",element_symbol_renamed) | grepl("OXA-48 family",element_symbol_renamed))
+amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol_renamed) | grepl("KPC|NDM|VIM|IMP",element_symbol_renamed) | grepl("OXA-48 family",closest_reference_name))
 amrfinder_carb_ompK <- amrfinder %>% subset(subclass == "CARBAPENEM" & ! element_symbol_renamed %in% amrfinder_carb_bla$element_symbol_renamed)
+```
+
+# AMRFinder matrix curation
+
+```{r}
 amrfinder_matrix <- readRDS("./data/amrfinder/amrfinder_matrix.RDS")  %>% subset(rownames(.) %in% df$isolate_no) 
+
 amrfinder_matrix_beta <- amrfinder_matrix %>% select(any_of(sort(c(unique(amrfinder_beta$element_symbol_renamed)))))
 amrfinder_matrix_carb <- amrfinder_matrix %>% select(any_of(sort(c(unique(amrfinder_carb_bla$element_symbol_renamed)))))
 ```
 
-# Load kleborate
+# Load kleborate matrix
+
+1. Remove GD and TD insertion, as we're using amrfinder's curated insertion data
+
 ```{r,fig.width=9.5,height=6.7857}
 kleborate_matrix <- readRDS("./data/kleborate/kleborate_kpsc_both_studies_matrix.RDS") %>% select_if(!colnames(.) %in% c("OmpK36GD","OmpK36TD")) 
 
 kleborate_matrix$isolate_no <- rownames(kleborate_matrix) 
 ```
 
-# Merge with amrfinder matrix
+# Merge b-lactamase + insertion data with Kleborate matrix
+
 ```{r,fig.width=9.5,height=6.7857}
 df <- left_join(df,kleborate_matrix) %>% left_join(amrfinder_matrix_beta %>% mutate(isolate_no = rownames(.))) %>% as.data.frame
 rownames(df) <- df$isolate_no 
@@ -65,7 +82,8 @@ df_carb_omp <- df %>% select(any_of(c(unique(amrfinder_beta$element_symbol) ,col
 saveRDS(df_carb_omp,"./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_datasets.RDS")
 ```
 
-# First isolate curation
+# First isolate per quarter dataset curation
+
 ```{r}
 df_carb_omp_first <- subset(df_carb_omp,isolate_no %in% df_first$isolate_no)  %>% select(-isolate_no) %>% select_if(colSums(.)>0)
 ```
@@ -83,7 +101,7 @@ df_carb_omp_first$ompK36_rare_truncation <- df_carb_omp_first %>% select(ompK36_
 
 df_carb_omp_first <- df_carb_omp_first %>% select(-muts_under)
 
-# bla genotpyes
+# Beta-lactamase counts genotpyes
 bla_count <- df_carb_omp_first %>% select(any_of(colnames(amrfinder_matrix_beta))) %>% colSums() %>% sort
 bla_over_4 <- names(bla_count)[bla_count>4] 
 bla_under_4 <- names(bla_count)[bla_count<4]

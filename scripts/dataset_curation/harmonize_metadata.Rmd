@@ -1,5 +1,5 @@
 ---
-title: "Haromonize the metadata"
+title: "Haromonize metadata and merge datasets"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -14,9 +14,9 @@ opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
 ```
 
-```{r environment, echo=F, message=FALSE, include=F, results=F}
 # Environment
 
+```{r environment, echo=T, message=T, include=T, results=T}
 #Packages
 packages <- c("tidyverse") 
 
@@ -32,19 +32,23 @@ sessionInfo()
 source("./lib/metadata_curation_functions.R")
 ```
 
+# Load datasets
+
 ```{r}
-## Old
+# 2014-15 study
 df_201415 <- readRDS("./data/dataset/Penn_KPC_metadata_qcd_merged.RDS") %>% as.data.frame() %>% subset(qc_pass==T  & CRE==T)
 
-## New
+# 2021-23 study
 df_202123 <-  readRDS("./data/dataset/INTEGRATE_metadata_qcd_merged.RDS") %>% as.data.frame()%>% subset(qc_pass==T & CRE==T)
 ```
 
 # Source
+
 ```{r}
-# Old
+# 2014-15
 table(df_201415$source)
 df_201415$source_site <- df_201415$source
+# Rename to broad categories
 df_201415$source_simplified <- recode(df_201415$source,"blood"='blood','resp'='respiratory','urine'='urine','wound'='wound','Wound'='wound')
 
 # INTEGRATE
@@ -53,26 +57,29 @@ table(df_202123$source_site)
 df_202123$source_simplified <- ifelse(df_202123$source_site %in% c("Wound","Wound Right Posterior Dorsal Hand","Sacrum","Buttock"),"wound",ifelse(df_202123$source_site %in% c("Bronchial","Bronchial Wash","Bronchial Washing","Bronchoalveolar Lavage","Trachael Aspirate","Tracheal Aspirate","Sputum","Pleural Fluid"),"respiratory",ifelse(df_202123$source_site %in% c("Urine","Urine Catheterized"),"urine",ifelse(df_202123$source_site %in% c("Rectal","Recal"),"rectal",ifelse(df_202123$source_site %in% c("Blood"),"blood",ifelse(is.na(df_202123$source_site),NA,"other"))))))
 ```
 
-# Date
+# Date data
+
 ```{r}
-# Old
+# 2014-15
 df_201415$date <- lubridate::date(df_201415$Cx_date)
 df_201415$year <- lubridate::year(df_201415$Cx_date)
 df_201415$year_quarter <- paste0(df_201415$year,"_",lubridate::quarter(df_201415$date),"Q")
 
-# INTEGRATE
+# 2021-23
 df_202123$date <- lubridate::date(df_202123$collect_date)
 df_202123$year <- lubridate::year(df_202123$collect_date)
 df_202123$year_quarter <- paste0(df_201415$year,"_",lubridate::quarter(df_202123$date),"Q")
 ```
 
 # Location
+
 ```{r}
-# Old
+# 2014-15
 df_201415$hospital_location <- df_201415$LTACH2 %>% gsub(" CA","",.)
 ```
 
 # Culture date data
+
 ```{r}
 #  Old
 df_201415$los_before_culture <-  as.numeric(df_201415$LOSbeforeCx)
@@ -85,6 +92,7 @@ df_202123$los_after_culture <- as.numeric(df_202123$discharge_date - df_202123$c
   
 # Standardize metadata
 ## Sex, age, race data
+
 ```{r}
 # Age, sex, race, ethnicitiy 
 df_202123$participant_sex <- recode(df_202123$patient_sex,'F'='female',
@@ -92,7 +100,7 @@ df_202123$participant_sex <- recode(df_202123$patient_sex,'F'='female',
 df_201415$participant_sex <- df_201415$sex
 
 # Age
-df_202123$participant_age_at_first_enc <-   df_202123$age_at_first_enc
+df_202123$participant_age_at_first_enc <- df_202123$age_at_first_enc
 df_201415$participant_age_at_first_enc <- round(df_201415$age,digits = 0)
 
 # Race
@@ -106,24 +114,32 @@ df_201415$participant_ethnicity <- rep(NA,nrow(df_201415))
 
 # Lab vantage ID
 ## Not found in 2014-15 study
+
 ```{r}
-df_201415$labvantage_id = NA
+df_201415$labvantage_id <-  NA
 ```
 
 # Merge datasets 
 
 ```{r} 
+# Resistance variables
 MIC_variables <- c('MERO',"IMI",'MVB','IR','PLZ','CST','OMC','DLX','ERV','CZA',"FDC","CT","FOS")
+## Add numeric, log2, categorical, and dichotomous variables
 resistance_variables <- sort(c(MIC_variables,paste0(MIC_variables,"_num"),paste0(MIC_variables,"_log_2"),paste0(MIC_variables,"_cat"),paste0(MIC_variables,"_dich_num"),"blbli_dich_num"))
+
+# Shared variables 
 shared_new_variables_w_old_not_res <- colnames(df_202123)[colnames(df_202123) %in% colnames(df_201415)] %>% subset(!. %in% resistance_variables) 
 
+# Obtain the variables of interest
 variables_of_interest <- unique(c("sample_id","isolate_no",shared_new_variables_w_old_not_res,resistance_variables))
 
+## Shared dataset
 df_202123_shared <- df_202123 %>% select(any_of(variables_of_interest))
 df_201415_shared <- df_201415  %>% select(any_of(variables_of_interest))
 ```
 
-# Metadata detining before merging
+# Metadata harmonizing before merging
+
 ```{r}
 # Numeric
 cols_to_make_numeric <- c("total_reads", "total_bp", "mean_read_length","coverage","after_trim_gc","after_trim_total_bases","after_trim_total_sequences","after_trim_median_sequence_length","after_trim_avg_sequence_length","after_trim_total_deduplicated_percentage","n_50","total_length","total_of_contigs","ani","align_fraction_ref","align_fraction_query")
@@ -144,30 +160,48 @@ df_202123_shared <- df_202123_shared %>%
   mutate(across(all_of(cols_to_make_logical), as.logical)) 
 ```
 
-# Merging
+# Merging the two datasets
+
 ```{r}  
 df_metadata_all <- bind_rows(df_201415_shared,df_202123_shared)
+```
 
-# New data variables
+# Creating useful new variables
+
+```{r}   
+# Species
 df_metadata_all$Species_ST <- paste0(df_metadata_all$species," ",df_metadata_all$ST)
-df_metadata_all$study <- ifelse(grepl("PCMP_H",df_metadata_all$isolate_no),"2014-15","2021-23") %>% factor(.,levels = c("2014-15","2021-23"))
 df_metadata_all$genus <- str_split(df_metadata_all$species," ",simplify = T) %>% .[,1] 
+
+# Study
+df_metadata_all$study <- ifelse(grepl("PCMP_H",df_metadata_all$isolate_no),"2014-15","2021-23") %>% factor(.,levels = c("2014-15","2021-23"))
+
+# Rectal status
 df_metadata_all$rectal <-  ifelse(df_metadata_all$source_simplified == "rectal","Rectal","Clinical")
 df_metadata_all$rectal_logical <- ifelse(df_metadata_all$source_simplified == "rectal",T,F)
 df_metadata_all$extraintestinal_logical <- !df_metadata_all$rectal_logical  
+
+# Recode LTACH by sorting the names and giving them a new number
 recode_LTACH_string <- sort(df_metadata_all$hospital_location) %>% unique %>% `names<-`(paste0("LTACH ",1:length(.))) %>% setNames(names(.), .)
 
 df_metadata_all$hospital_location_recode <- dplyr::recode(df_metadata_all$hospital_location, !!! recode_LTACH_string)   %>% factor(.,levels = paste0("LTACH ", 1:length(recode_LTACH_string)) )
 
+# Rownames
 rownames(df_metadata_all) <- df_metadata_all$isolate_no
+```
 
+# Final data report
+
+```{r}   
 paste0("Number of final rows: ", nrow(df_metadata_all))
 paste0("Number of final columns: ", ncol(df_metadata_all))
 paste0("Columns in dataset: ")
 colnames(df_metadata_all)
 ```
 
-# Save dataset
+# Save the merged dataset
+
 ```{r}
 saveRDS(df_metadata_all,"./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")
+write_csv(df_metadata_all,"./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.csv")
 ```

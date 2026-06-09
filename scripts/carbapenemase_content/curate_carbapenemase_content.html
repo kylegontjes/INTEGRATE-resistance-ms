@@ -11,9 +11,9 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-03" />
+<meta name="date" content="2026-06-09" />
 
-<title>Curate carbapenemase plasmid</title>
+<title>Curate carbapenemase gene and plasmid data</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,9 +350,10 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Curate carbapenemase plasmid</h1>
+<h1 class="title toc-ignore">Curate carbapenemase gene and plasmid
+data</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-03</h4>
+<h4 class="date">2026-06-09</h4>
 
 </div>
 
@@ -391,7 +392,7 @@ Sys.info()</code></pre>
 <pre class="r"><code>sessionInfo() </code></pre>
 <pre><code>R version 4.6.0 (2026-04-24)
 Platform: x86_64-apple-darwin20
-Running under: macOS Tahoe 26.5
+Running under: macOS Tahoe 26.5.1
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.6-x86_64/Resources/lib/libRblas.0.dylib 
@@ -428,12 +429,14 @@ loaded via a namespace (and not attached):
 </div>
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
+<div id="dataset" class="section level2">
+<h2>Dataset</h2>
 <pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)   </code></pre>
 </div>
-<div id="mobsuite-data" class="section level1">
-<h1>Mobsuite data</h1>
-<div id="integrate" class="section level2">
-<h2>INTEGRATE</h2>
+<div id="mobsuite-data" class="section level2">
+<h2>Mobsuite data</h2>
+<div id="study" class="section level3">
+<h3>2021-23 study</h3>
 <pre class="r"><code># Mobsuite contig
 mobsuite_contig &lt;- read_delim(&quot;./data/mobsuite/INTEGRATE_MOB_suite_contig_report.txt&quot;)
 mobsuite_contig$isolate_no &lt;- gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,mobsuite_contig$sample_id) 
@@ -445,8 +448,8 @@ mobtyper$isolate_no &lt;- mobtyper$sample_id %&gt;% str_split(.,&quot;:&quot;,si
 mobtyper &lt;- subset(mobtyper,isolate_no %in% df$isolate_no)
 mobtyper$rep_types &lt;- mobtyper$`rep_type(s)`</code></pre>
 </div>
-<div id="penn-kpc-ltach" class="section level2">
-<h2>Penn KPC LTACH</h2>
+<div id="study-1" class="section level3">
+<h3>2014-15 study</h3>
 <pre class="r"><code># Mobsuite contig
 mobsuite_contig_old &lt;-  read_delim(&quot;./data/mobsuite/Penn_KPC_MOB_suite_contig_report.txt&quot;)
 mobsuite_contig_old$isolate_no &lt;-mobsuite_contig_old$sample_id %&gt;% str_split(.,&quot;:&quot;,simplify=T) %&gt;% .[,1] %&gt;%  gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,.)
@@ -458,8 +461,8 @@ mobtyper_old$isolate_no &lt;-mobtyper_old$sample_id %&gt;% str_split(.,&quot;:&q
 mobtyper_old &lt;- subset(mobtyper_old,isolate_no %in% df$isolate_no)
 mobtyper_old$rep_types &lt;- mobtyper_old$`rep_type(s)`</code></pre>
 </div>
-<div id="merge-mobtyper" class="section level2">
-<h2>Merge Mobtyper</h2>
+<div id="merge-mobtyper-dataset" class="section level3">
+<h3>Merge Mobtyper dataset</h3>
 <pre class="r"><code># Mobtyper
 mobtyper_merged &lt;- bind_rows(mobtyper_old %&gt;% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor,observed_host_range_ncbi_name, predicted_mobility, rep_types,`rep_type(s)`,`relaxase_type(s)`, &#39;mpf_type&#39;,&#39;orit_type(s)&#39;),
                              mobtyper %&gt;% select(isolate_no,num_contigs,size,gc,primary_cluster_id,mash_nearest_neighbor,observed_host_range_ncbi_name, predicted_mobility,rep_types, `rep_type(s)`,`relaxase_type(s)`, &#39;mpf_type&#39;,&#39;orit_type(s)&#39;)) %&gt;% mutate(study =ifelse( grepl(&quot;INT&quot;,isolate_no),&quot;2021-23&quot;,&#39;2014-15&#39;))
@@ -467,6 +470,7 @@ mobtyper_merged &lt;- bind_rows(mobtyper_old %&gt;% select(isolate_no,num_contig
 # Mobsuite contig reports
 mobsuite_contig_merged &lt;- bind_rows(mobsuite_contig_old %&gt;% select(isolate_no,contig_id,size,gc,rep_types,primary_cluster_id,mash_nearest_neighbor),
                              mobsuite_contig %&gt;% select(isolate_no,contig_id,size,gc,rep_types,primary_cluster_id,mash_nearest_neighbor))%&gt;% mutate(study =ifelse( grepl(&quot;INT&quot;,isolate_no),&quot;2021-23&quot;,&#39;2014-15&#39;))</code></pre>
+</div>
 </div>
 </div>
 <div id="create-plasmid-and-mash-nn-matrix" class="section level1">
@@ -482,24 +486,27 @@ mobtyper_mash_nn_mat &lt;- get_mobtyper_mash_nn_matrix(df,mobtyper_merged)</code
 saveRDS(mobtyper_mash_nn_mat,&quot;./data/mobsuite/plasmid_mash_nn_matrix_merged_studies.RDS&quot;)</code></pre>
 </div>
 </div>
-<div id="load-amrfinder" class="section level1">
-<h1>Load AMRFinder</h1>
-<pre class="r"><code>amrfinder_mat &lt;- readRDS(&quot;./data/amrfinder/amrfinder_matrix.RDS&quot;)
+<div id="load-amrfinder-data" class="section level1">
+<h1>Load AMRFinder data</h1>
+<pre class="r"><code># Matrix
+amrfinder_mat &lt;- readRDS(&quot;./data/amrfinder/amrfinder_matrix.RDS&quot;)
 amrfinder_mat &lt;- subset(amrfinder_mat,rownames(amrfinder_mat) %in% df$isolate_no)
+
+# Curated data
 amrfinder &lt;- readRDS(&quot;./data/amrfinder/amrfinder_curated.RDS&quot;) 
 amrfinder_beta &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;)
 amrfinder_beta_bla &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;&amp; grepl(&quot;bla|ampC&quot;,element_symbol_renamed) )
-amrfinder_carb_bla &lt;- amrfinder %&gt;% subset(subclass == &quot;CARBAPENEM&quot; &amp; grepl(&quot;bla&quot;,element_symbol_renamed) | grepl(&quot;carbapenemase|NDM|VIM|IMP&quot;,element_symbol_renamed) | grepl(&quot;OXA-48 family&quot;,element_name))
+amrfinder_carb_bla &lt;- amrfinder %&gt;% subset(subclass == &quot;CARBAPENEM&quot; &amp; grepl(&quot;bla&quot;,element_symbol_renamed) | grepl(&quot;KPC|NDM|VIM|IMP&quot;,element_symbol_renamed) | grepl(&quot;OXA-48 family&quot;,closest_reference_name))
 amrfinder_beta_bla_non_carb &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot; &amp; grepl(&quot;bla&quot;,element_symbol_renamed) &amp; !element_symbol_renamed %in% c(unique(amrfinder_carb_bla$element_symbol_renamed))) </code></pre>
 </div>
 <div id="create-carbapenemase-data" class="section level1">
 <h1>Create carbapenemase data</h1>
-<pre class="r"><code># B lactamase gene
+<pre class="r"><code># Beta-lactamase gene
 df$blactamase &lt;- sapply(df$isolate_no,FUN=function(x){
   amrfinder_beta_bla %&gt;% subset(isolate_no == x) %&gt;% .$element_symbol_renamed %&gt;% unique %&gt;% sort %&gt;% paste0(collapse=&quot; &amp; &quot;)
 }) %&gt;% {ifelse(.==&quot;&quot;,&quot;No blactamase&quot;,.)}
 
-# B lactamase non-carbapenemase genes
+# Beta-lactamase non-carbapenemase genes
 df$blactamase_non_carbapenemase &lt;- sapply(df$isolate_no,FUN=function(x){
   amrfinder_beta_bla_non_carb %&gt;% subset(isolate_no == x) %&gt;% .$element_symbol_renamed %&gt;% unique %&gt;% sort %&gt;% paste0(collapse=&quot; &amp; &quot;)
 }) %&gt;% {ifelse(.==&quot;&quot;,&quot;No blactamase&quot;,.)}
@@ -511,7 +518,7 @@ df$carbapenemase &lt;- sapply(df$isolate_no,FUN=function(x){
 
 # Carbapenemase family
 df$carbapenemase_family &lt;- sapply(df$isolate_no,FUN=function(x){
-    carbapenemase &lt;- amrfinder_carb_bla %&gt;% subset(isolate_no == x) %&gt;% .$element_symbol_renamed %&gt;% sort
+    carbapenemase &lt;- amrfinder_carb_bla %&gt;% subset(isolate_no == x) %&gt;% .$element_symbol_renamed %&gt;% unique %&gt;% sort
      if(is_empty(carbapenemase)){
       &quot;No carbapenemase&quot;
     } else {
@@ -519,22 +526,37 @@ df$carbapenemase_family &lt;- sapply(df$isolate_no,FUN=function(x){
         str_split(y,&quot;-&quot;,simplify=T) %&gt;% .[,1]
     }) %&gt;% unlist  %&gt;% paste0(collapse=&quot; &amp; &quot;) 
     }
-})     
-
-# Get carbapenemase plasmid  
+})</code></pre>
+</div>
+<div id="create-carbapenemase-plasmid-data" class="section level1">
+<h1>Create carbapenemase plasmid data</h1>
+<div id="plasmid" class="section level2">
+<h2>Plasmid</h2>
+<pre class="r"><code># Get carbapenemase plasmid  
 get_carbapenemase_plasmid &lt;- function(isolate,amrfinder_carb,mobsuite_contig){
   amrfinder_sub &lt;- amrfinder_carb[amrfinder_carb$isolate_no == isolate,]  %&gt;% arrange(element_symbol_renamed)
   mobsuite_contig_merged_sub &lt;- mobsuite_contig %&gt;% subset(isolate_no == isolate &amp; contig_id %in% amrfinder_sub$contig_id) 
   if(nrow(mobsuite_contig_merged_sub)&gt;1){
   mobsuite_contig_merged_sub &lt;- mobsuite_contig_merged_sub %&gt;% arrange(match(contig_id, amrfinder_sub$contig_id))
   }
-  
-  mobsuite_contig_merged_sub$primary_cluster_id %&gt;% unique  %&gt;% paste0(collapse=&#39; &amp; &#39;) %&gt;% {ifelse(.==&quot;&quot;,&quot;No carbapenemase&quot;,.)} %&gt;% {ifelse(.==&quot;-&quot;,&quot;Chromosome&quot;,.)}
+  results &lt;- mobsuite_contig_merged_sub$primary_cluster_id %&gt;% unique  
+  # Curate results
+  if(is_empty(results)==T){
+    results &lt;- &quot;No carbapenemase&quot;
+  }  else if(length(results)&gt;1){
+    results &lt;- ifelse(results == &quot;-&quot;,&quot;Chromosome&quot;,results) 
+    results &lt;- results  %&gt;% paste0(collapse=&#39; &amp; &#39;) 
+  } else if(results == &quot;-&quot;){
+    results &lt;- &quot;Chromosome&quot;
+  }
+  return(results)
 }
 
-df$carbapenemase_plasmid &lt;-  pbmcapply::pbmclapply(df$isolate_no,get_carbapenemase_plasmid,amrfinder_carb = amrfinder_carb_bla,mobsuite_contig =  mobsuite_contig_merged,mc.cores=7) %&gt;% unlist
-
-# Get carbapenemase plasmid group 
+df$carbapenemase_plasmid &lt;-  pbmcapply::pbmclapply(df$isolate_no,get_carbapenemase_plasmid,amrfinder_carb = amrfinder_carb_bla,mobsuite_contig =  mobsuite_contig_merged,mc.cores=7) %&gt;% unlist</code></pre>
+</div>
+<div id="plasmid-group-variable-e.g.-replicon-type-primary-cluster" class="section level2">
+<h2>Plasmid group variable (e.g., replicon type: primary cluster)</h2>
+<pre class="r"><code># Get carbapenemase plasmid group 
 get_carbapenemase_plasmid_group &lt;- function(isolate,amrfinder_carb_report,mobsuite_contig_report,mobtyper_report){
   # Amrfinder
   amrfinder_sub &lt;- amrfinder_carb_report[amrfinder_carb_report$isolate_no == isolate,]  %&gt;% arrange(element_symbol_renamed)
@@ -549,7 +571,7 @@ get_carbapenemase_plasmid_group &lt;- function(isolate,amrfinder_carb_report,mob
   # For contigs more than 0 
   if(nrow(mobsuite_contig_sub)&gt;0){
     # Get replicon and primary cluster data
-    mobsuite_contig_sub$plasmid_merged &lt;- apply(mobsuite_contig_sub,1,FUN=function(x){
+    final_results &lt;- apply(mobsuite_contig_sub,1,FUN=function(x){
     primary_cluster &lt;- x[[&#39;primary_cluster_id&#39;]] 
     primary_cluster &lt;- ifelse(primary_cluster == &quot;-&quot;, &quot;Chromosome&quot;, primary_cluster)
     
@@ -568,13 +590,16 @@ get_carbapenemase_plasmid_group &lt;- function(isolate,amrfinder_carb_report,mob
     results
   }) %&gt;% paste0(collapse = &quot; &amp; &quot;) 
   } else{ 
-    paste0(&quot;No carbapenemase&quot;)
+   final_results &lt;- &quot;No carbapenemase&quot;
   } 
+  return(final_results)
 }
 
-df$carbapenemase_plasmid_group &lt;- pbmcapply::pbmclapply(df$isolate_no,get_carbapenemase_plasmid_group,amrfinder_carb_report = amrfinder_carb_bla,mobsuite_contig_report = mobsuite_contig_merged,mobtyper_report = mobtyper_merged,mc.cores=7) %&gt;% unlist
-
-get_carbapenemase_plasmid_rep_type &lt;- function(isolate,amrfinder_carb_report,mobsuite_contig_report,mobtyper_report){ 
+df$carbapenemase_plasmid_group &lt;- pbmcapply::pbmclapply(df$isolate_no, get_carbapenemase_plasmid_group, amrfinder_carb_report = amrfinder_carb_bla, mobsuite_contig_report = mobsuite_contig_merged, mobtyper_report = mobtyper_merged, mc.cores=7) %&gt;% unlist</code></pre>
+</div>
+<div id="replicon-type-pattern" class="section level2">
+<h2>Replicon type pattern</h2>
+<pre class="r"><code>get_carbapenemase_plasmid_rep_type &lt;- function(isolate,amrfinder_carb_report,mobsuite_contig_report,mobtyper_report){ 
   amrfinder_sub &lt;- amrfinder_carb_report[amrfinder_carb_report$isolate_no == isolate,]  %&gt;% arrange(element_symbol_renamed)
   mobsuite_contig_sub &lt;- mobsuite_contig_report %&gt;% subset(isolate_no == isolate &amp; contig_id %in% amrfinder_sub$contig_id)
     if(nrow(mobsuite_contig_sub)&gt;1){
@@ -583,7 +608,7 @@ get_carbapenemase_plasmid_rep_type &lt;- function(isolate,amrfinder_carb_report,
   if(nrow(mobsuite_contig_sub)&gt;0){
     
     # Get replicon and primary cluster data
-    mobsuite_contig_sub$plasmid_merged &lt;- apply(mobsuite_contig_sub,1,FUN=function(x){
+    final_results &lt;- apply(mobsuite_contig_sub,1,FUN=function(x){
     primary_cluster &lt;- x[[&#39;primary_cluster_id&#39;]] 
     primary_cluster &lt;- ifelse(primary_cluster == &quot;-&quot;, &quot;Chromosome&quot;, primary_cluster)
     
@@ -600,27 +625,33 @@ get_carbapenemase_plasmid_rep_type &lt;- function(isolate,amrfinder_carb_report,
           } 
     results
   }) %&gt;% paste0(collapse = &quot; &amp; &quot;) }  else{ 
-    paste0(&quot;No carbapenemase&quot;)
+    final_results &lt;- &quot;No carbapenemase&quot;
   } 
+  return(final_results)
 }
 
-df$carbapenemase_plasmid_replicon_type &lt;-  pbmcapply::pbmclapply(df$isolate_no,get_carbapenemase_plasmid_rep_type,amrfinder_carb_bla,mobsuite_contig_merged,mobtyper_merged,mc.cores=7) %&gt;% unlist
-
-carbapenemase_data &lt;- df %&gt;% select(isolate_no,blactamase,blactamase_non_carbapenemase,carbapenemase,carbapenemase_family,carbapenemase_plasmid,carbapenemase_plasmid_replicon_type,carbapenemase_plasmid_group)
+df$carbapenemase_plasmid_replicon_type &lt;-  pbmcapply::pbmclapply(df$isolate_no,get_carbapenemase_plasmid_rep_type,amrfinder_carb_bla,mobsuite_contig_merged,mobtyper_merged,mc.cores=7) %&gt;% unlist</code></pre>
+</div>
+</div>
+<div id="save-carbapenemase-data" class="section level1">
+<h1>Save carbapenemase data</h1>
+<pre class="r"><code>carbapenemase_data &lt;- df %&gt;% select(isolate_no,blactamase,blactamase_non_carbapenemase,carbapenemase,carbapenemase_family,carbapenemase_plasmid,carbapenemase_plasmid_replicon_type,carbapenemase_plasmid_group)
 
 saveRDS(carbapenemase_data,&quot;./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS&quot;)</code></pre>
 </div>
-<div id="create-carbapenemase-plasmid-matrix" class="section level1">
-<h1>Create carbapenemase plasmid matrix</h1>
+<div id="create-carbapenemase-plasmid-data-1" class="section level1">
+<h1>Create carbapenemase plasmid data</h1>
+<div id="mobtyper-merged-with-carbapenemase-data" class="section level2">
+<h2>Mobtyper merged with carbapenemase data</h2>
 <pre class="r"><code># Carbapenemase plasmid 
 mobtyper_merged$carbapenemase_plasmid &lt;- apply(mobtyper_merged,1,FUN=function(x){
-  isolate_carbapenemase &lt;- df %&gt;% subset(isolate_no == x[[&#39;isolate_no&#39;]]) %&gt;% .$carbapenemase_plasmid %&gt;% str_split(.,&quot; &amp; &quot; ) %&gt;% unlist
-  sum(x[[&#39;primary_cluster_id&#39;]] %in% isolate_carbapenemase) 
+  isolate_carbapenemase &lt;- df %&gt;% subset(isolate_no == x[[&#39;isolate_no&#39;]]) %&gt;% .$carbapenemase_plasmid %&gt;% str_split(.,&quot; &amp; &quot; ) %&gt;% unlist %&gt;% unique
+  x[[&#39;primary_cluster_id&#39;]] %in% isolate_carbapenemase
 })
 
 # Carbapnemease
 mobtyper_merged$carbapenemase &lt;- apply(mobtyper_merged,1,FUN=function(x){
-  mobsuite_contigs &lt;- mobsuite_contig_merged %&gt;% subset(primary_cluster_id == x[[&quot;primary_cluster_id&quot;]] &amp; isolate_no == x[[&quot;isolate_no&quot;]]) %&gt;% .$contig_id
+  mobsuite_contigs &lt;- mobsuite_contig_merged %&gt;% subset(primary_cluster_id == x[[&quot;primary_cluster_id&quot;]] &amp; isolate_no == x[[&quot;isolate_no&quot;]]) %&gt;% .$contig_id %&gt;% unique
   amrfinder_sub &lt;- amrfinder_carb_bla %&gt;% subset(contig_id %in% mobsuite_contigs)
   if(nrow(amrfinder_sub)==0){
     &quot;&quot;
@@ -630,9 +661,11 @@ mobtyper_merged$carbapenemase &lt;- apply(mobtyper_merged,1,FUN=function(x){
 })
 
 ## Save
-saveRDS(mobtyper_merged,&quot;./data/mobsuite/mobtyper_merged_w_carbapenemase_data.RDS&quot;)
-
-# Carbapenemase contig labeled
+saveRDS(mobtyper_merged,&quot;./data/mobsuite/mobtyper_merged_w_carbapenemase_data.RDS&quot;)</code></pre>
+</div>
+<div id="mob-contigs-merged-with-carbapenemase-data" class="section level2">
+<h2>MOB-contigs merged with carbapenemase data</h2>
+<pre class="r"><code># Carbapenemase contig labeled
 mobsuite_contig_merged$carbapenemase_contig &lt;- apply(mobsuite_contig_merged,1,FUN=function(x){
   contig &lt;- x[[&quot;contig_id&quot;]]
   amrfinder_sub &lt;- amrfinder_carb_bla %&gt;% subset(isolate_no  %in% x[[&quot;isolate_no&quot;]])
@@ -640,16 +673,12 @@ mobsuite_contig_merged$carbapenemase_contig &lt;- apply(mobsuite_contig_merged,1
 })
 
 ## Save
-saveRDS(mobsuite_contig_merged,&quot;./data/mobsuite/mobsuite_contig_merged_w_carbapenemase_data.RDS&quot;)
-
-# Convert carbapenemase_plasmid variable into a matrix where row is isolate and entry is 1 for present and 0 for absent
-carbapenemase_plasmid_pattern_matrix &lt;- df %&gt;% select(isolate_no,carbapenemase_plasmid) %&gt;% 
-    pivot_wider(names_from = carbapenemase_plasmid, values_from = carbapenemase_plasmid) %&gt;% column_to_rownames(&quot;isolate_no&quot;)  %&gt;% {ifelse(is.na(.),0,1)}  %&gt;% as.data.frame
-
-## Save carbapenemase pattern matrix
-saveRDS(carbapenemase_plasmid_pattern_matrix,&quot;./data/carbapenemase_content/carbapenemase_plasmid_pattern_matrix.RDS&quot;)
-
-# Carbapenemase plasmid matrix
+saveRDS(mobsuite_contig_merged,&quot;./data/mobsuite/mobsuite_contig_merged_w_carbapenemase_data.RDS&quot;)</code></pre>
+</div>
+</div>
+<div id="create-plasmid-matrix" class="section level1">
+<h1>Create plasmid matrix</h1>
+<pre class="r"><code># Carbapenemase plasmid matrix
 carbapenemase_plasmid_matrix &lt;- df %&gt;%
     select(isolate_no, carbapenemase_plasmid) %&gt;%
     separate_rows(carbapenemase_plasmid, sep = &quot; &amp; &quot;) %&gt;% 

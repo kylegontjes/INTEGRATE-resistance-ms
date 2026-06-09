@@ -11,9 +11,9 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-05-28" />
+<meta name="date" content="2026-06-09" />
 
-<title>curate_amrfinder_data</title>
+<title>Curate AMRFinder results</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,9 +350,9 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">curate_amrfinder_data</h1>
+<h1 class="title toc-ignore">Curate AMRFinder results</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-05-28</h4>
+<h4 class="date">2026-06-09</h4>
 
 </div>
 
@@ -387,7 +387,7 @@ Sys.info()</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 4.6.0 (2026-04-24)
 Platform: x86_64-apple-darwin20
-Running under: macOS Tahoe 26.5
+Running under: macOS Tahoe 26.5.1
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.6-x86_64/Resources/lib/libRblas.0.dylib 
@@ -424,8 +424,8 @@ loaded via a namespace (and not attached):
 <pre class="r"><code>df &lt;- readRDS(&quot;./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS&quot;)   
 isolates &lt;- df$isolate_no </code></pre>
 </div>
-<div id="load-amrfinder" class="section level1">
-<h1>Load amrfinder</h1>
+<div id="load-amrfinder-results" class="section level1">
+<h1>Load amrfinder results</h1>
 <pre class="r"><code>amrfinder_201415 &lt;- read_delim(&quot;./data/amrfinder/Penn_KPC_amrfinder_results.txt&quot;)
 amrfinder_202123 &lt;- read_delim(&quot;./data/amrfinder/INTEGRATE_amrfinder_results.txt&quot;)
 
@@ -434,13 +434,19 @@ colnames(amrfinder) &lt;- snakecase::to_snake_case(colnames(amrfinder) )%&gt;% g
 </div>
 <div id="load-and-curate-amrfinder-dataset" class="section level1">
 <h1>Load and curate amrfinder dataset</h1>
+<ol style="list-style-type: decimal">
+<li><p>Add isolate number</p></li>
+<li><p>Add contig</p></li>
+<li><p>Create a new ‘symbol’ naming scheme for use in honoring the
+genotype differences</p></li>
+</ol>
 <pre class="r"><code>amrfinder$isolate_no &lt;- pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
  x %&gt;% str_split(.,&quot;_&quot;) %&gt;% unlist %&gt;% .[1:(length(.)-1)] %&gt;% paste0(.,collapse = &quot;_&quot;)
-},mc.cores=5) %&gt;% unlist
+},mc.cores=7) %&gt;% unlist
 
 amrfinder$contig &lt;-  pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
  x %&gt;% str_split(.,&quot;_&quot;) %&gt;% unlist %&gt;% .[length(.)]   
-},mc.cores=5) %&gt;% unlist
+},mc.cores=7) %&gt;% unlist
  
 amrfinder &lt;- amrfinder %&gt;% select(-protein_id,-hmm_accession,-hmm_description)  
 amrfinder &lt;- subset(amrfinder, isolate_no %in% isolates)
@@ -473,9 +479,10 @@ amrfinder$element_symbol_renamed &lt;- apply(amrfinder,1,FUN=function(x){
     return(name)
 })
 
-saveRDS(amrfinder,file=&quot;./data/amrfinder/amrfinder_curated.RDS&quot;)
-
-get_amrfinder_matrix &lt;- function(amrfinder,isolates){
+saveRDS(amrfinder,file=&quot;./data/amrfinder/amrfinder_curated.RDS&quot;)</code></pre>
+<div id="presenceabsence-matrix" class="section level2">
+<h2>Presence/absence matrix</h2>
+<pre class="r"><code>get_amrfinder_matrix &lt;- function(amrfinder,isolates){
   unique_genes &lt;- amrfinder$element_symbol_renamed %&gt;% unique
   pbmcapply::pbmclapply(unique_genes,FUN =function(x,amrfinder){
     isolates_with_gene &lt;-  subset(amrfinder,element_symbol_renamed == x) %&gt;% select(isolate_no) %&gt;% unlist
@@ -486,6 +493,7 @@ get_amrfinder_matrix &lt;- function(amrfinder,isolates){
 amrfinder_mat &lt;- get_amrfinder_matrix(amrfinder = amrfinder,isolates = isolates)
 
 saveRDS(amrfinder_mat,file=&quot;./data/amrfinder/amrfinder_matrix.RDS&quot;)</code></pre>
+</div>
 </div>
 
 

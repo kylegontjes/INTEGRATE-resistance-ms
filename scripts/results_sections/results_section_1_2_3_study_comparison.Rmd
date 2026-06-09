@@ -38,24 +38,32 @@ df_202123 <- df%>% subset(study == "2021-23")
 ```
 
 # 2014-15 (period 1) study
+
+1. From August 1 to 25 July 2025
+
 ```{r}
+# Specimens and patients
 paste0("Number of specimens: ",nrow(df_201415))
 paste0("Number of patients: ",length(unique(df_201415$participant_id)))
 
-paste0("Minimum date: ",min(df_201415$date,na.rm=T))
-paste0("Maximum date: ",max(df_201415$date,na.rm=T))
-
+# Facilities
 paste0("Number of facilities: ",length(unique(df_201415$hospital_location %>% subset(.!='NA'),na.rm=T)))
 ``` 
 
 # Overview of clinical specimens from 2021-23
+
+1. Per Leigh - Study was from June 7, 2021 to December 31, 2023.
 ```{r}
+# Specimens and patients
 paste0("Number of specimens: ",nrow(df_202123))
 paste0("Number of patients: ",length(unique(df_202123$participant_id)))
 
-paste0("Minimum date: ",min(df_202123$date,na.rm=T))
-paste0("Maximum date: ",max(df_202123$date,na.rm=T))
+# Date
+INTEGRATE_full_dataest <- readRDS("./data/dataset/INTEGRATE_metadata_qcd_merged.RDS")
+paste0("Minimum date: ",min(INTEGRATE_full_dataest$collect_date,na.rm=T))
+paste0("Maximum date: ",max(INTEGRATE_full_dataest$collect_date,na.rm=T))
 
+# Facilities
 paste0("Number of facilities: ",length(unique(df_202123$hospital_location)))
 ```
 

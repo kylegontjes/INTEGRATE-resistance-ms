@@ -1,5 +1,5 @@
 ---
-title: "curate_amrfinder_data"
+title: "Curate AMRFinder results"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -32,7 +32,7 @@ df <- readRDS("./data/dataset/CA_LTACH_CRE_genomes_merged_studies_metadata.RDS")
 isolates <- df$isolate_no 
 ```
 
-# Load amrfinder
+# Load amrfinder results
 ```{r}
 amrfinder_201415 <- read_delim("./data/amrfinder/Penn_KPC_amrfinder_results.txt")
 amrfinder_202123 <- read_delim("./data/amrfinder/INTEGRATE_amrfinder_results.txt")
@@ -42,14 +42,21 @@ colnames(amrfinder) <- snakecase::to_snake_case(colnames(amrfinder) )%>% gsub("x
 ```
 
 # Load and curate amrfinder dataset
+
+1. Add isolate number
+
+2. Add contig 
+
+3. Create a new 'symbol' naming scheme for use in honoring the genotype differences
+
 ```{r} 
 amrfinder$isolate_no <- pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
  x %>% str_split(.,"_") %>% unlist %>% .[1:(length(.)-1)] %>% paste0(.,collapse = "_")
-},mc.cores=5) %>% unlist
+},mc.cores=7) %>% unlist
 
 amrfinder$contig <-  pbmcapply::pbmclapply(amrfinder$contig_id, FUN=function(x){
  x %>% str_split(.,"_") %>% unlist %>% .[length(.)]   
-},mc.cores=5) %>% unlist
+},mc.cores=7) %>% unlist
  
 amrfinder <- amrfinder %>% select(-protein_id,-hmm_accession,-hmm_description)  
 amrfinder <- subset(amrfinder, isolate_no %in% isolates)
@@ -83,7 +90,11 @@ amrfinder$element_symbol_renamed <- apply(amrfinder,1,FUN=function(x){
 })
 
 saveRDS(amrfinder,file="./data/amrfinder/amrfinder_curated.RDS")
+```
 
+## Presence/absence matrix
+
+```{r} 
 get_amrfinder_matrix <- function(amrfinder,isolates){
   unique_genes <- amrfinder$element_symbol_renamed %>% unique
   pbmcapply::pbmclapply(unique_genes,FUN =function(x,amrfinder){
@@ -95,4 +106,4 @@ get_amrfinder_matrix <- function(amrfinder,isolates){
 amrfinder_mat <- get_amrfinder_matrix(amrfinder = amrfinder,isolates = isolates)
 
 saveRDS(amrfinder_mat,file="./data/amrfinder/amrfinder_matrix.RDS")
-``` 
+```

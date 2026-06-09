@@ -11,9 +11,9 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-05" />
+<meta name="date" content="2026-06-09" />
 
-<title>PENN blaKPC 2014-15 CA LTACH isolate collection curation</title>
+<title>2014-15 CA CRKP LTACH isolate collection dataset curation</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -574,31 +574,132 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">PENN blaKPC 2014-15 CA LTACH isolate
-collection curation</h1>
+<h1 class="title toc-ignore">2014-15 CA CRKP LTACH isolate collection
+dataset curation</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-05</h4>
+<h4 class="date">2026-06-09</h4>
 
 </div>
 
 
+<div id="environment" class="section level1">
+<h1>Environment</h1>
+<pre class="r"><code>#Packages
+packages &lt;- c(&quot;tidyverse&quot;,&#39;kableExtra&#39;) 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))</code></pre>
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.2.1     ✔ readr     2.2.0
+✔ forcats   1.0.1     ✔ stringr   1.6.0
+✔ ggplot2   4.0.3     ✔ tibble    3.3.1
+✔ lubridate 1.9.5     ✔ tidyr     1.3.2
+✔ purrr     1.2.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+
+Attaching package: &#39;kableExtra&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    group_rows</code></pre>
+<pre class="r"><code># Functions
+setwd(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms&quot;)
+source(&quot;./lib/consistent_themes.R&quot;) </code></pre>
+<pre><code>
+Attaching package: &#39;gridExtra&#39;
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    combine</code></pre>
+<pre class="r"><code>source(&quot;./lib/metadata_curation_functions.R&quot;)
+
+# Print environment
+set.seed(45) 
+Sys.info()</code></pre>
+<pre><code>                                                                                            sysname 
+                                                                                           &quot;Darwin&quot; 
+                                                                                            release 
+                                                                                           &quot;25.5.0&quot; 
+                                                                                            version 
+&quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
+                                                                                           nodename 
+                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                                            machine 
+                                                                                           &quot;x86_64&quot; 
+                                                                                              login 
+                                                                                             &quot;root&quot; 
+                                                                                               user 
+                                                                                         &quot;kgontjes&quot; 
+                                                                                     effective_user 
+                                                                                         &quot;kgontjes&quot; </code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.6.0 (2026-04-24)
+Platform: x86_64-apple-darwin20
+Running under: macOS Tahoe 26.5.1
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.6-x86_64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.6-x86_64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Detroit
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] colorspace_2.1-2 ggtext_0.1.2     gridExtra_2.3    kableExtra_1.4.0
+ [5] lubridate_1.9.5  forcats_1.0.1    stringr_1.6.0    dplyr_1.2.1     
+ [9] purrr_1.2.2      readr_2.2.0      tidyr_1.3.2      tibble_3.3.1    
+[13] ggplot2_4.0.3    tidyverse_2.0.0  knitr_1.51      
+
+loaded via a namespace (and not attached):
+ [1] sass_0.4.10        generics_0.1.4     xml2_1.5.2         stringi_1.8.7     
+ [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.5     evaluate_1.0.5    
+ [9] grid_4.6.0         timechange_0.4.0   RColorBrewer_1.1-3 fastmap_1.2.0     
+[13] jsonlite_2.0.0     viridisLite_0.4.3  scales_1.4.0       textshaping_1.0.5 
+[17] jquerylib_0.1.4    cli_3.6.6          rlang_1.2.0        withr_3.0.2       
+[21] cachem_1.1.0       yaml_2.3.12        otel_0.2.0         tools_4.6.0       
+[25] tzdb_0.5.0         hues_0.2.0         vctrs_0.7.3        R6_2.6.1          
+[29] lifecycle_1.0.5    pkgconfig_2.0.3    pillar_1.11.1      bslib_0.10.0      
+[33] gtable_0.3.6       Rcpp_1.1.1-1.1     glue_1.8.1         systemfonts_1.3.2 
+[37] xfun_0.57          tidyselect_1.2.1   rstudioapi_0.18.0  farver_2.1.2      
+[41] htmltools_0.5.9    rmarkdown_2.31     svglite_2.2.2      compiler_4.6.0    
+[45] S7_0.2.2           gridtext_0.1.6    </code></pre>
+</div>
 <div id="load-data" class="section level1">
 <h1>Load data</h1>
+<ol style="list-style-type: decimal">
+<li><p>This is the 459 data provided by UPENN</p></li>
+<li><p>Isolate_no is the specimen-level identifier while participant_id
+is the patient identifier</p></li>
+<li><p>We subset to the California isolates</p></li>
+</ol>
 <pre class="r"><code>df_2014_15 &lt;- readxl::read_excel(&quot;./Project_Penn_KPC/Analysis/data/459_patients_data_for_posting.xls&quot;)  %&gt;% as.data.frame
 df_2014_15 &lt;- df_2014_15 %&gt;% subset(state == &#39;CA&#39;)  
 df_2014_15$sample_id &lt;- as.character(df_2014_15$isolate_no)
 df_2014_15$isolate_no &lt;-  paste0(&quot;PCMP_H&quot;,df_2014_15$isolate_no)   
 df_2014_15$participant_id &lt;- as.character(df_2014_15$Patient_ID)</code></pre>
 </div>
-<div id="recoded-participant-13s-initial-entry-due-to-incorrect-admit-and-discharge-date" class="section level1">
-<h1>Recoded participant 13’s initial entry due to incorrect admit and
-discharge date</h1>
-<div id="participant-13-had-1-isolate.-although-the-age-was-accurate-i.e.-age-different-correlated-with-collection-date-difference-the-two-isolates-had-the-same-admit-date-which-suggests-a-possible-issue-with-admit-and-discharge-data" class="section level2">
-<h2>Participant 13 had &gt;1 isolate. Although the age was accurate
-(i.e., age different correlated with collection date difference), the
-two isolates had the same admit date, which suggests a possible issue
-with admit and discharge data</h2>
-<pre class="r"><code>wrong_Cx_data &lt;- df_2014_15 %&gt;% subset(LOSbeforeCx &lt;0) %&gt;% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx)
+<div id="we-recoded-participant-13s-initial-entry-due-to-incorrect-admit-and-discharge-dates" class="section level1">
+<h1>We recoded participant 13’s initial entry due to incorrect admit and
+discharge dates</h1>
+<ol style="list-style-type: decimal">
+<li><p>Participant 13 had &gt;1 isolate.</p></li>
+<li><p>Although the age was accurate (i.e., age different correlated
+with collection date difference), the two isolates had the same admit
+date, which suggests a possible issue with admit and discharge
+data</p></li>
+</ol>
+<pre class="r"><code># Isolate with weird discharge data
+wrong_Cx_data &lt;- df_2014_15 %&gt;% subset(LOSbeforeCx &lt;0) %&gt;% select(isolate_no,Patient_ID,Cx_date,admit_date,discharge_date,LOSbeforeCx,LOS_after_cx)
 paste0(&quot;Incorrect isolate with bad admit and discharge data: &quot;)</code></pre>
 <pre><code>[1] &quot;Incorrect isolate with bad admit and discharge data: &quot;</code></pre>
 <pre class="r"><code>wrong_Cx_data %&gt;% favorite_kable()</code></pre>
@@ -655,11 +756,9 @@ PCMP_H13
 </tbody>
 </table>
 <pre class="r"><code># Recode df when LOSbeforeCx variable is less than 0, make the admit_date, discharge_date, LOSbeforeCx, and LOS_after_cx variables all NA
-df_2014_15 &lt;- df_2014_15 %&gt;%
-  mutate(
+df_2014_15 &lt;- df_2014_15 %&gt;% mutate(
     across(c(admit_date, discharge_date, LOSbeforeCx, LOS_after_cx),
-           ~ if_else(LOSbeforeCx &lt; 0, NA, .))
-  ) 
+           ~ if_else(LOSbeforeCx &lt; 0, NA, .))) 
 
 paste0(&quot;Recoded the initial isolate to have NA admit date: &quot;)</code></pre>
 <pre><code>[1] &quot;Recoded the initial isolate to have NA admit date: &quot;</code></pre>
@@ -739,12 +838,11 @@ PCMP_H306
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Create a flag
+<pre class="r"><code># Create a flag for full metadata (e.g., not those isolates!)
 df_2014_15$has_full_metadata &lt;- !df_2014_15$isolate_no %in% wrong_Cx_data$isolate_no</code></pre>
 </div>
-</div>
-<div id="resitance" class="section level1">
-<h1>Resitance</h1>
+<div id="antibiotic-resistance" class="section level1">
+<h1>Antibiotic resistance</h1>
 <div id="load-data-1" class="section level2">
 <h2>Load data</h2>
 <pre class="r"><code>SENSITITRE &lt;- readxl::read_excel(&quot;./Project_Penn_KPC/Analysis/Antibiotic_resistance/data/SENSITITRE MICs.xlsx&quot;, range = &quot;B1:N460&quot;) %&gt;% as.data.frame
@@ -755,6 +853,11 @@ SENSITITRE &lt;- subset(SENSITITRE,!isolate_no %in% c(&quot;PCMP_H472&quot;,&quo
 </div>
 <div id="clean-variables" class="section level2">
 <h2>Clean variables</h2>
+<ol style="list-style-type: decimal">
+<li><p>Renamed the variable names</p></li>
+<li><p>Fixed coding issue with inhibitor of MVB</p></li>
+<li><p>Numerize, factored, log transformed MIC data</p></li>
+</ol>
 <pre class="r"><code>## Convert names
 SENSITITRE &lt;-  dplyr::rename(SENSITITRE,MVB = &quot;MEV&quot;,IR = &quot;IMK&quot;, CST = &quot;COL&quot;, AMK = &quot;AMI&quot;, FOS = &quot;FOS+&quot;,PT = &quot;P/T4&quot;)
 
@@ -791,6 +894,10 @@ for(i in MIC_variables){
 <ol style="list-style-type: decimal">
 <li><p><a href="https://academic.oup.com/cid/article/72/8/1484/5868454?login=true" class="uri">https://academic.oup.com/cid/article/72/8/1484/5868454?login=true</a></p></li>
 <li><p><a href="https://www.sciencedirect.com/science/article/pii/S0255085721041062" class="uri">https://www.sciencedirect.com/science/article/pii/S0255085721041062</a></p></li>
+<li><p>See our prior work in ICHE: Zhang H et al., Infection Control
+&amp; Hospital Epidemiology, 2022 (PMC9883590)</p></li>
+<li><p>Note: We recoded colistin intermediate category as ‘susceptible’
+for sake of fitting the susceptible vs. resistant paradigm</p></li>
 </ol>
 <pre class="r"><code>SENSITITRE &lt;- SENSITITRE %&gt;% mutate(
   ### Meropenem (MERO): ≤1/2/≥4
@@ -811,6 +918,7 @@ for(i in MIC_variables){
   AMK_cat =  ifelse(AMK_num &lt;= 16,&quot;S&quot;,ifelse(AMK_num == 32,&quot;I&quot;,&quot;R&quot;)),
   ### Plazomicin (PLZ): Susceptible (MIC≤2), Intermediate (MIC=4), Resistant (MIC≥8) 
   PLZ_cat = ifelse(PLZ_num &lt;= 2,&quot;S&quot;,ifelse(PLZ_num == 4,&quot;I&quot;,&quot;R&quot;)),
+  # Fosfomycin (FOS): Susceptible &lt;=64. We only had &gt;64 reported, which would be classified as at least intermediate category
   FOS_cat = ifelse(FOS == &quot;&gt;64&quot;,&quot;I&quot;,&quot;S&quot;)) 
 
 ## Factorize Categorical Data
@@ -826,6 +934,8 @@ MIC_variables_no_CST&lt;- c(&quot;MERO&quot;,&quot;IMI&quot;,&quot;MVB&quot;,&qu
 for(i in MIC_variables_no_CST){
   SENSITITRE[,paste0(i,&quot;_dich&quot;)] &lt;- binarize_MIC(SENSITITRE,paste0(i,&quot;_cat&quot;))
 }
+
+## Colistin reclassified intermediate category as susceptible.
 SENSITITRE$CST_dich &lt;- ifelse(SENSITITRE$CST_cat == &quot;Resistant&quot;,&quot;Non-Susceptible&quot;,&quot;Susceptible&quot;)
 
 ## Factorize Dichotomous Data
@@ -836,13 +946,17 @@ for(i in MIC_variables_dich){
                            labels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;))
 }
 
-## Numerical Dichotemous Variable for Resistance
+## Numerical Dichotomous Variable for Resistance Analysis
 for(i in MIC_variables_dich){
   SENSITITRE[,paste0(i,&quot;_num&quot;)] &lt;- ifelse(SENSITITRE[,i] == &quot;Susceptible&quot;,0,1)
 }</code></pre>
 </div>
 <div id="create-blbli-combination-therapy-outcome" class="section level2">
 <h2>Create BL/BLI combination therapy outcome</h2>
+<ol style="list-style-type: decimal">
+<li>This will focus on KPC-inhibiting BL/BLI antibiotics: MVB, CZA, and
+IR</li>
+</ol>
 <pre class="r"><code>SENSITITRE$blbli_dich &lt;- ifelse(SENSITITRE$MVB_dich==&quot;Non-Susceptible&quot; | SENSITITRE$IR_dich==&quot;Non-Susceptible&quot;  | SENSITITRE$CZA_dich == &quot;Non-Susceptible&quot;,&quot;Non-Susceptible&quot;,&quot;Susceptible&quot;)  %&gt;% factor(.,levels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;),labels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;))
 SENSITITRE$blbli_dich_num &lt;- ifelse(SENSITITRE$blbli_dich == &quot;Non-Susceptible&quot;,1,0) </code></pre>
 </div>
@@ -855,20 +969,31 @@ SENSITITRE$blbli_dich_num &lt;- ifelse(SENSITITRE$blbli_dich == &quot;Non-Suscep
 <h1>Merge with QCD data</h1>
 <div id="load-and-curate" class="section level2">
 <h2>Load and curate</h2>
-<pre class="r"><code>escre_list &lt;- read.csv(&quot;./Project_INTEGRATE/Analysis/data/INTEGRATE_MERLIN_WGS_Species_calls_030925_LLC.csv&quot;)
+<ol style="list-style-type: decimal">
+<li>Using an Enterobacterales species call list (although it doesn’t
+matter as we’re working with Kpn here)</li>
+</ol>
+<pre class="r"><code># ESCrE list containing Enterobacterales designation
+escre_list &lt;- read.csv(&quot;./Project_INTEGRATE/Analysis/data/INTEGRATE_MERLIN_WGS_Species_calls_030925_LLC.csv&quot;)
 escre_species &lt;- subset(escre_list,Enterobacterales == T) %&gt;% .$Species
+
+# Remove negative control
 qcd_201415 &lt;- read.csv(&quot;./Project_Penn_KPC/Sequence_data/illumina_fastq/master_qc_summary.csv&quot;)  %&gt;% subset(grepl(&quot;NEG_CTL&quot;,Sample)==F) 
+
+# Convert column names to snakecase for easy use
 colnames(qcd_201415) &lt;- snakecase::to_snake_case(colnames(qcd_201415))
 qcd_201415$qc_pass &lt;- qcd_201415$qc_check==&quot;PASS&quot; 
 
+# CRE flag
 qcd_201415$CRE &lt;- qcd_201415$species %in% escre_species 
 qcd_201415$isolate_no &lt;- qcd_201415$sample
 
+# Merge
 df_2014_15 &lt;- left_join(df_2014_15,qcd_201415) </code></pre>
 </div>
 </div>
-<div id="prioritize-st-data-via-kleborate" class="section level1">
-<h1>Prioritize ST data via kleborate</h1>
+<div id="prioritize-sequence-type-st-data-via-kleborate" class="section level1">
+<h1>Prioritize Sequence type (ST) data via Kleborate</h1>
 <pre class="r"><code>kleborate_kpsc_penn &lt;- read_delim(&quot;./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt&quot;)  %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
 
 ST_data_201415 &lt;- lapply(df_2014_15$isolate_no,FUN=function(x){
@@ -889,9 +1014,10 @@ df_2014_15 &lt;- left_join(df_2014_15,ST_data_201415) %&gt;% rename(mlst_st=st)<
 <pre class="r"><code>paste0(&quot;Number of qc_passing CRE isolates &amp; full metadata: &quot;,sum(df_2014_15$qc_pass==TRUE &amp; df_2014_15$CRE==TRUE &amp; df_2014_15$has_full_metadata==T))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing CRE isolates &amp; full metadata: 407&quot;</code></pre>
 </div>
-<div id="save" class="section level1">
-<h1>Save</h1>
-<pre class="r"><code>saveRDS(df_2014_15,&quot;./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.RDS&quot;)</code></pre>
+<div id="save-the-dataset" class="section level1">
+<h1>Save the dataset</h1>
+<pre class="r"><code>saveRDS(df_2014_15,&quot;./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.RDS&quot;)
+write_csv(df_2014_15,&quot;./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.csv&quot;)</code></pre>
 </div>
 
 
