@@ -165,7 +165,7 @@ heatmap_figure
 
 
 ```{r,fig.width=7.5,fig.height=7.5} 
-fig_heatmap_image <- grid.grabExpr(draw(heatmap_figure))
-figure <- cowplot::plot_grid(heatmap_figure) 
-ggsave(filename = "./figures/s_figure_8_carbapeemase_plasmid_replicon_type_heatmap.png",plot=figure,width = 7.5,height = 7.5,dpi=900,bg = 'white')
+png("./figures/s_figure_8_carbapeemase_plasmid_replicon_type_heatmap.png", width = 7.5, height = 7.5, units = 'in',res = 900,bg = 'white')
+draw(heatmap_figure)
+dev.off()  
 ``` 
