@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-08" />
+<meta name="date" content="2026-06-09" />
 
 <title>Supplemental Table 2: Sequencing QC data for study isolates</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">Supplemental Table 2: Sequencing QC data
 for study isolates</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-08</h4>
+<h4 class="date">2026-06-09</h4>
 
 </div>
 
@@ -591,7 +591,7 @@ for study isolates</h1>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                                   &quot;msla0572.local&quot; 
+                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -918,6 +918,9 @@ isolate_data_merged$`Source category` &lt;- recode(isolate_data_merged$`Source c
                                                 &quot;blood&quot; = &quot;Blood&quot;,
                                                 &quot;wound&quot; = &quot;Wound&quot;,
                                                 &quot;other&quot; = &quot;Other&quot;)
+
+rownames(isolate_data_merged) &lt;- NULL
+
 head(isolate_data_merged) %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
@@ -1174,7 +1177,7 @@ ST258
 <div id="save-table" class="section level1">
 <h1>Save table</h1>
 <pre class="r"><code>saveRDS(isolate_data_merged,&quot;./tables/s_table_2_SRA_metadata.RDS&quot;)
-write.csv(isolate_data_merged,&quot;./tables/s_table_2_SRA_metadata.csv&quot;)</code></pre>
+write.csv(isolate_data_merged,&quot;./tables/s_table_2_SRA_metadata.csv&quot;,row.names = F)</code></pre>
 </div>
 
 

@@ -62,12 +62,15 @@ isolate_data_merged$`Source category` <- recode(isolate_data_merged$`Source cate
                                                 "blood" = "Blood",
                                                 "wound" = "Wound",
                                                 "other" = "Other")
+
+rownames(isolate_data_merged) <- NULL
+
 head(isolate_data_merged) %>% favorite_kable()
 ```
 
 # Save table
 ```{r}
 saveRDS(isolate_data_merged,"./tables/s_table_2_SRA_metadata.RDS")
-write.csv(isolate_data_merged,"./tables/s_table_2_SRA_metadata.csv")
+write.csv(isolate_data_merged,"./tables/s_table_2_SRA_metadata.csv",row.names = F)
 ```
  
