@@ -103,7 +103,7 @@ table <- table %>% mutate(across(where(is.character),
 ```
 
 ```{r}
-table   %>% favorite_kable
+table %>% favorite_kable
 ```
 
 ```{r}
