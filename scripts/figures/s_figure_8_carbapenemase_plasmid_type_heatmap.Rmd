@@ -119,13 +119,13 @@ rowannots <- rowAnnotation(
     col = list(
         Study =study_colors,
         `Sequence type (ST)` = ST_colors,
-        Plasmid = plasmid_colors,
+        `Plasmid cluster` = plasmid_colors,
         Carbapenemase = carbapenemase_colors
     ),
       annotation_legend_param = list(   
     Study = c(legend_common_features,list(ncol=2)), 
-    `Sequence type (ST)` =c(legend_common_features,list(at = ST_scale$breaks,ncol=2)),  
-    `Plasmid cluster` =c(legend_common_features,list(at = plasmid_fill_scale$breaks,ncol=2)),  
+    `Sequence type (ST)` = c(legend_common_features,list(at = ST_scale$breaks,ncol=2)),  
+    `Plasmid cluster` = c(legend_common_features,list(at = names(plasmid_colors),ncol=2)),  
     Carbapenemase =c(legend_common_features,list(at=carbapenemase_scale$breaks %>% gsub("<i>bla</i><sub>","bla",.) %>% gsub("</sub>","",.) %>% trimws(.,"both") ,ncol=1))),
     
   annotation_name_gp = gpar(fontsize=9)
