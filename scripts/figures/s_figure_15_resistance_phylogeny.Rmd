@@ -90,7 +90,7 @@ resistance_variable_order <- resistance_vars[column_order(resistance_clustering)
 ## Overall
 
 ```{r,fig.width=8.5,fig.height=10.625} 
-A <- get_short_phylogeny(df = df ,tr =  tr,col_width = 0.1,col_offset = 0.0065,col_offset_y =  0.25,col_fontsize = 3,ylimit = 567,treescale_y = 10,treescale_offset = 2,resistance_variable_order = resistance_variable_order) + phylo_theme
+A <- get_short_phylogeny(df = df ,tr =  tr,col_width = 0.1,col_offset = 0.0065,col_offset_y =  0.25,col_fontsize = 3,ylimit = 565,treescale_y = 10,treescale_offset = 2,resistance_variable_order = resistance_variable_order) + phylo_theme
 
 A+ theme(legend.position= 'none')
 ```
@@ -103,7 +103,7 @@ st258_df <- as.data.frame(st258_df)
 rownames(st258_df) <- st258_df$isolate_no
 tr_ST258 <- tr %>% keep.tip(subset(st258_df$isolate_no,st258_df$isolate_no %in% tr$tip.label) ) %>% phytools::midpoint.root()
 
-B <- get_short_phylogeny(df = st258_df ,tr =  tr_ST258,col_width =  0.05,col_offset =  0.000076,col_offset_y = 0.25,col_fontsize = 2.5,ylimit = 269,treescale_y = 6.5,treescale_offset = 1.33,resistance_variable_order = resistance_variable_order) + theme(legend.position = 'none')
+B <- get_short_phylogeny(df = st258_df ,tr =  tr_ST258,col_width =  0.05,col_offset =  0.000076,col_offset_y = 0.25,col_fontsize = 2.5,ylimit = 267.5,treescale_y = 6.5,treescale_offset = 1.33,resistance_variable_order = resistance_variable_order) + theme(legend.position = 'none')
 
 B   + theme(legend.position= 'none')
 ```
@@ -116,7 +116,7 @@ st14_df <- as.data.frame(st14_df)
 rownames(st14_df) <- st14_df$isolate_no
 tr_ST14 <- tr %>% keep.tip(subset(st14_df$isolate_no,st14_df$isolate_no %in% tr$tip.label) )%>% phytools::midpoint.root()
 
-C <- get_short_phylogeny(df = st14_df ,tr =  tr_ST14,col_width =  0.05,col_offset =  0.00002,col_offset_y = 0.1,col_fontsize = 2.5,ylimit = 178,treescale_y = 6,treescale_offset = 1.2,resistance_variable_order = resistance_variable_order)  + theme(legend.position = 'none')
+C <- get_short_phylogeny(df = st14_df ,tr =  tr_ST14,col_width =  0.05,col_offset =  0.00002,col_offset_y = 0.1,col_fontsize = 2.5,ylimit = 177.5,treescale_y = 6,treescale_offset = 1.2,resistance_variable_order = resistance_variable_order)  + theme(legend.position = 'none')
 
 C + theme(legend.position = 'none')
 ```
@@ -140,9 +140,9 @@ D + theme(legend.position = 'none')
 st17_df <- df %>% subset(ST=='ST17')
 st17_df <- as.data.frame(st17_df)
 rownames(st17_df) <- st17_df$isolate_no
-tr_ST17 <- tr %>% keep.tip(subset(st17_df$isolate_no,st17_df$isolate_no %in% tr$tip.label) )%>% phytools::midpoint.root()
+tr_ST17 <- tr %>% keep.tip(subset(st17_df$isolate_no,st17_df$isolate_no %in% tr$tip.label)) %>% phytools::midpoint.root()
 
-E <- get_short_phylogeny(df = st17_df ,tr =  tr_ST17,col_width =  0.05,col_offset =  0.000008,col_offset_y = -0.4,col_fontsize = 2.5,ylimit = 42.5,treescale_y = 0.8,treescale_offset = 0.3,resistance_variable_order = resistance_variable_order)  + theme(legend.position = 'none')
+E <- get_short_phylogeny(df = st17_df ,tr =  tr_ST17,col_width =  0.05,col_offset =  0.000008,col_offset_y = -0.4,col_fontsize = 2.5,ylimit = 42,treescale_y = 0.8,treescale_offset = 0.3,resistance_variable_order = resistance_variable_order)  + theme(legend.position = 'none')
  
 E 
 ```
@@ -155,7 +155,7 @@ A_legend <- cowplot::get_legend(A)
 legend_fig <- cowplot::plot_grid(A_legend)
 smaller <- cowplot::plot_grid(B,C,D,E,ncol=2,labels = c("B","C","D","E"),hjust = 0)
 merged <- cowplot::plot_grid(A_fig,smaller,ncol=2,rel_widths = c(0.5,1))
-figure <- cowplot::plot_grid(merged,A_legend,rel_heights = c(1,0.125),ncol=1)
+figure <- cowplot::plot_grid(merged,A_legend,rel_heights = c(1,0.09),ncol=1)
 figure
 ```
 

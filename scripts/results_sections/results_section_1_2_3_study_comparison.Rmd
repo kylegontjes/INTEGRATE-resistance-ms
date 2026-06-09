@@ -1,5 +1,5 @@
 ---
-title: "Results section 1: Propsective surveillance of CRKP from California LTACHs"
+title: "Results section 1-3: Propsective surveillance of CRKP from California LTACHs and differences across studies"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -69,11 +69,6 @@ paste0("Number of isolates with metadata: ",nrow(df_202123_w_metadata))
 paste0("Proportion of isolates with metadata: ",round(nrow(df_202123_w_metadata)/ sum(nrow(df_202123_no_metadata),nrow(df_202123_w_metadata)),3))
 ```
 
-## Anatomical site
-```{r} 
-convert_tableone_into_df(dataset=df_202123_w_metadata,vars = "source_simplified") 
-``` 
-
 # Age & sex differences
 1. Preferentially select first isolate with metadata
 ```{r}
@@ -114,6 +109,23 @@ paste0("Wilcox test for length of stay")
 median_IQR("los_before_culture",df_w_metadata)
 ```
 
+# Frequency differences
+## Count
+```{r}
+paste0("Differences by study")
+hospital_study_table <- table(df_w_metadata$study,df_w_metadata$hospital_location) 
+hospital_study_table
+hospital_study_table %>% prop.table() *100
+hospital_study_table %>% fisher.test(simulate.p.value = T)
+
+paste0("Differences by study w/o Paramount")
+df_no_par <- subset(df_w_metadata,hospital_location != "Paramount")
+hospital_study_table_no_par <- table(df_no_par$study,df_no_par$hospital_location) 
+hospital_study_table_no_par
+hospital_study_table_no_par %>% prop.table() *100
+hospital_study_table_no_par %>% chisq.test(simulate.p.value = T)
+```
+
 # Source data 
 ```{r}
 df$blood <- ifelse(df$source_simplified == "blood",1,0)
@@ -133,20 +145,4 @@ paste0("Isolates with other source declaration: ")
 df %>% subset(source_simplified == "other") %>% .$source_site
 ```
 
-# Frequency differences
-## Count
-```{r}
-paste0("Differences by study")
-hospital_study_table <- table(df_w_metadata$study,df_w_metadata$hospital_location) 
-hospital_study_table
-hospital_study_table %>% prop.table() *100
-hospital_study_table %>% fisher.test(simulate.p.value = T)
-
-paste0("Differences by study w/o Paramount")
-df_no_par <- subset(df_w_metadata,hospital_location != "Paramount")
-hospital_study_table_no_par <- table(df_no_par$study,df_no_par$hospital_location) 
-hospital_study_table_no_par
-hospital_study_table_no_par %>% prop.table() *100
-hospital_study_table_no_par %>% chisq.test(simulate.p.value = T)
-```
  
