@@ -14,7 +14,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 # Environment
 ```{r}
-packages <- c("tidyverse",'ape','kableExtra','phytools','tableone','kableExtra','ggtree','phyloAMR','ggalluvial','colorRamp2',"RColorBrewer",'ComplexHeatmap',"cowplot") 
+packages <- c("tidyverse",'kableExtra','tableone','kableExtra','colorRamp2',"RColorBrewer",'ComplexHeatmap',"cowplot") 
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
@@ -45,6 +45,7 @@ paste0("Number of considered individuals with complete resistance datafor this a
 
 # Code for figure
 ```{r} 
+# Dataset
 last_line_res_numeric <- complete_case %>% select(rev(resistance_vars))
 
 # Get content
