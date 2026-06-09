@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-08" />
+<meta name="date" content="2026-06-09" />
 
 <title>Supplemental Table 3: Baseline characteristics</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">Supplemental Table 3: Baseline
 characteristics</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-08</h4>
+<h4 class="date">2026-06-09</h4>
 
 </div>
 
@@ -623,7 +623,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                                   &quot;msla0572.local&quot; 
+                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -829,13 +829,18 @@ ltach_shared_table</code></pre>
   LTACH 13      31      18</code></pre>
 <pre class="r"><code>ltach_shared_table_pvalue &lt;-  fisher.test(ltach_shared_table,simulate.p.value = T)
 ltach_shared_table_pvalue$p.value</code></pre>
-<pre><code>[1] 0.3738131</code></pre>
+<pre><code>[1] 0.3933033</code></pre>
 <pre class="r"><code>ltach_shared_table_pvalue_rounded &lt;- round(ltach_shared_table_pvalue$p.value ,digits = 2)
 ltach_shared_table_pvalue_rounded</code></pre>
-<pre><code>[1] 0.37</code></pre>
+<pre><code>[1] 0.39</code></pre>
 <pre class="r"><code>table$`P-value` &lt;- ifelse(table$Variable == &quot;Long-term acute care hospital (LTACH)&quot;,ltach_shared_table_pvalue_rounded,table$`P-value`)
 table$`P-value` &lt;- ifelse(table$`P-value` == &quot;1.000&quot;,&quot;1.00&quot;,table$`P-value`)
-table[table==&quot;0 (NaN)&quot;] &lt;- &quot;-&quot;  </code></pre>
+table[table==&quot;0 (NaN)&quot;] &lt;- &quot;-&quot;   
+
+# Replace brackets
+table &lt;- table %&gt;% mutate(across(where(is.character),
+                                 ~ gsub(&quot;\\[&quot;,&quot;(&quot;,.x))) %&gt;% mutate(across(where(is.character),
+                                 ~ gsub(&quot;\\]&quot;,&quot;)&quot;,.x))) </code></pre>
 <pre class="r"><code>table   %&gt;% favorite_kable</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
@@ -866,13 +871,13 @@ Test
 Age in years, median (IQR)
 </td>
 <td style="text-align:left;">
-71.00 [62.00, 79.00]
+71.00 (62.00, 79.00)
 </td>
 <td style="text-align:left;">
-73.00 [64.00, 82.00]
+73.00 (64.00, 82.00)
 </td>
 <td style="text-align:left;">
-69.00 [61.00, 77.00]
+69.00 (61.00, 77.00)
 </td>
 <td style="text-align:left;">
 &lt;0.001
@@ -1152,16 +1157,16 @@ Wound
 </tr>
 <tr>
 <td style="text-align:left;">
-Length of stay before culture, median [IQR]
+Length of stay before culture, median (IQR)
 </td>
 <td style="text-align:left;">
-25.00 [8.00, 55.00]
+25.00 (8.00, 55.00)
 </td>
 <td style="text-align:left;">
-20.00 [5.00, 43.00]
+20.00 (5.00, 43.00)
 </td>
 <td style="text-align:left;">
-32.00 [11.00, 71.00]
+32.00 (11.00, 71.00)
 </td>
 <td style="text-align:left;">
 &lt;0.001
@@ -1181,7 +1186,7 @@ Long-term acute care hospital (LTACH)
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-0.37
+0.39
 </td>
 <td style="text-align:left;">
 exact
@@ -1431,7 +1436,7 @@ LTACH 13
 </ul></li>
 </ul>
 <pre class="r"><code>saveRDS(table,&quot;./tables/s_table_3_demographics.RDS&quot;)
-write_csv(table,&quot;./tables/s_table_3_demographics.csv&quot;)</code></pre>
+write.csv(table,&quot;./tables/s_table_3_demographics.csv&quot;,row.names = F)</code></pre>
 </div>
 
 

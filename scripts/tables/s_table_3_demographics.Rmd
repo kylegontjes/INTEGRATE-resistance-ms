@@ -94,7 +94,12 @@ ltach_shared_table_pvalue_rounded
 ```{r}
 table$`P-value` <- ifelse(table$Variable == "Long-term acute care hospital (LTACH)",ltach_shared_table_pvalue_rounded,table$`P-value`)
 table$`P-value` <- ifelse(table$`P-value` == "1.000","1.00",table$`P-value`)
-table[table=="0 (NaN)"] <- "-"  
+table[table=="0 (NaN)"] <- "-"   
+
+# Replace brackets
+table <- table %>% mutate(across(where(is.character),
+                                 ~ gsub("\\[","(",.x))) %>% mutate(across(where(is.character),
+                                 ~ gsub("\\]",")",.x))) 
 ```
 
 ```{r}
@@ -103,5 +108,5 @@ table   %>% favorite_kable
 
 ```{r}
 saveRDS(table,"./tables/s_table_3_demographics.RDS")
-write_csv(table,"./tables/s_table_3_demographics.csv")
+write.csv(table,"./tables/s_table_3_demographics.csv",row.names = F)
 ```
