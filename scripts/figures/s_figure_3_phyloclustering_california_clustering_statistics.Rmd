@@ -99,6 +99,7 @@ A <-  general_statistics %>% tableGrob(rows = NULL,theme = mytheme)
 ```
 
 # Cluster dynamics data (i.e., membership in study)
+
 ```{r}
 clustering_data <- rbind(phylogeographic_clustering_data$ST258$clustering_info %>% mutate(ST='ST258'),phylogeographic_clustering_data$ST307$clustering_info %>% mutate(ST='ST307')) %>% rbind(phylogeographic_clustering_data$ST14$clustering_info %>% mutate(ST='ST14')) %>% rbind(phylogeographic_clustering_data$ST17$clustering_info %>% mutate(ST='ST17'))
  

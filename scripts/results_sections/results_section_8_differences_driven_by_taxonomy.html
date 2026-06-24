@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>Results section 8: Differences among taxonomic groups</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">Results section 8: Differences among
 taxonomic groups</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -809,16 +809,16 @@ IMI_dich_num
 211
 </td>
 <td style="text-align:right;">
-211
+151
 </td>
 <td style="text-align:right;">
-100.0
+71.6
 </td>
 <td style="text-align:left;">
-Fisher’s Exact Test
+Chi-squared
 </td>
 <td style="text-align:right;">
-0.0015175
+0.0000000
 </td>
 </tr>
 <tr>
@@ -1247,9 +1247,9 @@ Chi-squared
 <div id="differences-in-resistance-across-2021-23-st258-vs-2021-23-not-st258" class="section level1">
 <h1>Differences in resistance across 2021-23 ST258 vs 2021-23 not
 ST258</h1>
-<pre class="r"><code>resistance_vars_no_perfect &lt;- subset(resistance_vars,resistance_vars!=&quot;IMI_dich_num&quot;)
-lapply(resistance_vars_no_perfect,FUN=get_frequency_stats_compare,df=df_202123,comparitor=&#39;ST258&#39;) %&gt;% do.call(rbind,.)%&gt;% favorite_kable() </code></pre>
+<pre class="r"><code>lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_202123,comparitor=&#39;ST258&#39;) %&gt;% do.call(rbind,.)%&gt;% favorite_kable() </code></pre>
 <pre><code>[1] &quot;MERO_dich_num&quot;
+[1] &quot;IMI_dich_num&quot;
 [1] &quot;blbli_dich_num&quot;
 [1] &quot;MVB_dich_num&quot;
 [1] &quot;IR_dich_num&quot;
@@ -1334,6 +1334,41 @@ Chi-squared
 </td>
 <td style="text-align:right;">
 0.0000035
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+IMI_dich_num
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:right;">
+296
+</td>
+<td style="text-align:right;">
+138
+</td>
+<td style="text-align:right;">
+46.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+211
+</td>
+<td style="text-align:right;">
+151
+</td>
+<td style="text-align:right;">
+71.6
+</td>
+<td style="text-align:left;">
+Chi-squared
+</td>
+<td style="text-align:right;">
+0.0000000
 </td>
 </tr>
 <tr>

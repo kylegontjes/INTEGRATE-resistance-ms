@@ -83,8 +83,13 @@ mobtyper_mash_nn_mat <- get_mobtyper_mash_nn_matrix(df,mobtyper_merged)
 
 ## Save 
 ```{r}
+# Cluster matrix
 saveRDS(mobtyper_cluster_matrix,"./data/mobsuite/plasmid_cluster_matrix_merged_studies.RDS")
+write.csv(mobtyper_cluster_matrix,"./data/mobsuite/plasmid_cluster_matrix_merged_studies.csv",row.names = T)
+
+# Plasmid matrix
 saveRDS(mobtyper_mash_nn_mat,"./data/mobsuite/plasmid_mash_nn_matrix_merged_studies.RDS")
+write.csv(mobtyper_mash_nn_mat,"./data/mobsuite/plasmid_mash_nn_matrix_merged_studies.csv",row.names = T)
 ```
 
 # Load AMRFinder data
@@ -96,9 +101,9 @@ amrfinder_mat <- subset(amrfinder_mat,rownames(amrfinder_mat) %in% df$isolate_no
 # Curated data
 amrfinder <- readRDS("./data/amrfinder/amrfinder_curated.RDS") 
 amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
-amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla|ampC",element_symbol_renamed) )
-amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol_renamed) | grepl("KPC|NDM|VIM|IMP",element_symbol_renamed) | grepl("OXA-48 family",closest_reference_name))
-amrfinder_beta_bla_non_carb <- amrfinder %>% subset(class == "BETA-LACTAM" & grepl("bla",element_symbol_renamed) & !element_symbol_renamed %in% c(unique(amrfinder_carb_bla$element_symbol_renamed))) 
+amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("^(bla|ampC)",element_symbol_renamed))
+amrfinder_carb_bla <- amrfinder %>% subset((subclass == "CARBAPENEM" & grepl("^bla",element_symbol_renamed)) | grepl("^bla(KPC|NDM|VIM|IMP)",element_symbol_renamed) | grepl("OXA-48 family",closest_reference_name))
+amrfinder_beta_bla_non_carb <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("^(bla|ampC)",element_symbol_renamed)) %>% subset(!element_symbol_renamed %in% c(unique(amrfinder_carb_bla$element_symbol_renamed))) 
 ``` 
 
 # Create carbapenemase data
@@ -243,6 +248,7 @@ df$carbapenemase_plasmid_replicon_type <-  pbmcapply::pbmclapply(df$isolate_no,g
 carbapenemase_data <- df %>% select(isolate_no,blactamase,blactamase_non_carbapenemase,carbapenemase,carbapenemase_family,carbapenemase_plasmid,carbapenemase_plasmid_replicon_type,carbapenemase_plasmid_group)
 
 saveRDS(carbapenemase_data,"./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
+write.csv(carbapenemase_data,"./data/carbapenemase_content/carbapenemase_content_merged_studies.csv",row.names = F)
 ```
 
 # Create carbapenemase plasmid data
@@ -268,7 +274,8 @@ mobtyper_merged$carbapenemase <- apply(mobtyper_merged,1,FUN=function(x){
 })
 
 ## Save
-saveRDS(mobtyper_merged,"./data/mobsuite/mobtyper_merged_w_carbapenemase_data.RDS")
+saveRDS(mobtyper_merged,"./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.RDS")
+write.csv(mobtyper_merged,"./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.csv",row.names = F)
 ```
 
 ## MOB-contigs merged with carbapenemase data
@@ -282,7 +289,8 @@ mobsuite_contig_merged$carbapenemase_contig <- apply(mobsuite_contig_merged,1,FU
 })
 
 ## Save
-saveRDS(mobsuite_contig_merged,"./data/mobsuite/mobsuite_contig_merged_w_carbapenemase_data.RDS")
+saveRDS(mobsuite_contig_merged,"./data/carbapenemase_content/mobsuite_contig_merged_w_carbapenemase_data.RDS")
+write.csv(mobsuite_contig_merged,"./data/carbapenemase_content/mobsuite_contig_merged_w_carbapenemase_data.csv",row.names = F)
 ```
 
 # Create plasmid matrix
@@ -295,4 +303,5 @@ carbapenemase_plasmid_matrix <- df %>%
    
 ## Save carbapenemase pattern
 saveRDS(carbapenemase_plasmid_matrix,"./data/carbapenemase_content/carbapenemase_plasmid_matrix.RDS") 
+write.csv(carbapenemase_plasmid_matrix,"./data/carbapenemase_content/carbapenemase_plasmid_matrix.csv",row.names = T)
 ```

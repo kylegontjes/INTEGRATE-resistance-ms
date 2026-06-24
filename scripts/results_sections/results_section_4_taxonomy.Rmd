@@ -116,17 +116,18 @@ names(phylogeographic_clustering_data) <- STs
 ```
 
 # ST258 - clonal expansion of existing lineages with multiple novel introductions and clear loss of circulating PCMP_H genomes
-1. Phylogenetic events: 16 
 
-2. Singletons: 5 public, 1 INTEGRATE, 1 PCMP_H
+1. Phylogenetic events: 14 
 
-3. Clusters: 9 clusters
+2. Singletons: 7 (6 public & 1 PCMP_H)
+
+3. Clusters: 7 clusters
 
 a. 6 involve PCMP_H isolates: 1 dead-end, 4 with all, 1 w/ only public
 
 b. 5 involve INTEGRATE isolates: 4 with all, 1 w/ only public
 
-c. 8 involve public isolates: 4 with all, 1 w/ PCMP_H, 1 w/ INTEGRATE, 2 w/ only public 
+c. 6 involve public isolates: 4 with all, 1 w/ PCMP_H, 1 w/ INTEGRATE
 
 ```{r}
 paste0("Phylogeographic data for: ","ST258")
@@ -140,15 +141,15 @@ phylogeographic_clustering_data$ST258$clustering_info %>% favorite_kable()
 
 # ST307 - Many introductions with varying success
 
-1. Phylogenetic events: 15
+1. Phylogenetic events: 14
 
-2. Singletons: 5 public + 3 INTEGRATE
+2. Singletons: 8 (5 public + 3 INTEGRATE)
 
-3. Clusters: 7 clusters
+3. Clusters: 6 clusters
 
-a. 5 involve INTEGRATE isolates: 1 exclusive, 4 w/ public  
+a. 4 involve INTEGRATE + public isolates 
 
-b. 6 involve public isolates 4 with INTEGRATE, 2 unique
+b. 6 involve public isolates: 4 with INTEGRATE & 2 unique
 
 ```{r}
 paste0("Phylogeographic data for: ","ST307")
@@ -168,7 +169,7 @@ phylogeographic_clustering_data$ST307$clustering_info %>% favorite_kable()
 
 3. Clusters: 2 clusters 
 
-a. Both involve INTEGRATE + public genomes. One is very large (138 INTEGRATE + 50 public) and another is small (1 INTEGRATE + 1 public)
+a. Both involve INTEGRATE + public genomes. One is very large and another is small
 
 ```{r}
 paste0("Phylogeographic data for: ","ST14")
@@ -182,7 +183,7 @@ phylogeographic_clustering_data$ST14$clustering_info %>% favorite_kable()
 
 # ST17 - Clonal expansion of existing population w/ minor dead end introductions
 
-1. Phylogenetic events: 7
+1. Phylogenetic events: 8
 
 2. Singletons: 7 public  
 

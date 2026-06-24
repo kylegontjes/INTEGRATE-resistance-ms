@@ -19,6 +19,10 @@ d. Dropped one INT_1259 entry as it was a duplicate!
 
 2. 06/05/26: Removed gontjesr functions
 
+3. 06/22/26: Convert categories to informative naming
+
+4. Concert imipenem non-susceptibilty to resistant category in binary variable
+
 ```{r setup, include=FALSE}
 require(knitr)
 opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
@@ -47,6 +51,7 @@ sessionInfo()
 # Sequencing data
 
 1. Used QCD pipeline for processing 
+
 ```{r} 
 # Sample lookup
 sample_lookup = read_delim("../../../Sequence_data/metadata/sample_lookup/2025-03-25_INT_CRE_genome_sample_lookup.txt") 
@@ -64,6 +69,7 @@ paste0("Percentage of isolates that had passed our quality control filters: ",ro
 # Filter step #1: CRE genomes
 
 1. We retained Enterobacterales species per LLC's suggestions
+
 ```{r}
 escre_list <- read.csv("../../data/INTEGRATE_MERLIN_WGS_Species_calls_030925_LLC.csv")
 escre_species <- subset(escre_list,Enterobacterales == T) %>% .$Species
@@ -80,6 +86,7 @@ qcd %>% subset(qc_pass==T & CRE==F) %>% group_by(species) %>% summarize(n=n())  
 ## Filtering #2: Mismatches
 
 1. A few genomes had possible mismatches. They were dropped.
+
 ```{r}
 mismatches <- read_xlsx("../../data/INTEGRATE_lab_WGS_species_mismatches_021025_llc.xlsx")  %>% .[-nrow(.),] 
 
@@ -96,7 +103,8 @@ to_drop_isolates <- mismatches %>% subset(`Keep/Drop`=="drop") %>% .$sample_id
 paste0("Number of isolates to drop: ", length(to_drop_isolates)) 
 ```
 
-# Get sample ID from QCD entry
+### Get sample ID from QCD entry
+
 ```{r}
 get_sample_id = function(isolate,sample_lookup){
   subset(sample_lookup,`Genome ID` == isolate) %>% .$`Sample ID` %>% as.character() %>% paste0(collapse=";") %>% trimws(.,whitespace = ";")
@@ -110,6 +118,7 @@ qcd$sample_id <- sapply(qcd$sample,get_sample_id,sample_lookup) %>% as.character
 1. See ./data/
 
 2. Duplicated metadata entries were flagged and dropped accordingly
+
 ```{r}
 duplicated_metadata_entries <- read_csv("../../data/INTEGRATE_duplicated_metadata_entries_120125.csv")
 duplicated_metadata_entries %>% favorite_kable()
@@ -121,6 +130,7 @@ qcd <- qcd %>% subset(!sample %in%drop_worst_duplicated_entry)
 ```
 
 # Merge QCD data with the dataset
+
 ```{r}
 # Load
 df <- read_delim("../../data/integrate_metadata_20260220.txt")
@@ -224,6 +234,8 @@ df_merged <- lapply(df$isolate_no,FUN=function(x){
   }
 }) %>% do.call(rbind,.)
 
+df_merged <- as.data.frame(df_merged)
+
 paste0("Number of isolates: ",nrow(df_merged))
 paste0("Number of qc_passing isolates: ",sum(df_merged$qc_pass==TRUE))
 paste0("Number of qc_passing CRE isolates: ",sum(df_merged$qc_pass==TRUE & df_merged$CRE==TRUE))
@@ -233,58 +245,57 @@ paste0("Number of qc_passing CRE isolates without metadata: ",sum(df_merged$qc_p
   
 # Curate metadata
 ## Antibiotic resistance  
-```{r}
-factorize_mic_null <- function(dataset,resistance){ 
-  values <- unique(na.omit(as.character(dataset[[resistance]])))
-  combination <- ifelse(length(grep("/",values))>0,"yes","no")
-  if(combination == "no"){
-    level <- c(
-      #Endpoint 
-      values[grep("≤|<|<=",values)], 
-      #if non endpoint included 
-      #non-endpoint sorted
-      as.character(sort(as.numeric(values[!grepl("≤|<|>|>=|≥", values)]))),
-      #Endpoint
-      values[grep(">|>=|≥",values)])
-  }
-  if(combination == "yes"){
-    values_no_in <- gsub("/.*","",values)
-    in_value <- gsub(".*\\/","",values)
-    level <- c(
-      #Endpoint 
-      values_no_in[grep("≤",values_no_in)], 
-      #if non endpoint included 
-      #non-endpoint sorted
-      as.character(sort(as.numeric(values_no_in[!grepl("≤|>", values_no_in)]))),
-      #Endpoint
-      values_no_in[grep(">",values_no_in)])
-    level <- paste0(level,"/",in_value)
-  }    
-  factorized <- factor(as.vector(dataset[[resistance]]),levels = level)
-  return(factorized)
-}
-```
-
+ 
 1. Update the names
 
 2. Recode numerical values
 
-3. Numerize, factorize, and log2 transform
+3. Numerize and log2 transform
 
 4. Create dichotomous variable
 
 5. Create KPC-inhibiting BL/BLI antibiotics
+
 ```{r}  
-## Convert names
-df_merged <-  dplyr::rename(df_merged,MERO='mero',IMI='imi',CZA='cza',MVB = "mev",IR = "imr", PLZ = "plz", CST='col',OMC='omc',DLX='dlx',ERV='erv',CT ='c_t',FDC = 'fdc_kb_zoi_mm',FOS ='fos') 
-df_merged <-  dplyr::rename(df_merged,MERO_cat='mero_int',IMI_cat='imi_int',CZA_cat='cza_int',MVB_cat = "mev_int",IR_cat = "imr_int", PLZ_cat = "plz_int", CST_cat='col_int',OMC_cat='omc_int',DLX_cat='dlx_int',ERV_cat='erv_int',CT_cat ='ct_int',FDC_cat = 'fdc_int',FOS_cat = 'fos_int') 
+# Convert names
+## Raw names
+df_merged <-  dplyr::rename(df_merged,
+                            MERO='mero',
+                            IMI='imi',
+                            CZA='cza',
+                            MVB = "mev",
+                            IR = "imr", 
+                            PLZ = "plz", 
+                            CST='col',
+                            OMC='omc',
+                            DLX='dlx',
+                            ERV='erv',
+                            CT ='c_t',
+                            FDC = 'fdc_kb_zoi_mm',
+                            FOS ='fos') 
+## Categorical names
+df_merged <-  dplyr::rename(df_merged,
+                            MERO_cat='mero_int',
+                            IMI_cat='imi_int',
+                            CZA_cat='cza_int',
+                            MVB_cat = "mev_int",
+                            IR_cat = "imr_int",
+                            PLZ_cat = "plz_int", 
+                            CST_cat='col_int',
+                            OMC_cat='omc_int',
+                            DLX_cat='dlx_int',
+                            ERV_cat='erv_int',
+                            CT_cat ='ct_int',
+                            FDC_cat = 'fdc_int',
+                            FOS_cat = 'fos_int') 
 
 ## Create MIC Variable
 MIC_variables <- c('MERO',"IMI",'MVB','IR','PLZ','CST','OMC','DLX','ERV','CZA',"FDC","CT","FOS")
+MIC_variables_wo_IMI <- MIC_variables %>% subset(.!="IMI")
 
 ## Recode numeric values if found in category if numeric is NA
 for(i in MIC_variables){
-  df_merged[,paste0(i)] <- ifelse(df_merged[[paste0(i)]] %in% c("S","I","R"),NA, df_merged[[paste0(i)]])
+  df_merged[,paste0(i)] <- as.character(ifelse(df_merged[[paste0(i)]] %in% c("S","I","R"),NA, df_merged[[paste0(i)]]))
 }
 
 ## Numerize MIC Data
@@ -292,27 +303,48 @@ for(i in MIC_variables){
   df_merged[,paste0(i,"_num")] <- df_merged[[paste0(i)]] %>% gsub("≤","",.) %>% gsub(">","",.) %>% gsub("/.","",.) %>% trimws(.,'both') %>% as.numeric
 }
 
-## Factorize Raw MIC Data
-for(i in MIC_variables){
-  df_merged[,i] <- factorize_mic_null(df_merged,i)
-}
-
 ## Log-2 Transform Data
 for(i in MIC_variables){
-  df_merged[,paste0(i,"_log_2")] <- log2(df_merged[paste0(i,"_num")])
+  df_merged[,paste0(i,"_log_2")] <- log2(df_merged[[paste0(i,"_num")]])
 }
 
-# Dich
-for(i in MIC_variables){
-  df_merged[,paste0(i,"_dich_num")] <- sapply(df_merged[paste0(i,"_cat")],FUN=function(x){
-      ifelse(x %in% c("ERROR",NA),NA,ifelse(x %in% c("I","R"),1,0))
+## Factorize Categorical Data
+MIC_variables_cat <- paste0(MIC_variables,"_cat") 
+for(i in MIC_variables_cat){
+  df_merged[,i] <- factor(as.vector(df_merged[[i]]), 
+                           levels = c("S","I","R"),
+                           labels = c("Susceptible","Intermediate","Resistant"))
+}
+
+# Dichotomous variables
+## Every resistant variable other than imipenem
+for(i in MIC_variables_wo_IMI){
+  df_merged[,paste0(i,"_dich_num")] <- sapply(df_merged[[paste0(i,"_cat")]],FUN=function(x){
+      ifelse(x %in% c("ERROR",NA),NA,ifelse(x %in% c("Intermediate","Resistant"),1,0))
   })
 }
 
-df_merged$blbli_dich_num <- ifelse(is.na(df_merged$MVB_dich_num) & is.na(df_merged$IR_dich_num) & is.na(df_merged$CZA_dich_num),NA,ifelse( df_merged$MVB_dich_num==1| df_merged$IR_dich_num==1 | df_merged$CZA_dich_num == 1,1,0))
-``` 
+## Imipenem: Dichotomous resistance is the resistant category only, due to lack of measurement
+df_merged$IMI_dich_num <- ifelse(df_merged$IMI_cat=="Resistant",1,0)
+```
+
+## Create BL/BLI combination therapy outcome
+
+1. This will focus on KPC-inhibiting BL/BLI antibiotics: MVB, CZA, and IR
+
+```{r}  
+df_merged$blbli_dich_num <- ifelse(is.na(df_merged$MVB_dich_num) & is.na(df_merged$IR_dich_num) & is.na(df_merged$CZA_dich_num), NA,
+                                   ifelse(df_merged$MVB_dich_num==1| df_merged$IR_dich_num==1 | df_merged$CZA_dich_num == 1, 1, 0))
+
+
+df_merged$blbli_dich <- ifelse(df_merged$blbli_dich_num==1,"Non-susceptible",
+                               ifelse(df_merged$blbli_dich_num==0,"Susceptible",df_merged$blbli_dich_num))
+```
   
 ## Prioritize kleborate's ST data 
+
+1. We are prioritizing kleborate's ST calls over mlst
+
 ```{r}
 kleborate_Ecoli <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/escherichia_INTEGRATE/escherichia_output.txt") %>% `colnames<-`(recode(colnames(.), "ST...10"="ST_Pasteur",  "ST...19"="ST_Achtman")) %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
 kleborate_kosc <- read_delim("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kosc_INTEGRATE/klebsiella_oxytoca_complex_output.txt") %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
@@ -347,7 +379,7 @@ ST_data_202123 <- lapply(df_merged$isolate_no,FUN=function(x){
 df_merged <- left_join(df_merged,ST_data_202123) %>% rename(mlst_st=st)
 ```
 
-# Save the dataset
+# Save the 2021-23  dataset
 
 ```{r}
 saveRDS(df_merged,"./data/dataset/INTEGRATE_metadata_qcd_merged.RDS")

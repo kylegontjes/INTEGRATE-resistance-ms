@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>Make final datasets</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Make final datasets</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -392,7 +392,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -448,8 +448,8 @@ paste0(&quot;Total number of isolates: &quot;,nrow(df_metadata_all))</code></pre
 2014-15 2021-23 
     408    1372 </code></pre>
 </div>
-<div id="clinical-cre" class="section level1">
-<h1>Clinical CRE</h1>
+<div id="clinical-cre-isolates" class="section level1">
+<h1>Clinical CRE isolates</h1>
 <ol style="list-style-type: decimal">
 <li>Subset dataset to non-rectal isolates</li>
 </ol>
@@ -467,8 +467,8 @@ paste0(&quot;Total number of clinical CRE isolates: &quot;,nrow(df_metadata_all_
 2014-15 2021-23 
     408     864 </code></pre>
 </div>
-<div id="clinical-crkp" class="section level1">
-<h1>Clinical CRKP</h1>
+<div id="clinical-crkp-isolates" class="section level1">
+<h1>Clinical CRKP isolates</h1>
 <ol style="list-style-type: decimal">
 <li><p>Subset dataset to Kpn isolates</p></li>
 <li><p>Label the participant’s first isolate</p></li>
@@ -500,8 +500,8 @@ paste0(&quot;Total number of clinical CRKP isolates: &quot;,nrow(df_metadata_all
 2014-15 2021-23 
     408     724 </code></pre>
 </div>
-<div id="add-metadata-to-kpn-dataset" class="section level1">
-<h1>Add metadata to Kpn dataset</h1>
+<div id="add-metadata-to-klebsiella-pneumoniae-dataset" class="section level1">
+<h1>Add metadata to Klebsiella pneumoniae dataset</h1>
 <pre class="r"><code>create_Kpn_Species_ST_variable &lt;- function(dataset){
   df_201415 &lt;- dataset %&gt;% subset(study == &quot;2014-15&quot;)
   df_202123 &lt;- dataset %&gt;% subset(study == &quot;2021-23&quot;)
@@ -516,14 +516,14 @@ df_metadata_all_clinical_kpn_first_isolate &lt;- df_metadata_all_clinical_kpn_fi
 df_metadata_all_clinical_kpn_first_isolate_per_Q &lt;- df_metadata_all_clinical_kpn_first_isolate_per_Q %&gt;% 
   cbind(create_Kpn_Species_ST_variable(df_metadata_all_clinical_kpn_first_isolate_per_Q) ) </code></pre>
 </div>
-<div id="first-isolate" class="section level1">
-<h1>First isolate</h1>
+<div id="first-isolate-per-patient" class="section level1">
+<h1>First isolate per patient</h1>
 <pre class="r"><code># First isolate  
 saveRDS(df_metadata_all_clinical_kpn_first_isolate,&quot;./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.RDS&quot;) 
 write_csv(df_metadata_all_clinical_kpn_first_isolate,&quot;./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.csv&quot;)</code></pre>
 </div>
-<div id="first-isolate-per-quarter" class="section level1">
-<h1>First isolate per quarter</h1>
+<div id="first-isolate-per-patient-per-calendar-quarter" class="section level1">
+<h1>First isolate per patient per calendar quarter</h1>
 <pre class="r"><code># First isolate per quarter
 saveRDS(df_metadata_all_clinical_kpn_first_isolate_per_Q,&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS&quot;) 
 write_csv(df_metadata_all_clinical_kpn_first_isolate_per_Q,&quot;./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.csv&quot;)</code></pre>

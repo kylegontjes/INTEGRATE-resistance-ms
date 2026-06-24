@@ -1,5 +1,5 @@
 ---
-title: "Supplemental Figure 1: Repeated sampling"
+title: "Supplemental Figure 1: Study design justification figure"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -50,7 +50,7 @@ df_summary_proportion$percentage <- ifelse(df_summary_proportion$study=='2014-15
 
 wilcox.test(n_isolates ~ study, df_summary)
 
-A <- ggplot(data=df_summary_proportion,aes(x=n_isolates,y=percentage)) + geom_bar(stat='identity',fill='black') + facet_wrap(~study) + theme_bw_me + ylab("Percentage of patients (%)") + xlab("Clinical isolates per patient") + ylim(NA,100) + geom_text(aes(x=n_isolates,label = n,y=percentage+5),size = 2.75)  + scale_x_continuous(breaks = scales::pretty_breaks(10))
+A <- ggplot(data=df_summary_proportion,aes(x=n_isolates,y=percentage)) + geom_bar(stat='identity',fill='black') + facet_wrap(~study) + theme_bw_me + ylab("Percentage of patients") + xlab("Clinical isolates per patient") + ylim(NA,100) + geom_text(aes(x=n_isolates,label = n,y=percentage+5),size = 2.75)  + scale_x_continuous(breaks = scales::pretty_breaks(10))
 
 A
 ```
@@ -66,7 +66,7 @@ df_summary_first_per_q_prop$percentage <- ifelse(df_summary_first_per_q_prop$stu
 
 wilcox.test(n_isolates ~ study, df_summary_first_per_q)
 
-B <- ggplot(data=df_summary_first_per_q_prop,aes(x=n_isolates,y=percentage)) + geom_bar(stat='identity',fill = 'black') + theme_bw_me + ylab("Percentage of patients (%)") + xlab("Quarters with at least one isolate") + ylim(NA,100) + geom_text(aes(x=n_isolates,label = n,y=percentage+5),size = 3.5)  + facet_wrap(~study) + scale_x_continuous(breaks = scales::pretty_breaks(5))
+B <- ggplot(data=df_summary_first_per_q_prop,aes(x=n_isolates,y=percentage)) + geom_bar(stat='identity',fill = 'black') + theme_bw_me + ylab("Percentage of patients") + xlab("Quarters with at least one isolate") + ylim(NA,100) + geom_text(aes(x=n_isolates,label = n,y=percentage+5),size = 3.5)  + facet_wrap(~study) + scale_x_continuous(breaks = scales::pretty_breaks(5))
 
 B
 ```
@@ -81,7 +81,7 @@ df_summary_ST_prop <-  df_summary_ST %>% group_by(study,n_STs) %>% summarise(n=l
 df_summary_ST_prop$percentage <- ifelse(df_summary_ST_prop$study=='2014-15',df_summary_ST_prop$n /n_participants_1415, df_summary_ST_prop$n / n_participants_2123) * 100
 df_summary_ST_prop$n_STs <- as.factor(df_summary_ST_prop$n_STs)
 
-C <- ggplot(data=df_summary_ST_prop,aes(x=n_STs,y=percentage)) + geom_bar(stat='identity',fill = 'black') + theme_bw_me + ylab("Percentage of patients (%)") + xlab("Sequence types per patient\n") + ylim(NA,104) + geom_text(aes(x=n_STs,label = n,y=percentage+5),size = 3.5)  + facet_wrap(~study)
+C <- ggplot(data=df_summary_ST_prop,aes(x=n_STs,y=percentage)) + geom_bar(stat='identity',fill = 'black') + theme_bw_me + ylab("Percentage of patients") + xlab("Sequence types per patient\n") + ylim(NA,104) + geom_text(aes(x=n_STs,label = n,y=percentage+5),size = 3.5)  + facet_wrap(~study)
 C
 ```
 
@@ -95,11 +95,12 @@ df_summary_ST_first_per_q_prop <-  df_summary_ST_first_per_q %>% group_by(study,
 df_summary_ST_first_per_q_prop$percentage <- ifelse(df_summary_ST_first_per_q_prop$study=='2014-15',df_summary_ST_first_per_q_prop$n /n_participants_1415, df_summary_ST_first_per_q_prop$n / n_participants_2123) * 100
 df_summary_ST_first_per_q_prop$n_STs <- as.factor(df_summary_ST_first_per_q_prop$n_STs)
 
-D <- ggplot(data=df_summary_ST_first_per_q_prop,aes(x=n_STs,y=percentage)) + geom_bar(stat='identity',fill = 'black') + theme_bw_me + ylab("Percentage of patients (%)") + xlab("Sequence types per patient\n(First isolate per patient per quarter)") + ylim(NA,104) + geom_text(aes(x=n_STs,label = n,y=percentage+5),size = 3.5)  + facet_wrap(~study)
+D <- ggplot(data=df_summary_ST_first_per_q_prop,aes(x=n_STs,y=percentage)) + geom_bar(stat='identity',fill = 'black') + theme_bw_me + ylab("Percentage of patients") + xlab("Sequence types per patient\n(First isolate per patient per quarter)") + ylim(NA,104) + geom_text(aes(x=n_STs,label = n,y=percentage+5),size = 3.5)  + facet_wrap(~study)
 D
 ```
 
 # E -  Frequency per patient
+
 ```{r}
 frequency_per_ST <- df %>%
     group_by(study, participant_id, ST) %>%
@@ -122,11 +123,12 @@ E <- ggplot(frequency_per_ST,
            y = ST,
            fill = perc_participants)) +
     geom_tile() +
-    facet_wrap(~study) + geom_text(aes(label = round(perc_participants,1)),color='black',size = 2.5) + theme_bw_me + xlab("Number of contributed isolates") + ylab("Sequence type (ST)") + scale_fill_gradient(breaks = c(0,20,40,60,80,100),low = 'white',high='red',name = 'Percentage of patients (%)')
+    facet_wrap(~study) + geom_text(aes(label = round(perc_participants,1)),color='black',size = 2.75) + theme_bw_me + xlab("Number of contributed isolates") + ylab("Sequence type (ST)") + scale_fill_gradient(breaks = c(0,20,40,60,80,100),low = 'white',high='red',name = 'Percentage of patients',limits = c(0,100))
 ```
 
 
 # F - Change in study prevalence based on study method 
+
 ```{r}
 get_frequency_differences <- function(df,study){
   df_first_isolate <- df %>% subset(first_isolate==T)
@@ -135,19 +137,16 @@ get_frequency_differences <- function(df,study){
 df_ST_dist <-   df   %>%
   count(ST) %>%
   complete(ST, fill = list(n = 0)) %>%
-  mutate(prop = n / sum(n) * 100)  %>% rename('n_overall' = 'n',
-                                                                                   'prop_overall' = 'prop')
+  mutate(prop = n / sum(n) * 100)  %>% rename('n_overall' = 'n',   'prop_overall' = 'prop')
 
 df_first_isolate_ST_Dist <-   df_first_isolate   %>%
   count(ST) %>%
   complete(ST, fill = list(n = 0)) %>%
-  mutate(prop = n / sum(n) * 100)%>% rename('n_first' = 'n',
-                                                                                   'prop_first' = 'prop')
+  mutate(prop = n / sum(n) * 100)%>% rename('n_first' = 'n', 'prop_first' = 'prop')
 df_first_isolate_per_q_ST_Dist <-   df_first_isolate_per_quarter   %>%
   count(ST) %>%
   complete(ST, fill = list(n = 0)) %>%
-  mutate(prop = n / sum(n) * 100)  %>% rename('n_quarter' = 'n',
-                                                                                   'prop_quarter' = 'prop')
+  mutate(prop = n / sum(n) * 100)  %>% rename('n_quarter' = 'n', 'prop_quarter' = 'prop')
 
 df_ST_dist_by_study <- left_join(df_ST_dist,df_first_isolate_ST_Dist) %>% left_join(df_first_isolate_per_q_ST_Dist)
 df_ST_dist_by_study[is.na(df_ST_dist_by_study)] <- 0
@@ -183,14 +182,13 @@ diffs <- rbind(df_201415_diff,df_202123_diff)
 min_diff <- c(diffs %>% .$value %>% min %>% round() ) - 1
 max_diff <- c(diffs%>% .$value %>% max %>% round() )
 
-f <- ggplot(data = diffs ,aes(x = value)) + geom_histogram(fill='black',bins = 50) + facet_grid(study~variable)  + labs(x="Change in frequency relative to complete dataset (%)",y="Sequence types") + xlim(min_diff,max_diff)   + theme(panel.background = element_rect(fill = "white",colour = 'black'), panel.grid = element_blank(),                                                                                                                                             strip.background = element_rect(fill = "white",colour = "black",linewidth=1),                                                                                                                      panel.grid.major = element_blank(),                                                                                                                                                            panel.grid.minor = element_blank(),                                                                                                                                                          axis.line = element_line(colour = "black"),legend.position = "bottom") + scale_x_continuous(breaks = scales::pretty_breaks(8))
+f <- ggplot(data = diffs ,aes(x = value)) + geom_histogram(fill='black',bins = 50) + facet_grid(study~variable)  + labs(x="Change in frequency relative to the isolate collection (%)",y="Sequence types") + xlim(min_diff,max_diff)   + theme(panel.background = element_rect(fill = "white",colour = 'black'), panel.grid = element_blank(),                                                                                                                                             strip.background = element_rect(fill = "white",colour = "black",linewidth=1),                                                                                                                      panel.grid.major = element_blank(),                                                                                                                                                            panel.grid.minor = element_blank(),                                                                                                                                                          axis.line = element_line(colour = "black"),legend.position = "bottom") + scale_x_continuous(breaks = scales::pretty_breaks(8))
 ```
 
-```{r,fig.width=11.5,fig.height=11.5}
+```{r,fig.width=10.75,fig.height=10.75}
 AB <- cowplot::plot_grid(A,B,rel_widths = c(1,0.66),labels = "AUTO",ncol=2)
 CD <- cowplot::plot_grid(C,D,rel_widths = c(1,1),labels = c("C","D"),ncol=2)
 CDF <-  cowplot::plot_grid(CD,f,rel_widths = c(1.25,1),labels = c("","F"),ncol=2)
-
 
 E_legend <- cowplot::get_legend(E) %>% cowplot::plot_grid()
 E_fig <- cowplot::plot_grid(E + theme(legend.position= 'none'),E_legend,ncol=1,rel_heights = c(1,0.07))
@@ -199,5 +197,5 @@ figure
 ```
 
 ```{r,fig.width=9,fig.height=4.5}  
-ggsave(filename = "./figures/s_figure_1_repeated_samples.png",plot=figure,width = 11.5,height = 11.5,dpi=900,bg = 'white')
+ggsave(filename = "./figures/s_figure_1_repeated_samples.png",plot=figure, width = 10.75, height = 10.75, dpi=900, bg = 'white')
 ```

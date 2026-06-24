@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>2021-23 CA CRKP LTACH isolate collection dataset curation</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">2021-23 CA CRKP LTACH isolate collection
 dataset curation</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -595,7 +595,10 @@ removal</p></li>
 <li><p>Dropped one INT_1259 entry as it was a duplicate!</p></li>
 </ol>
 <ol start="2" style="list-style-type: decimal">
-<li>06/05/26: Removed gontjesr functions</li>
+<li><p>06/05/26: Removed gontjesr functions</p></li>
+<li><p>06/22/26: Convert categories to informative naming</p></li>
+<li><p>Concert imipenem non-susceptibilty to resistant category in
+binary variable</p></li>
 </ol>
 <div id="environment" class="section level1">
 <h1>Environment</h1>
@@ -639,7 +642,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -753,15 +756,15 @@ paste0(&quot;Number of isolates with genus-level differences: &quot;, sum(mismat
 to_drop_isolates &lt;- mismatches %&gt;% subset(`Keep/Drop`==&quot;drop&quot;) %&gt;% .$sample_id    
 paste0(&quot;Number of isolates to drop: &quot;, length(to_drop_isolates)) </code></pre>
 <pre><code>[1] &quot;Number of isolates to drop: 31&quot;</code></pre>
-</div>
-</div>
-<div id="get-sample-id-from-qcd-entry" class="section level1">
-<h1>Get sample ID from QCD entry</h1>
+<div id="get-sample-id-from-qcd-entry" class="section level3">
+<h3>Get sample ID from QCD entry</h3>
 <pre class="r"><code>get_sample_id = function(isolate,sample_lookup){
   subset(sample_lookup,`Genome ID` == isolate) %&gt;% .$`Sample ID` %&gt;% as.character() %&gt;% paste0(collapse=&quot;;&quot;) %&gt;% trimws(.,whitespace = &quot;;&quot;)
 }
 
 qcd$sample_id &lt;- sapply(qcd$sample,get_sample_id,sample_lookup) %&gt;% as.character() </code></pre>
+</div>
+</div>
 <div id="filtering-3-duplicates" class="section level2">
 <h2>Filtering #3: Duplicates</h2>
 <ol style="list-style-type: decimal">
@@ -977,6 +980,8 @@ df_merged &lt;- lapply(df$isolate_no,FUN=function(x){
   }
 }) %&gt;% do.call(rbind,.)
 
+df_merged &lt;- as.data.frame(df_merged)
+
 paste0(&quot;Number of isolates: &quot;,nrow(df_merged))</code></pre>
 <pre><code>[1] &quot;Number of isolates: 1445&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Number of qc_passing isolates: &quot;,sum(df_merged$qc_pass==TRUE))</code></pre>
@@ -992,52 +997,52 @@ paste0(&quot;Number of isolates: &quot;,nrow(df_merged))</code></pre>
 <h1>Curate metadata</h1>
 <div id="antibiotic-resistance" class="section level2">
 <h2>Antibiotic resistance</h2>
-<pre class="r"><code>factorize_mic_null &lt;- function(dataset,resistance){ 
-  values &lt;- unique(na.omit(as.character(dataset[[resistance]])))
-  combination &lt;- ifelse(length(grep(&quot;/&quot;,values))&gt;0,&quot;yes&quot;,&quot;no&quot;)
-  if(combination == &quot;no&quot;){
-    level &lt;- c(
-      #Endpoint 
-      values[grep(&quot;≤|&lt;|&lt;=&quot;,values)], 
-      #if non endpoint included 
-      #non-endpoint sorted
-      as.character(sort(as.numeric(values[!grepl(&quot;≤|&lt;|&gt;|&gt;=|≥&quot;, values)]))),
-      #Endpoint
-      values[grep(&quot;&gt;|&gt;=|≥&quot;,values)])
-  }
-  if(combination == &quot;yes&quot;){
-    values_no_in &lt;- gsub(&quot;/.*&quot;,&quot;&quot;,values)
-    in_value &lt;- gsub(&quot;.*\\/&quot;,&quot;&quot;,values)
-    level &lt;- c(
-      #Endpoint 
-      values_no_in[grep(&quot;≤&quot;,values_no_in)], 
-      #if non endpoint included 
-      #non-endpoint sorted
-      as.character(sort(as.numeric(values_no_in[!grepl(&quot;≤|&gt;&quot;, values_no_in)]))),
-      #Endpoint
-      values_no_in[grep(&quot;&gt;&quot;,values_no_in)])
-    level &lt;- paste0(level,&quot;/&quot;,in_value)
-  }    
-  factorized &lt;- factor(as.vector(dataset[[resistance]]),levels = level)
-  return(factorized)
-}</code></pre>
 <ol style="list-style-type: decimal">
 <li><p>Update the names</p></li>
 <li><p>Recode numerical values</p></li>
-<li><p>Numerize, factorize, and log2 transform</p></li>
+<li><p>Numerize and log2 transform</p></li>
 <li><p>Create dichotomous variable</p></li>
 <li><p>Create KPC-inhibiting BL/BLI antibiotics</p></li>
 </ol>
-<pre class="r"><code>## Convert names
-df_merged &lt;-  dplyr::rename(df_merged,MERO=&#39;mero&#39;,IMI=&#39;imi&#39;,CZA=&#39;cza&#39;,MVB = &quot;mev&quot;,IR = &quot;imr&quot;, PLZ = &quot;plz&quot;, CST=&#39;col&#39;,OMC=&#39;omc&#39;,DLX=&#39;dlx&#39;,ERV=&#39;erv&#39;,CT =&#39;c_t&#39;,FDC = &#39;fdc_kb_zoi_mm&#39;,FOS =&#39;fos&#39;) 
-df_merged &lt;-  dplyr::rename(df_merged,MERO_cat=&#39;mero_int&#39;,IMI_cat=&#39;imi_int&#39;,CZA_cat=&#39;cza_int&#39;,MVB_cat = &quot;mev_int&quot;,IR_cat = &quot;imr_int&quot;, PLZ_cat = &quot;plz_int&quot;, CST_cat=&#39;col_int&#39;,OMC_cat=&#39;omc_int&#39;,DLX_cat=&#39;dlx_int&#39;,ERV_cat=&#39;erv_int&#39;,CT_cat =&#39;ct_int&#39;,FDC_cat = &#39;fdc_int&#39;,FOS_cat = &#39;fos_int&#39;) 
+<pre class="r"><code># Convert names
+## Raw names
+df_merged &lt;-  dplyr::rename(df_merged,
+                            MERO=&#39;mero&#39;,
+                            IMI=&#39;imi&#39;,
+                            CZA=&#39;cza&#39;,
+                            MVB = &quot;mev&quot;,
+                            IR = &quot;imr&quot;, 
+                            PLZ = &quot;plz&quot;, 
+                            CST=&#39;col&#39;,
+                            OMC=&#39;omc&#39;,
+                            DLX=&#39;dlx&#39;,
+                            ERV=&#39;erv&#39;,
+                            CT =&#39;c_t&#39;,
+                            FDC = &#39;fdc_kb_zoi_mm&#39;,
+                            FOS =&#39;fos&#39;) 
+## Categorical names
+df_merged &lt;-  dplyr::rename(df_merged,
+                            MERO_cat=&#39;mero_int&#39;,
+                            IMI_cat=&#39;imi_int&#39;,
+                            CZA_cat=&#39;cza_int&#39;,
+                            MVB_cat = &quot;mev_int&quot;,
+                            IR_cat = &quot;imr_int&quot;,
+                            PLZ_cat = &quot;plz_int&quot;, 
+                            CST_cat=&#39;col_int&#39;,
+                            OMC_cat=&#39;omc_int&#39;,
+                            DLX_cat=&#39;dlx_int&#39;,
+                            ERV_cat=&#39;erv_int&#39;,
+                            CT_cat =&#39;ct_int&#39;,
+                            FDC_cat = &#39;fdc_int&#39;,
+                            FOS_cat = &#39;fos_int&#39;) 
 
 ## Create MIC Variable
 MIC_variables &lt;- c(&#39;MERO&#39;,&quot;IMI&quot;,&#39;MVB&#39;,&#39;IR&#39;,&#39;PLZ&#39;,&#39;CST&#39;,&#39;OMC&#39;,&#39;DLX&#39;,&#39;ERV&#39;,&#39;CZA&#39;,&quot;FDC&quot;,&quot;CT&quot;,&quot;FOS&quot;)
+MIC_variables_wo_IMI &lt;- MIC_variables %&gt;% subset(.!=&quot;IMI&quot;)
 
 ## Recode numeric values if found in category if numeric is NA
 for(i in MIC_variables){
-  df_merged[,paste0(i)] &lt;- ifelse(df_merged[[paste0(i)]] %in% c(&quot;S&quot;,&quot;I&quot;,&quot;R&quot;),NA, df_merged[[paste0(i)]])
+  df_merged[,paste0(i)] &lt;- as.character(ifelse(df_merged[[paste0(i)]] %in% c(&quot;S&quot;,&quot;I&quot;,&quot;R&quot;),NA, df_merged[[paste0(i)]]))
 }
 
 ## Numerize MIC Data
@@ -1045,27 +1050,48 @@ for(i in MIC_variables){
   df_merged[,paste0(i,&quot;_num&quot;)] &lt;- df_merged[[paste0(i)]] %&gt;% gsub(&quot;≤&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;&gt;&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;/.&quot;,&quot;&quot;,.) %&gt;% trimws(.,&#39;both&#39;) %&gt;% as.numeric
 }
 
-## Factorize Raw MIC Data
-for(i in MIC_variables){
-  df_merged[,i] &lt;- factorize_mic_null(df_merged,i)
-}
-
 ## Log-2 Transform Data
 for(i in MIC_variables){
-  df_merged[,paste0(i,&quot;_log_2&quot;)] &lt;- log2(df_merged[paste0(i,&quot;_num&quot;)])
+  df_merged[,paste0(i,&quot;_log_2&quot;)] &lt;- log2(df_merged[[paste0(i,&quot;_num&quot;)]])
 }
 
-# Dich
-for(i in MIC_variables){
-  df_merged[,paste0(i,&quot;_dich_num&quot;)] &lt;- sapply(df_merged[paste0(i,&quot;_cat&quot;)],FUN=function(x){
-      ifelse(x %in% c(&quot;ERROR&quot;,NA),NA,ifelse(x %in% c(&quot;I&quot;,&quot;R&quot;),1,0))
+## Factorize Categorical Data
+MIC_variables_cat &lt;- paste0(MIC_variables,&quot;_cat&quot;) 
+for(i in MIC_variables_cat){
+  df_merged[,i] &lt;- factor(as.vector(df_merged[[i]]), 
+                           levels = c(&quot;S&quot;,&quot;I&quot;,&quot;R&quot;),
+                           labels = c(&quot;Susceptible&quot;,&quot;Intermediate&quot;,&quot;Resistant&quot;))
+}
+
+# Dichotomous variables
+## Every resistant variable other than imipenem
+for(i in MIC_variables_wo_IMI){
+  df_merged[,paste0(i,&quot;_dich_num&quot;)] &lt;- sapply(df_merged[[paste0(i,&quot;_cat&quot;)]],FUN=function(x){
+      ifelse(x %in% c(&quot;ERROR&quot;,NA),NA,ifelse(x %in% c(&quot;Intermediate&quot;,&quot;Resistant&quot;),1,0))
   })
 }
 
-df_merged$blbli_dich_num &lt;- ifelse(is.na(df_merged$MVB_dich_num) &amp; is.na(df_merged$IR_dich_num) &amp; is.na(df_merged$CZA_dich_num),NA,ifelse( df_merged$MVB_dich_num==1| df_merged$IR_dich_num==1 | df_merged$CZA_dich_num == 1,1,0))</code></pre>
+## Imipenem: Dichotomous resistance is the resistant category only, due to lack of measurement
+df_merged$IMI_dich_num &lt;- ifelse(df_merged$IMI_cat==&quot;Resistant&quot;,1,0)</code></pre>
+</div>
+<div id="create-blbli-combination-therapy-outcome" class="section level2">
+<h2>Create BL/BLI combination therapy outcome</h2>
+<ol style="list-style-type: decimal">
+<li>This will focus on KPC-inhibiting BL/BLI antibiotics: MVB, CZA, and
+IR</li>
+</ol>
+<pre class="r"><code>df_merged$blbli_dich_num &lt;- ifelse(is.na(df_merged$MVB_dich_num) &amp; is.na(df_merged$IR_dich_num) &amp; is.na(df_merged$CZA_dich_num), NA,
+                                   ifelse(df_merged$MVB_dich_num==1| df_merged$IR_dich_num==1 | df_merged$CZA_dich_num == 1, 1, 0))
+
+
+df_merged$blbli_dich &lt;- ifelse(df_merged$blbli_dich_num==1,&quot;Non-susceptible&quot;,
+                               ifelse(df_merged$blbli_dich_num==0,&quot;Susceptible&quot;,df_merged$blbli_dich_num))</code></pre>
 </div>
 <div id="prioritize-kleborates-st-data" class="section level2">
 <h2>Prioritize kleborate’s ST data</h2>
+<ol style="list-style-type: decimal">
+<li>We are prioritizing kleborate’s ST calls over mlst</li>
+</ol>
 <pre class="r"><code>kleborate_Ecoli &lt;- read_delim(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/escherichia_INTEGRATE/escherichia_output.txt&quot;) %&gt;% `colnames&lt;-`(recode(colnames(.), &quot;ST...10&quot;=&quot;ST_Pasteur&quot;,  &quot;ST...19&quot;=&quot;ST_Achtman&quot;)) %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
 kleborate_kosc &lt;- read_delim(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kosc_INTEGRATE/klebsiella_oxytoca_complex_output.txt&quot;) %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
 kleborate_kpsc_integrate &lt;- read_delim(&quot;~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_INTEGRATE/klebsiella_pneumo_complex_output.txt&quot;) %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
@@ -1338,8 +1364,8 @@ ST_data_202123 &lt;- lapply(df_merged$isolate_no,FUN=function(x){
 <pre class="r"><code>df_merged &lt;- left_join(df_merged,ST_data_202123) %&gt;% rename(mlst_st=st)</code></pre>
 </div>
 </div>
-<div id="save-the-dataset" class="section level1">
-<h1>Save the dataset</h1>
+<div id="save-the-2021-23-dataset" class="section level1">
+<h1>Save the 2021-23 dataset</h1>
 <pre class="r"><code>saveRDS(df_merged,&quot;./data/dataset/INTEGRATE_metadata_qcd_merged.RDS&quot;)
 write_csv(df_merged,&quot;./data/dataset/INTEGRATE_metadata_qcd_merged.csv&quot;)</code></pre>
 </div>

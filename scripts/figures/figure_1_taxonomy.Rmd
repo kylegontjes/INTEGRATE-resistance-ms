@@ -82,7 +82,7 @@ ST_dist$alpha_value <- ifelse(ST_dist$Species_ST_recode == "Singleton STs",0,0.7
 
 B <- ggplot(ST_dist %>% subset(n>0),aes(x = study,stratum = Species_ST_recode,alluvium = Species_ST_recode,y=perc,fill = Species_ST_recode)) +
   geom_alluvium(aes(alpha=alpha_value),width=0.66)+ scale_alpha_identity() +
-  geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + ST_scale + theme(legend.position = "right",
+  geom_stratum(width=0.66,linewidth = 0.075) + theme_bw_me + xlab("Study") + ylab("Percentage (%)") + ST_scale + theme(legend.position = "right",
                   axis.text =   element_text(hjust = 0.5, size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),

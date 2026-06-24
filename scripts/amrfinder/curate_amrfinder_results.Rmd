@@ -90,6 +90,7 @@ amrfinder$element_symbol_renamed <- apply(amrfinder,1,FUN=function(x){
 })
 
 saveRDS(amrfinder,file="./data/amrfinder/amrfinder_curated.RDS")
+write.csv(x = amrfinder,file="./data/amrfinder/amrfinder_curated.csv",row.names = F)
 ```
 
 ## Presence/absence matrix
@@ -106,4 +107,5 @@ get_amrfinder_matrix <- function(amrfinder,isolates){
 amrfinder_mat <- get_amrfinder_matrix(amrfinder = amrfinder,isolates = isolates)
 
 saveRDS(amrfinder_mat,file="./data/amrfinder/amrfinder_matrix.RDS")
+write.csv(x = amrfinder_mat,file="./data/amrfinder/amrfinder_matrix.csv",row.names = T)
 ```

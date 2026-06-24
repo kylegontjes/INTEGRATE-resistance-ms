@@ -1,5 +1,5 @@
 ---
-title: "Curate betalactamase and OMP mutation matrix"
+title: "Curate betalactamase and porin mutation matrix"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -48,8 +48,9 @@ amrfinder <- subset(amrfinder,amrfinder$isolate_no %in% df$isolate_no)
 # Betalactamase
 amrfinder_beta <- amrfinder %>% subset(class == "BETA-LACTAM")
 # Get bla
-amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("bla|ampC",element_symbol_renamed))
-amrfinder_carb_bla <- amrfinder %>% subset(subclass == "CARBAPENEM" & grepl("bla",element_symbol_renamed) | grepl("KPC|NDM|VIM|IMP",element_symbol_renamed) | grepl("OXA-48 family",closest_reference_name))
+amrfinder_beta_bla <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("^(bla|ampC)",element_symbol_renamed) )
+amrfinder_carb_bla <- amrfinder %>% subset((subclass == "CARBAPENEM" & grepl("^bla",element_symbol_renamed)) | grepl("^bla(KPC|NDM|VIM|IMP)",element_symbol_renamed) | grepl("OXA-48 family",closest_reference_name)) 
+amrfinder_beta_bla_non_carb <- amrfinder %>% subset(class == "BETA-LACTAM"& grepl("^(bla|ampC)",element_symbol_renamed)) %>% subset(!element_symbol_renamed %in% c(unique(amrfinder_carb_bla$element_symbol_renamed))) 
 amrfinder_carb_ompK <- amrfinder %>% subset(subclass == "CARBAPENEM" & ! element_symbol_renamed %in% amrfinder_carb_bla$element_symbol_renamed)
 ```
 
@@ -80,6 +81,7 @@ rownames(df) <- df$isolate_no
 df_carb_omp <- df %>% select(any_of(c(unique(amrfinder_beta$element_symbol) ,colnames(kleborate_matrix))))   
 
 saveRDS(df_carb_omp,"./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_datasets.RDS")
+write.csv(df_carb_omp,"./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_datasets.csv",row.names = T) 
 ```
 
 # First isolate per quarter dataset curation
@@ -121,4 +123,5 @@ df_carb_omp_first <- df_carb_omp_first %>% select(-bla_under_4)
 
 ```{r}
 saveRDS(df_carb_omp_first,"./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.RDS")
+write.csv(df_carb_omp_first,"./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.csv",row.names = T)
 ```

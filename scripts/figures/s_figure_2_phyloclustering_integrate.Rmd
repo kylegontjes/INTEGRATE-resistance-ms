@@ -5,7 +5,6 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-
 ```{r setup, include=FALSE}
 require(knitr)
 opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
@@ -33,6 +32,7 @@ source("./lib/consistent_themes.R")
 
 
 # Sample assembly list
+
 ```{r}
 public_dataset <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/public_genomes/NCBI_metadata/NCBI_Pathogens_Kpn_metadata_isolates_w_spatiotemporal_data_121025.RDS")
 public_dataset$assembly_name <- public_dataset$Assembly
@@ -48,6 +48,7 @@ public_dataset <- left_join(public_dataset,kleborate)
 ```
 
 # Load QCD data
+
 ```{r}
 qcd <- read_csv("~/Desktop/gl_nfs/Project_INTEGRATE/Public_datasets/2025-12-15_all_Kleb_NCBI_Pathogen/illumina/master_qc_summary_assembly.csv")
 qcd$Assembly <- qcd$Sample
@@ -59,6 +60,7 @@ public_dataset$participant_id <- public_dataset$Assembly
 ```
 
 # Load integrate data
+
 ```{r}
 df <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
 df_kleborate <- readRDS("~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kleborate_kpsc_both_studies.RDS") 
@@ -71,6 +73,7 @@ df$collection_year <- df$year
 ```
 
 # Merge dataset
+
 ```{r}
 voi <- c('isolate_no','participant_id','ST','collection_date','collection_year','continent','country','california')
 combined_phylogeographic_df <- bind_rows(public_dataset %>% select(any_of(voi)),df %>% select(any_of(voi))) %>% as.data.frame
@@ -94,6 +97,7 @@ CA_tips <- combined_phylogeographic_df %>% subset(california==T) %>% .$isolate_n
 ```
 
 # Trees 
+
 ```{r}
 tr_ST14 <- read.tree("./data/phylogeny/phylogeographic/ST14/phylogeographic_ST14_pruned.treefile") %>% drop.tip("INT_CRE_1243") 
 tr_ST17 <- read.tree("./data/phylogeny/phylogeographic/ST17/phylogeographic_ST17_pruned.treefile") %>% drop.tip("INT_CRE_1243")  
@@ -102,12 +106,14 @@ tr_ST258 <- read.tree("./data/phylogeny/phylogeographic/ST258/phylogeographic_ST
 ```  
 
 # Reconstructions
+
 ```{r}
 CA_asr <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_asr_objs_pruned.RDS")
 CA_asr_cluster <- readRDS("./data/public_genomes/california_reconstruction/california_phylogeographic_reconstruction_clustering_pruned.RDS")
 ```
  
 ## Function
+
 ```{r}
 get_phylogeny <- function(st,tr,df,pcdf,col_offset,ymax,point_size,line_width,colname_offset_y,y_tscale,offset_tscale){ 
   tr$edge.length <- scales::pseudo_log_trans(base=10)$transform(tr$edge.length)
@@ -145,35 +151,40 @@ get_phylogeny <- function(st,tr,df,pcdf,col_offset,ymax,point_size,line_width,co
 ```
 
 ## ST258
+
 ```{r,fig.height=7.5} 
 A <- get_phylogeny(st='ST258',tr=tr_ST258,df = combined_phylogeographic_df, pcdf = CA_asr$ST258$parent_child_df, col_offset = .00024,ymax = 1840,point_size=0.1,line_width=0.1,colname_offset_y=2,y_tscale=-35,offset_tscale=5)
 A  + theme(legend.position='none')  
 ```
 
 # ST307
+
 ```{r,fig.height=7.5}
 B <- get_phylogeny(st='ST307',tr=tr_ST307,df = combined_phylogeographic_df, pcdf = CA_asr$ST307$parent_child_df, col_offset = 0.00021, ymax = 1030,point_size=0.1,line_width=0.1,colname_offset_y=2,y_tscale=-25,offset_tscale=4)
 B + theme(legend.position='none')
 ```
 
 ## ST14
+
 ```{r,fig.height=7.5}
 C <- get_phylogeny(st='ST14',tr=tr_ST14,df = combined_phylogeographic_df, pcdf = CA_asr$ST14$parent_child_df, col_offset = 0.00082,ymax = 700,point_size=0.1,line_width=0.1,colname_offset_y=1,y_tscale=-15,offset_tscale=2.5)
 C  + theme(legend.position='none')
 ```
 
 ## ST17
+
 ```{r,fig.height=7.5} 
 D <- get_phylogeny(st='ST17',tr=tr_ST17,df = combined_phylogeographic_df, pcdf = CA_asr$ST17$parent_child_df, col_offset = 0.000305,ymax = 610,point_size=0.1,line_width=0.1,colname_offset_y=1,y_tscale=-15,offset_tscale=2.5)
 D + theme(legend.position='none')
 ```
 
 # Create plots to grab legend! 
+
 ```{r}
 decade <- ggplot(data=combined_phylogeographic_df,aes(x=collection_decade,fill=collection_decade)) + geom_bar(stat='count') + decade_scale + theme_bw_me + theme(legend.title.position = 'top')
 continent <- ggplot(data=combined_phylogeographic_df,aes(x=continent,fill=continent)) + geom_bar(stat='count') + continent_scale  + theme_bw_me+ theme(legend.title.position = 'top')
 study <- ggplot(data=combined_phylogeographic_df,aes(x=type_CA,color=type)) + geom_point(stat='count') + study_scale_color + theme_bw_me+ theme(legend.title.position = 'top')
-california <- ggplot(data=combined_phylogeographic_df,aes(x=california,fill=california)) + geom_bar(stat='count') + california_scale + theme_bw_me+ theme(legend.title.position = 'top')
+california <- ggplot(data=combined_phylogeographic_df,aes(x=collection_year,y=continent,color=california)) + geom_line() + california_scale_color + theme_bw_me+ theme(legend.title.position = 'top')
 
 decade_legend <- cowplot::get_legend(decade) %>% cowplot::plot_grid()
 continent_legend <- cowplot::get_legend(continent) %>% cowplot::plot_grid() 
@@ -184,7 +195,8 @@ legends <- cowplot::plot_grid(california_legend,study_legend,decade_legend,conti
 legends
 ```
  
-# Create figure
+# Create and save figure
+
 ```{r,fig.width=10.667,fig.height=16}
 main <- cowplot::plot_grid(A + theme(legend.position = 'none'),B+ theme(legend.position = 'none'),C+ theme(legend.position = 'none'),D+ theme(legend.position = 'none'),ncol=2,labels = c("A. ST258","B. ST307","C. ST14","D. ST17"))
 figure <- cowplot::plot_grid(main,legends,ncol=1,rel_heights = c(1,0.075))

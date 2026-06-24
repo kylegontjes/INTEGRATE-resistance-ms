@@ -84,7 +84,6 @@ lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_kpn_ST258,comparito
 
 #  Differences in resistance across 2021-23 ST258 vs 2021-23 not ST258
 
-```{r}    
-resistance_vars_no_perfect <- subset(resistance_vars,resistance_vars!="IMI_dich_num")
-lapply(resistance_vars_no_perfect,FUN=get_frequency_stats_compare,df=df_202123,comparitor='ST258') %>% do.call(rbind,.)%>% favorite_kable() 
+```{r}     
+lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_202123,comparitor='ST258') %>% do.call(rbind,.)%>% favorite_kable() 
 ```

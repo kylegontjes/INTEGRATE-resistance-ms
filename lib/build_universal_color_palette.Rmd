@@ -1,5 +1,5 @@
 ---
-title: "create_master_scale"
+title: "Curate universal color palette for ST, carbapenemase, and plasmid"
 author: "Kyle Gontjes"
 date: "`r Sys.Date()`"
 output: html_document
@@ -39,7 +39,7 @@ dataset_for_creating_cb_scale$carbapenemase_md <-  format_carbapenemase(dataset_
 # Create palette
 ```{r}
 iwant_hues_overall <- list( hmin = 0, hmax = 360, 
-                            cmin = 35, cmax = 160, 
+                            cmin = 33, cmax = 160, 
                             lmin = 25, lmax = 92
   )
 

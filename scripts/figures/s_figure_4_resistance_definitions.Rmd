@@ -1,0 +1,329 @@
+---
+title: "Supplemental Figure 4: Resistance definitions"
+author: "Kyle Gontjes"
+date: '`r Sys.Date()`'
+output: html_document
+---
+ 
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA) 
+opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
+opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/')
+```
+
+# Environment
+
+```{r environment, echo=T, message=T, include=T, results=T}
+#Packages
+packages <- c("tidyverse",'kableExtra',"readxl") 
+
+#Load Packages
+invisible(lapply(packages,library,character.only=T,quietly=T))
+
+# Functions
+source("./lib/consistent_themes.R") 
+source("./lib/common_functions.R") 
+
+# Print environment
+set.seed(45) 
+Sys.info()
+sessionInfo()
+```
+
+# Load data
+
+```{r}
+df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")
+carbapenemase_content <- readRDS("./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS")
+blamatrix <- readRDS("./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.RDS")
+amrfinder <- readRDS("./data/amrfinder/amrfinder_curated.RDS")
+
+df <- left_join(df,carbapenemase_content)
+
+df$MERO_IMI_R_SENSITITRE_renamed <- recode(df$MERO_IMI_R_SENSITITRE,
+                                           `0`="Carbapenem susceptible\n(broth microdilution)",
+                                           `1`="Carbapenem resistant\n(broth microdilution)")
+df$MERO_IMI_R_SENSITITRE_renamed <- factor(df$MERO_IMI_R_SENSITITRE_renamed,levels = rev(c("Carbapenem susceptible\n(broth microdilution)","Carbapenem resistant\n(broth microdilution)")))
+```
+
+# Themes
+```{r}
+ABE_theme <- theme(axis.text.y = element_text(size = 8,color='black'),
+                                                                      axis.text.x = element_text(size = 8,color='black'),
+                                                                      axis.title.y = element_text(size = 10,color='black'),
+                                                                      axis.title.x = element_text(size = 10,color='black'),
+                  strip.text = element_text(size=8,color='black'))
+
+CD_theme <- theme(axis.text.y = element_markdown(size = 8,color='black'),
+                                                                      axis.text.x = element_text(size = 8,color='black'),
+                                                                      axis.title.y = element_markdown(size = 10,color='black'),
+                                                                      axis.title.x = element_text(size = 10,color='black'),
+                                              legend.text = element_markdown(),
+                                strip.text = element_text(size=8,color='black'))
+
+CD_x_scale <-   scale_x_continuous(
+        limits = c(-0.5, 100),
+        expand = expansion(mult = c(0, 0.1))
+    ) 
+
+theme_bw_grid <- theme(panel.background = element_rect(fill = "white",colour = 'black'), 
+                       panel.grid = element_blank(),
+                     strip.background = element_rect(fill = "white",colour = "black",linewidth=1), 
+                     panel.grid.major = element_blank(),
+                     panel.grid.minor = element_blank(),
+                     axis.line = element_line(colour = "black"),legend.position = "bottom")
+```
+
+
+# Figure A. Distribution by resistance
+
+```{r}
+MIC_data <- df %>%
+  dplyr::select(isolate_no, MERO_cat, IMI_cat, study) %>%
+  reshape2::melt(id.vars = c("isolate_no", "study")) %>%
+  dplyr::group_by(study, variable, value) %>%
+  dplyr::summarise(count = n(), .groups = "drop") %>%
+  dplyr::group_by(study, variable) %>%
+  dplyr::mutate(percentage = count / sum(count)*100) %>%
+  dplyr::ungroup()
+   
+MIC_data$value <- factor(MIC_data$value,levels = rev(c("Susceptible","Intermediate","Resistant")))
+MIC_data$variable <- recode(MIC_data$variable,
+                            "MERO_cat" = "Meropenem",
+                            "IMI_cat" = "Imipenem") 
+MIC_data$variable <- factor(MIC_data$variable,levels = rev(c("Meropenem","Imipenem")))
+
+A <- ggplot(data=MIC_data,aes(x=variable,y=percentage,fill=value)) + geom_bar(stat='identity') + facet_grid(~study) + theme_bw_me + ylab("Percentage") + xlab(NULL) + resistance_cat_scale_two_title_rows + ABE_theme +scale_y_continuous(limits = c(0,100.5))
+
+A
+```
+
+# Figure B. Definition
+
+```{r}
+df$ST258 <- df$ST=="ST258"
+
+# ST specific data
+ST_specific_data <- df %>%
+  dplyr::select(study,ST258,MERO_IMI_R_SENSITITRE_renamed) %>% group_by(study,ST258) %>% summarise(n=n(),
+                                                                                                   num_compliant = sum(MERO_IMI_R_SENSITITRE_renamed=="Carbapenem resistant\n(broth microdilution)"),
+                                                                                                   percentage_compliant = num_compliant / n * 100) 
+## Merging group
+ST_specific_data$group <- ifelse(ST_specific_data$ST258 ==T,"ST258","Not ST258") 
+
+# Overall data
+overall_data <- df %>%
+  dplyr::select(study,ST258,MERO_IMI_R_SENSITITRE_renamed) %>% group_by(study) %>% summarise(n=n(),
+                                                                                             num_compliant = sum(MERO_IMI_R_SENSITITRE_renamed=="Carbapenem resistant\n(broth microdilution)"),
+                                                                                             percentage_compliant = num_compliant / n * 100) 
+## Merging group
+overall_data$group <- "Overall"
+
+# Group dataset
+dataset <- rbind(overall_data %>% select(study,group,n,num_compliant,percentage_compliant),ST_specific_data%>% select(study,group,n,num_compliant,percentage_compliant))
+
+dataset$group <- factor(dataset$group,levels = c("Overall","ST258","Not ST258"))
+
+# Figure
+B <- ggplot(data=dataset,aes(y=percentage_compliant,x=group,fill=group)) + geom_bar(stat='identity') + facet_grid(~study) + ST258_scale_w_overall_fill + theme_bw_me + xlab(NULL) + ylab("Percentage carbapenem resistant\n(broth microdilution)") + ABE_theme +
+  geom_text(
+    aes(label = num_compliant),
+    vjust = -0.15,
+    size = 3
+  )  + scale_y_continuous(limits = c(0,100.5))
+
+B
+```
+
+
+
+# Figure C. ST Distribution
+
+```{r}
+plot_data <- df %>%
+  count(
+    study,
+    MERO_IMI_R_SENSITITRE_renamed,
+    Species_ST_recode,
+    name = "n"
+  ) %>%
+  left_join(
+    df %>% distinct(Species_ST_recode, Species_ST_recode),
+    by = "Species_ST_recode"
+  ) %>%
+  group_by(study, MERO_IMI_R_SENSITITRE_renamed) %>%
+  mutate(
+    total = sum(n),
+    percentage = 100 * n / total
+  ) %>%
+  ungroup()
+
+# Recode variables
+plot_data$Species_ST_recode <- factor(plot_data$Species_ST_recode,levels = ST_scale$breaks) 
+
+# Figure
+C <- ggplot(
+  plot_data,
+  aes(
+    x = percentage,
+    y = Species_ST_recode,
+    fill = Species_ST_recode
+  )
+) +
+  geom_col() +
+  geom_text(
+    aes(label = n),
+    hjust = -0.15,
+    size = 2
+  ) +
+  facet_grid(
+    MERO_IMI_R_SENSITITRE_renamed ~ study
+  ) +
+  labs(
+    x = "Percentage in group",
+    y = NULL
+  ) + 
+  CD_x_scale + theme_bw_grid + ST_scale + CD_theme 
+```
+
+# D. B-lactamase content by group
+
+```{r}
+# Beta lactamase data curation
+blactamases <- subset(amrfinder,class == "BETA-LACTAM") %>% .$element_symbol_renamed %>% unique() %>% sort() %>% subset(grepl("amp|bla",.))  
+bla_matrix <- subset(blamatrix,rownames(blamatrix) %in% df$isolate_no) %>% select_if(colSums(.)>0)  #%>% select_if(colnames(.) %in% unique(blactamases))
+drop_omp_related <- subset(colnames(bla_matrix),grepl("OmpK|ompK",colnames(bla_matrix))==F)
+bla_matrix <-  bla_matrix %>% select(drop_omp_related) 
+
+# Convert non-carbapenemase b-lactam matrix into long form
+bla_long <- bla_matrix %>%
+  as.data.frame() %>%
+  rownames_to_column("isolate_no") %>%
+  pivot_longer(
+    cols = -isolate_no,
+    names_to = "bla_gene",
+    values_to = "present"
+  ) %>%
+  filter(present > 0)
+
+# Join with category data
+bla_long <- bla_long %>%
+  left_join(
+    df %>% select(isolate_no, study, MERO_IMI_R_SENSITITRE_renamed),
+    by = "isolate_no"
+  )
+
+# Collapse data to isolate level information
+bla_counts <- bla_long %>%
+  distinct(isolate_no, study, MERO_IMI_R_SENSITITRE_renamed, bla_gene) %>%
+  count(
+    study,
+    MERO_IMI_R_SENSITITRE_renamed,
+    bla_gene,
+    name = "n"
+  )
+
+# Compute denomicator data
+denoms_bla_analysis <- df %>%
+  distinct(isolate_no, study, MERO_IMI_R_SENSITITRE_renamed) %>%
+  count(
+    study,
+    MERO_IMI_R_SENSITITRE_renamed,
+    name = "total_isolates"
+  )
+
+# Generate final plotting data
+plot_data_bla <- bla_counts %>%
+  left_join(
+    denoms_bla_analysis,
+    by = c("study", "MERO_IMI_R_SENSITITRE_renamed")
+  ) %>%
+  mutate(
+    percentage = 100 * n / total_isolates
+  ) %>%
+  ungroup()
+
+# Factoring bla gene data
+all_bla_order <- plot_data_bla %>% group_by(bla_gene) %>% summarise(tot=sum(n)) %>% arrange(-tot) %>% .$bla_gene  
+order_in_202123_carb_res <- plot_data_bla %>% subset(study == '2021-23' & MERO_IMI_R_SENSITITRE_renamed=="Carbapenem resistant (broth microdilution)") %>% arrange(-n) %>% .$bla_gene
+bla_level <- c(order_in_202123_carb_res,all_bla_order %>% subset(!. %in% order_in_202123_carb_res))
+
+plot_data_bla$bla_gene <- factor(plot_data_bla$bla_gene,levels = bla_level)
+
+
+# Recode genotypes
+plot_data_bla$bla_gene <- recode_genotypes(plot_data_bla$bla_gene) 
+plot_data_bla$bla_gene_md <- sapply(plot_data_bla$bla_gene,format_blaKPC_genotypes_md)  
+plot_data_bla$bla_gene_md <- factor(plot_data_bla$bla_gene_md,
+                                    levels = recode_genotypes(bla_level)  %>% sapply(.,format_blaKPC_genotypes_md))
+
+# Figure
+D <-   ggplot(
+    plot_data_bla,
+    aes(
+        x = percentage,
+        y = bla_gene_md 
+    )
+) +
+    geom_col(fill='black') +
+    geom_text(
+        aes(label = n),
+        hjust = -0.15,
+        size = 2
+    ) +
+    facet_grid(
+        MERO_IMI_R_SENSITITRE_renamed ~ study
+    ) +
+    labs(
+        x = "Percentage in group",
+        y = NULL
+    ) + theme_bw_grid  + CD_theme + CD_x_scale
+```
+
+# Figure E. Carbapenemase content
+
+```{r}
+df$carbapenemase_present <- df$carbapenemase!="No carbapenemase"
+
+carbapenemase_data <- df %>%
+  dplyr::select(study,carbapenemase_present,MERO_IMI_R_SENSITITRE_renamed) %>% group_by(study,MERO_IMI_R_SENSITITRE_renamed) %>% summarise(n=n(),
+                                                                                                   num_carbapenemase = sum(carbapenemase_present),
+                                                                                                   percentage_compliant = num_carbapenemase / n * 100) 
+ carbapenemase_data$MERO_IMI_R_SENSITITRE_renamed_simple <- ifelse(carbapenemase_data$MERO_IMI_R_SENSITITRE_renamed == "Carbapenem resistant\n(broth microdilution)","Carbapenem\nresistant","Carbapenem\nsusceptible")
+
+E <- ggplot(data=carbapenemase_data,aes(y=percentage_compliant,x=MERO_IMI_R_SENSITITRE_renamed_simple)) + geom_bar(stat='identity',fill='black') + facet_grid(~study)  + theme_bw_me + xlab(NULL) + ylab("Percentage with\ncarbapenemase") + ABE_theme +
+  geom_text(
+    aes(label = num_carbapenemase),
+    vjust = -0.15,
+    size = 3
+  )  +scale_y_continuous(limits = c(0,100.5))
+
+E
+```
+
+
+# Merge figures together
+
+```{r,fig.height=13.5,fig.width=11.8125}
+A_legend <- cowplot::get_legend(A + theme(legend.position= 'right')) 
+
+AB <- cowplot::plot_grid(A + theme(legend.position = 'none', plot.margin = margin(t=0.05,l=0.05,unit='cm')),
+                         A_legend,
+                         B+ theme(legend.position= 'none',plot.margin = margin(t=0.05,l=0.05,unit='cm')),
+                         E + theme(legend.position = 'none',plot.margin = margin(t=0.05,l=0.05,r=0.05,unit='cm')), ncol=4, labels = c("A","","B","E"), 
+                         rel_widths = c(0.8,.3,1,1),hjust = -0.1)
+
+final_figure <- cowplot::plot_grid(AB,
+                                   C+ theme(legend.position=   'none', plot.margin = margin(t=0.05,l=0.05,r=0.05,unit='cm')),
+                                   D+ theme(legend.position=   'none', plot.margin = margin(t=0.05,l=0.05,r=0.05,b=0.05,unit='cm')),ncol=1,labels = c("","C","D"),
+                                  rel_heights = c(0.365,0.575,1),hjust = -0.1)
+
+final_figure
+```
+
+# Save figure
+
+```{r}
+ggsave(plot = final_figure,filename = "./figures/s_figure_4_resistance_definitions.png",units = 'in',width = 11.8125,height = 13.5,bg='white',dpi=900)
+```

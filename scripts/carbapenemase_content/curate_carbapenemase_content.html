@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>Curate carbapenemase gene and plasmid data</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Curate carbapenemase gene and plasmid
 data</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -380,7 +380,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -482,8 +482,13 @@ mobtyper_mash_nn_mat &lt;- get_mobtyper_mash_nn_matrix(df,mobtyper_merged)</code
 </div>
 <div id="save" class="section level2">
 <h2>Save</h2>
-<pre class="r"><code>saveRDS(mobtyper_cluster_matrix,&quot;./data/mobsuite/plasmid_cluster_matrix_merged_studies.RDS&quot;)
-saveRDS(mobtyper_mash_nn_mat,&quot;./data/mobsuite/plasmid_mash_nn_matrix_merged_studies.RDS&quot;)</code></pre>
+<pre class="r"><code># Cluster matrix
+saveRDS(mobtyper_cluster_matrix,&quot;./data/mobsuite/plasmid_cluster_matrix_merged_studies.RDS&quot;)
+write.csv(mobtyper_cluster_matrix,&quot;./data/mobsuite/plasmid_cluster_matrix_merged_studies.csv&quot;,row.names = T)
+
+# Plasmid matrix
+saveRDS(mobtyper_mash_nn_mat,&quot;./data/mobsuite/plasmid_mash_nn_matrix_merged_studies.RDS&quot;)
+write.csv(mobtyper_mash_nn_mat,&quot;./data/mobsuite/plasmid_mash_nn_matrix_merged_studies.csv&quot;,row.names = T)</code></pre>
 </div>
 </div>
 <div id="load-amrfinder-data" class="section level1">
@@ -495,9 +500,9 @@ amrfinder_mat &lt;- subset(amrfinder_mat,rownames(amrfinder_mat) %in% df$isolate
 # Curated data
 amrfinder &lt;- readRDS(&quot;./data/amrfinder/amrfinder_curated.RDS&quot;) 
 amrfinder_beta &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;)
-amrfinder_beta_bla &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;&amp; grepl(&quot;bla|ampC&quot;,element_symbol_renamed) )
-amrfinder_carb_bla &lt;- amrfinder %&gt;% subset(subclass == &quot;CARBAPENEM&quot; &amp; grepl(&quot;bla&quot;,element_symbol_renamed) | grepl(&quot;KPC|NDM|VIM|IMP&quot;,element_symbol_renamed) | grepl(&quot;OXA-48 family&quot;,closest_reference_name))
-amrfinder_beta_bla_non_carb &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot; &amp; grepl(&quot;bla&quot;,element_symbol_renamed) &amp; !element_symbol_renamed %in% c(unique(amrfinder_carb_bla$element_symbol_renamed))) </code></pre>
+amrfinder_beta_bla &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;&amp; grepl(&quot;^(bla|ampC)&quot;,element_symbol_renamed))
+amrfinder_carb_bla &lt;- amrfinder %&gt;% subset((subclass == &quot;CARBAPENEM&quot; &amp; grepl(&quot;^bla&quot;,element_symbol_renamed)) | grepl(&quot;^bla(KPC|NDM|VIM|IMP)&quot;,element_symbol_renamed) | grepl(&quot;OXA-48 family&quot;,closest_reference_name))
+amrfinder_beta_bla_non_carb &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;&amp; grepl(&quot;^(bla|ampC)&quot;,element_symbol_renamed)) %&gt;% subset(!element_symbol_renamed %in% c(unique(amrfinder_carb_bla$element_symbol_renamed))) </code></pre>
 </div>
 <div id="create-carbapenemase-data" class="section level1">
 <h1>Create carbapenemase data</h1>
@@ -637,7 +642,8 @@ df$carbapenemase_plasmid_replicon_type &lt;-  pbmcapply::pbmclapply(df$isolate_n
 <h1>Save carbapenemase data</h1>
 <pre class="r"><code>carbapenemase_data &lt;- df %&gt;% select(isolate_no,blactamase,blactamase_non_carbapenemase,carbapenemase,carbapenemase_family,carbapenemase_plasmid,carbapenemase_plasmid_replicon_type,carbapenemase_plasmid_group)
 
-saveRDS(carbapenemase_data,&quot;./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS&quot;)</code></pre>
+saveRDS(carbapenemase_data,&quot;./data/carbapenemase_content/carbapenemase_content_merged_studies.RDS&quot;)
+write.csv(carbapenemase_data,&quot;./data/carbapenemase_content/carbapenemase_content_merged_studies.csv&quot;,row.names = F)</code></pre>
 </div>
 <div id="create-carbapenemase-plasmid-data-1" class="section level1">
 <h1>Create carbapenemase plasmid data</h1>
@@ -661,7 +667,8 @@ mobtyper_merged$carbapenemase &lt;- apply(mobtyper_merged,1,FUN=function(x){
 })
 
 ## Save
-saveRDS(mobtyper_merged,&quot;./data/mobsuite/mobtyper_merged_w_carbapenemase_data.RDS&quot;)</code></pre>
+saveRDS(mobtyper_merged,&quot;./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.RDS&quot;)
+write.csv(mobtyper_merged,&quot;./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.csv&quot;,row.names = F)</code></pre>
 </div>
 <div id="mob-contigs-merged-with-carbapenemase-data" class="section level2">
 <h2>MOB-contigs merged with carbapenemase data</h2>
@@ -673,7 +680,8 @@ mobsuite_contig_merged$carbapenemase_contig &lt;- apply(mobsuite_contig_merged,1
 })
 
 ## Save
-saveRDS(mobsuite_contig_merged,&quot;./data/mobsuite/mobsuite_contig_merged_w_carbapenemase_data.RDS&quot;)</code></pre>
+saveRDS(mobsuite_contig_merged,&quot;./data/carbapenemase_content/mobsuite_contig_merged_w_carbapenemase_data.RDS&quot;)
+write.csv(mobsuite_contig_merged,&quot;./data/carbapenemase_content/mobsuite_contig_merged_w_carbapenemase_data.csv&quot;,row.names = F)</code></pre>
 </div>
 </div>
 <div id="create-plasmid-matrix" class="section level1">
@@ -685,7 +693,8 @@ carbapenemase_plasmid_matrix &lt;- df %&gt;%
     pivot_wider(names_from = carbapenemase_plasmid, values_from = carbapenemase_plasmid) %&gt;% column_to_rownames(&quot;isolate_no&quot;) %&gt;% mutate_all(as.character)  %&gt;% {ifelse(is.na(.),0,1)}  %&gt;% as.data.frame
    
 ## Save carbapenemase pattern
-saveRDS(carbapenemase_plasmid_matrix,&quot;./data/carbapenemase_content/carbapenemase_plasmid_matrix.RDS&quot;) </code></pre>
+saveRDS(carbapenemase_plasmid_matrix,&quot;./data/carbapenemase_content/carbapenemase_plasmid_matrix.RDS&quot;) 
+write.csv(carbapenemase_plasmid_matrix,&quot;./data/carbapenemase_content/carbapenemase_plasmid_matrix.csv&quot;,row.names = T)</code></pre>
 </div>
 
 

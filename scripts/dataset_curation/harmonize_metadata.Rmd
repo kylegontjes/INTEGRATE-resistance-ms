@@ -45,13 +45,14 @@ df_202123 <-  readRDS("./data/dataset/INTEGRATE_metadata_qcd_merged.RDS") %>% as
 # Source
 
 ```{r}
-# 2014-15
+# 2014-15 study
 table(df_201415$source)
 df_201415$source_site <- df_201415$source
-# Rename to broad categories
+
+## Rename to broad categories
 df_201415$source_simplified <- recode(df_201415$source,"blood"='blood','resp'='respiratory','urine'='urine','wound'='wound','Wound'='wound')
 
-# INTEGRATE
+# 2021-23 study
 table(df_202123$source_site)
 
 df_202123$source_simplified <- ifelse(df_202123$source_site %in% c("Wound","Wound Right Posterior Dorsal Hand","Sacrum","Buttock"),"wound",ifelse(df_202123$source_site %in% c("Bronchial","Bronchial Wash","Bronchial Washing","Bronchoalveolar Lavage","Trachael Aspirate","Tracheal Aspirate","Sputum","Pleural Fluid"),"respiratory",ifelse(df_202123$source_site %in% c("Urine","Urine Catheterized"),"urine",ifelse(df_202123$source_site %in% c("Rectal","Recal"),"rectal",ifelse(df_202123$source_site %in% c("Blood"),"blood",ifelse(is.na(df_202123$source_site),NA,"other"))))))
@@ -95,8 +96,7 @@ df_202123$los_after_culture <- as.numeric(df_202123$discharge_date - df_202123$c
 
 ```{r}
 # Age, sex, race, ethnicitiy 
-df_202123$participant_sex <- recode(df_202123$patient_sex,'F'='female',
-                                    'M'='male')
+df_202123$participant_sex <- recode(df_202123$patient_sex, 'F'='female', 'M'='male')
 df_201415$participant_sex <- df_201415$sex
 
 # Age
@@ -133,7 +133,7 @@ shared_new_variables_w_old_not_res <- colnames(df_202123)[colnames(df_202123) %i
 # Obtain the variables of interest
 variables_of_interest <- unique(c("sample_id","isolate_no",shared_new_variables_w_old_not_res,resistance_variables))
 
-## Shared dataset
+## Shared variable dataset
 df_202123_shared <- df_202123 %>% select(any_of(variables_of_interest))
 df_201415_shared <- df_201415  %>% select(any_of(variables_of_interest))
 ```
@@ -186,6 +186,10 @@ recode_LTACH_string <- sort(df_metadata_all$hospital_location) %>% unique %>% `n
 
 df_metadata_all$hospital_location_recode <- dplyr::recode(df_metadata_all$hospital_location, !!! recode_LTACH_string)   %>% factor(.,levels = paste0("LTACH ", 1:length(recode_LTACH_string)) )
 
+# Resistance using SENSITIRE
+df_metadata_all$MERO_IMI_R_SENSITITRE <- ifelse(is.na(df_metadata_all$MERO)==T & is.na(df_metadata_all$IMI) ==T,NA,
+                                                ifelse(df_metadata_all$MERO_cat == "Resistant" | df_metadata_all$IMI_cat == "Resistant",1,0))
+   
 # Rownames
 rownames(df_metadata_all) <- df_metadata_all$isolate_no
 ```
@@ -195,6 +199,7 @@ rownames(df_metadata_all) <- df_metadata_all$isolate_no
 ```{r}   
 paste0("Number of final rows: ", nrow(df_metadata_all))
 paste0("Number of final columns: ", ncol(df_metadata_all))
+
 paste0("Columns in dataset: ")
 colnames(df_metadata_all)
 ```

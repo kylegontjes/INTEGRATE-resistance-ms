@@ -45,7 +45,10 @@ kleborate_joint <- rbind(kleborate_2014_15,kleborate_INTEGRATE)
 saveRDS(kleborate_joint,"./data/kleborate/kleborate_kpsc_both_studies.RDS")
 ```
 
-# Matrix of OmpK36 mutations for future usage (truncations)
+# Matrix of OmpK36 mutations for future usage (e.g., focus on truncations)
+
+Note: We'll use AMRFinder's insertion data, as that's more up to date
+
 ```{r}
 rownames(kleborate_joint) <- kleborate_joint$isolate_no
 kleborate_matrix <- get_presence_absence_matrix(df = kleborate_joint,variable = 'Omp_mutations') %>% as.data.frame

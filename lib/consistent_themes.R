@@ -36,11 +36,16 @@ ST_breaks <- names(ST_palette)
 break_of_sts_renamed <- gsub("Klebsiella pneumoniae ","",ST_breaks)
 ST_scale <- scale_fill_manual(breaks =ST_breaks,values = ST_palette,labels = break_of_sts_renamed, name = "Sequence type (ST)", guide = guide_legend(order=1,ncol=7, title.position = "top", label.position = "right"))
 ST_scale_3_row <- scale_fill_manual(breaks = ST_breaks,values = ST_palette,labels = break_of_sts_renamed, name = "Sequence type (ST)", guide = guide_legend(order=1,nrow=3, title.position = "top", label.position = "right"))
+ST_scale_4_row <- scale_fill_manual(breaks = ST_breaks,values = ST_palette,labels = break_of_sts_renamed, name = "Sequence type (ST)", guide = guide_legend(order=1,nrow=4, title.position = "top", label.position = "right"))
 ST_scale_2_row <- scale_fill_manual(breaks = ST_breaks,values = ST_palette,labels = break_of_sts_renamed, name = "Sequence type (ST)", guide = guide_legend(order=1,nrow=2, title.position = "top", label.position = "right"))
 
 # Sequence type
 ST258_color <- subset(ST_palette,names(ST_palette) =="ST258") %>% `names<-`(NULL)
-ST258_scale_fill <- scale_fill_manual(breaks = c("ST258","Not ST258"),labels = str_pad(c("ST258","Not ST258"),7,side = 'right'),values = c(ST258_color,'black'),name = "Sequence type (ST)")
+not_ST258_color <- "gray30"
+ST258_scale_fill <- scale_fill_manual(breaks = c("ST258","Not ST258"),labels = str_pad(c("ST258","Not ST258"),7,side = 'right'),values = c(ST258_color,not_ST258_color),name = "Sequence type (ST)")
+
+## ST258 with other 
+ST258_scale_w_overall_fill <- scale_fill_manual(breaks = c('Overall',"ST258","Not ST258"),labels = str_pad(c("Overall","ST258","Not ST258"),7,side = 'right'),values = c("black",ST258_color,not_ST258_color),name = "Sequence type (ST)")
 
 # Carbapenemase scale
 carbapenemase_palette <- readRDS("./lib/carbapenemase_palette.RDS")
@@ -71,7 +76,7 @@ plasmid_replicon_type_fill_scale <- scale_fill_manual(breaks = carbapenemase_pla
 plasmid_replicon_type_color_scale <- scale_color_manual(breaks = carbapenemase_plasmid_replicon_breaks,values = carbapenemase_plasmid_replicon_colors, labels = carbapenemase_plasmid_replicon_labels, name="Plasmid replicon type(s)",guide = guide_legend(title.position = "top", label.position = "right"),na.translate = FALSE) 
 
 # Carbapenemase content scale
-KPC_plasmid_scale <-  scale_fill_manual(breaks = c(1,0),values=c("red","gray"),labels = c("Present","Absent"),name = "Carbapenemase content",guide = guide_legend(nrow=2, title.position = "top", label.position = "right"))
+KPC_plasmid_scale <-  scale_fill_manual(breaks = c(T,F),values=c("red","gray"),labels = c("Present","Absent"),name = "Carbapenemase content",guide = guide_legend(nrow=2, title.position = "top", label.position = "right"))
 KPC_contig_bool <-  scale_fill_manual(breaks = c(T,F),values=c("red","gray"),labels = c("Present","Absent"),name = "Carbapenemase content",guide = guide_legend(nrow=2, title.position = "top", label.position = "right"))
 
 # Phylogeographic scales
@@ -89,6 +94,7 @@ continent_scale <- scale_fill_manual(breaks = sort(continent_breaks),values = co
 
 ## California scale
 california_scale <- scale_fill_manual(breaks = c(TRUE,FALSE),values = c("red","#CCCCCC"),labels = c("California","Other"),name = "Location",guide = guide_legend(nrow=3,order=3),drop=FALSE)
+california_scale_color <- scale_color_manual(breaks = c(TRUE,FALSE),values = c("red","#CCCCCC"),labels = c("California","Other"),name = "Location",guide = guide_legend(nrow=3,order=3),drop=FALSE)
 
 ## Study scale
 study_scale <- scale_fill_manual(breaks = c("2014-15 study","2021-23 study","Public California genomes","Other public genomes"),values = c("#D55E00","#0072B3","#2B2B2B","white"),name = "Type of assembly",guide = guide_legend(nrow=4,order=4),drop=FALSE)
@@ -105,8 +111,9 @@ color_range <- hues::iwanthue(n = 6,hmin = 0,hmax = 75)
 host_range_scale <- scale_fill_manual(values = c("darkgray", color_range ),breaks = c("Actinomycetota,Bacillota,Pseudomonadota","Klebsiella","Enterobacteriaceae","Enterobacterales"                            ,"Gammaproteobacteria","Salmonella"),labels =  c("Actinomycetota, Bacillota, Pseudomonadota","Klebsiella","Enterobacteriaceae","Enterobacterales"                            ,"Gammaproteobacteria","Salmonella"),name="Observed host range",guide = guide_legend(nrow=2, title.position = "top", label.position = "right"))
 
 # Resistance colors
-resistance_cat_colors <- c("S" = "#005AB5","I"="#FFC20A","R" = "#DC3220")
-resistance_cat_scale <- scale_fill_manual(breaks = c(names(resistance_cat_colors)),values=resistance_cat_colors,labels = c("S"="Susceptible","I" ="Intermediate","R" = "Resistant"), name="Resistance category", guide = guide_legend(ncol=1, title.position = "top", label.position = "right"))
+resistance_cat_colors <- c("Susceptible" = "#005AB5","Intermediate"="#FFC20A","Resistant" = "#DC3220")
+resistance_cat_scale <- scale_fill_manual(breaks = c(names(resistance_cat_colors)),values=resistance_cat_colors,labels = names(resistance_cat_colors), name="Resistance category", guide = guide_legend(ncol=1, title.position = "top", label.position = "right"))
+resistance_cat_scale_two_title_rows <- scale_fill_manual(breaks = c(names(resistance_cat_colors)),values=resistance_cat_colors,labels = names(resistance_cat_colors), name="Resistance\ncategory", guide = guide_legend(ncol=1, title.position = "top", label.position = "right"))
 
 MIC_variables <- c("IMI","MERO","CST","FOS",'blbli','CZA',"IR",'MVB',"PLZ",
                    "CT","DLX","ERV","OMC",'FDC')  %>% rev

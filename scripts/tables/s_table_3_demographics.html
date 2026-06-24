@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>Supplemental Table 3: Baseline characteristics</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">Supplemental Table 3: Baseline
 characteristics</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -623,7 +623,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -680,9 +680,698 @@ df_w_metadata$non_hispanic_white &lt;- df_w_metadata$participant_race==&quot;Cau
 </div>
 <div id="create-table" class="section level1">
 <h1>Create table</h1>
-<pre class="r"><code>table &lt;-  convert_tableone_into_df(dataset = df_w_metadata, vars = c(&quot;participant_age_at_first_enc&quot;,&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;non_hispanic_white&quot;,&#39;source_simplified&#39;,&quot;los_before_culture&quot;,&#39;hospital_location_recode&#39;), factorVars = c(&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;non_hispanic_white&quot;,&#39;source_simplified&#39;,&#39;hospital_location_recode&#39;),strata=&#39;study&#39;,outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;),exact = c(&quot;source_simplified&quot;,&quot;hospital_location_recode&quot;),argsExact = list(simulate.p.value=T),nonnormal_vars =c( &#39;participant_age_at_first_enc&#39;,&#39;los_before_culture&#39;),addOverall=T)
+<div id="patient-table" class="section level2">
+<h2>Patient table</h2>
+<pre class="r"><code>patient_table &lt;- convert_tableone_into_df(dataset = df_w_metadata, 
+                                          vars = c(&quot;participant_age_at_first_enc&quot;,&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;non_hispanic_white&quot;,&quot;los_before_culture&quot;), 
+                                          factorVars = c(&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;non_hispanic_white&quot;),
+                                          strata=&#39;study&#39;,
+                                          outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;),
+                                          exact = c(&quot;source_simplified&quot;,&quot;hospital_location_recode&quot;),
+                                          argsExact = list(simulate.p.value=T), 
+                                          nonnormal_vars =c( &#39;participant_age_at_first_enc&#39;,&#39;los_before_culture&#39;),addOverall=T)
 
-table$Variable &lt;- recode(table$Variable,
+patient_table &lt;- rbind(colnames(patient_table), patient_table)
+colnames(patient_table) &lt;- c(&quot;Characteristics&quot;,&quot;Overall&quot;,&quot;2014-15 study&quot;,&quot;2021-23 study&quot;,&quot;P-value&quot;,&quot;Test&quot;)
+patient_table$Characteristics &lt;- ifelse(patient_table$Characteristics==&quot;Variable&quot;,&quot;Patient characteristics&quot;,patient_table$Characteristics) 
+
+patient_table %&gt;% favorite_kable()</code></pre>
+<table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
+<thead>
+<tr>
+<th style="text-align:left;">
+Characteristics
+</th>
+<th style="text-align:left;">
+Overall
+</th>
+<th style="text-align:left;">
+2014-15 study
+</th>
+<th style="text-align:left;">
+2021-23 study
+</th>
+<th style="text-align:left;">
+P-value
+</th>
+<th style="text-align:left;">
+Test
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Patient characteristics
+</td>
+<td style="text-align:left;">
+Overall (n=707)
+</td>
+<td style="text-align:left;">
+2014-15 (n=328)
+</td>
+<td style="text-align:left;">
+2021-23 (n=379)
+</td>
+<td style="text-align:left;">
+P-value
+</td>
+<td style="text-align:left;">
+Test
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+participant_age_at_first_enc (median [IQR])
+</td>
+<td style="text-align:left;">
+71.00 [62.00, 79.00]
+</td>
+<td style="text-align:left;">
+73.00 [64.00, 82.00]
+</td>
+<td style="text-align:left;">
+69.00 [61.00, 77.00]
+</td>
+<td style="text-align:left;">
+&lt;0.001
+</td>
+<td style="text-align:left;">
+nonnorm
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+participant_sex = male (%)
+</td>
+<td style="text-align:left;">
+367 (51.9)
+</td>
+<td style="text-align:left;">
+170 (51.8)
+</td>
+<td style="text-align:left;">
+197 (52.0)
+</td>
+<td style="text-align:left;">
+1.000
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+participant_race (%)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NaN
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+African American
+</td>
+<td style="text-align:left;">
+61 (16.1)
+</td>
+<td style="text-align:left;">
+0 (NaN)
+</td>
+<td style="text-align:left;">
+61 (16.1)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+American Indian
+</td>
+<td style="text-align:left;">
+1 (0.3)
+</td>
+<td style="text-align:left;">
+0 (NaN)
+</td>
+<td style="text-align:left;">
+1 (0.3)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Asian
+</td>
+<td style="text-align:left;">
+34 (9.0)
+</td>
+<td style="text-align:left;">
+0 (NaN)
+</td>
+<td style="text-align:left;">
+34 (9.0)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Caucasian
+</td>
+<td style="text-align:left;">
+208 (54.9)
+</td>
+<td style="text-align:left;">
+0 (NaN)
+</td>
+<td style="text-align:left;">
+208 (54.9)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+more than one race
+</td>
+<td style="text-align:left;">
+4 (1.1)
+</td>
+<td style="text-align:left;">
+0 (NaN)
+</td>
+<td style="text-align:left;">
+4 (1.1)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Other
+</td>
+<td style="text-align:left;">
+71 (18.7)
+</td>
+<td style="text-align:left;">
+0 (NaN)
+</td>
+<td style="text-align:left;">
+71 (18.7)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+non_hispanic_white = TRUE (%)
+</td>
+<td style="text-align:left;">
+140 (36.9)
+</td>
+<td style="text-align:left;">
+0 (NaN)
+</td>
+<td style="text-align:left;">
+140 (36.9)
+</td>
+<td style="text-align:left;">
+NaN
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+los_before_culture (median [IQR])
+</td>
+<td style="text-align:left;">
+25.00 [8.00, 55.00]
+</td>
+<td style="text-align:left;">
+20.00 [5.00, 43.00]
+</td>
+<td style="text-align:left;">
+32.00 [11.00, 71.00]
+</td>
+<td style="text-align:left;">
+&lt;0.001
+</td>
+<td style="text-align:left;">
+nonnorm
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="isolate-characteristics" class="section level2">
+<h2>Isolate characteristics</h2>
+<pre class="r"><code>source_hospital &lt;- convert_tableone_into_df(dataset = df, 
+                                            vars = c(&#39;source_simplified&#39;,&#39;hospital_location_recode&#39;), 
+                                            factorVars = c(&#39;source_simplified&#39;,&#39;hospital_location_recode&#39;),
+                                            strata=&#39;study&#39;,
+                                            outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;),
+                                            exact = c(&quot;source_simplified&quot;,&quot;hospital_location_recode&quot;),
+                                            argsExact = list(simulate.p.value=T),
+                                            nonnormal_vars =c( &#39;participant_age_at_first_enc&#39;,&#39;los_before_culture&#39;),addOverall=T)
+
+source_hospital &lt;- rbind(colnames(source_hospital), source_hospital)
+colnames(source_hospital) &lt;- c(&quot;Characteristics&quot;,&quot;Overall&quot;,&quot;2014-15 study&quot;,&quot;2021-23 study&quot;,&quot;P-value&quot;,&quot;Test&quot;)
+source_hospital$Characteristics &lt;- ifelse(source_hospital$Characteristics==&quot;Variable&quot;,&quot;Isolate characteristics&quot;,source_hospital$Characteristics) 
+
+source_hospital %&gt;% favorite_kable()</code></pre>
+<table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
+<thead>
+<tr>
+<th style="text-align:left;">
+Characteristics
+</th>
+<th style="text-align:left;">
+Overall
+</th>
+<th style="text-align:left;">
+2014-15 study
+</th>
+<th style="text-align:left;">
+2021-23 study
+</th>
+<th style="text-align:left;">
+P-value
+</th>
+<th style="text-align:left;">
+Test
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Isolate characteristics
+</td>
+<td style="text-align:left;">
+Overall (n=881)
+</td>
+<td style="text-align:left;">
+2014-15 (n=374)
+</td>
+<td style="text-align:left;">
+2021-23 (n=507)
+</td>
+<td style="text-align:left;">
+P-value
+</td>
+<td style="text-align:left;">
+Test
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+source_simplified (%)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+&lt;0.001
+</td>
+<td style="text-align:left;">
+exact
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+blood
+</td>
+<td style="text-align:left;">
+95 (10.8)
+</td>
+<td style="text-align:left;">
+30 (8.0)
+</td>
+<td style="text-align:left;">
+65 (12.8)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+10 (1.1)
+</td>
+<td style="text-align:left;">
+0 (0.0)
+</td>
+<td style="text-align:left;">
+10 (2.0)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+respiratory
+</td>
+<td style="text-align:left;">
+459 (52.1)
+</td>
+<td style="text-align:left;">
+217 (58.0)
+</td>
+<td style="text-align:left;">
+242 (47.7)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+urine
+</td>
+<td style="text-align:left;">
+234 (26.6)
+</td>
+<td style="text-align:left;">
+121 (32.4)
+</td>
+<td style="text-align:left;">
+113 (22.3)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wound
+</td>
+<td style="text-align:left;">
+83 (9.4)
+</td>
+<td style="text-align:left;">
+6 (1.6)
+</td>
+<td style="text-align:left;">
+77 (15.2)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hospital_location_recode (%)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+&lt;0.001
+</td>
+<td style="text-align:left;">
+exact
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 1
+</td>
+<td style="text-align:left;">
+107 (12.1)
+</td>
+<td style="text-align:left;">
+59 (15.8)
+</td>
+<td style="text-align:left;">
+48 (9.5)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 2
+</td>
+<td style="text-align:left;">
+30 (3.4)
+</td>
+<td style="text-align:left;">
+14 (3.7)
+</td>
+<td style="text-align:left;">
+16 (3.2)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 3
+</td>
+<td style="text-align:left;">
+88 (10.0)
+</td>
+<td style="text-align:left;">
+39 (10.4)
+</td>
+<td style="text-align:left;">
+49 (9.7)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 4
+</td>
+<td style="text-align:left;">
+103 (11.7)
+</td>
+<td style="text-align:left;">
+51 (13.6)
+</td>
+<td style="text-align:left;">
+52 (10.3)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 5
+</td>
+<td style="text-align:left;">
+78 (8.9)
+</td>
+<td style="text-align:left;">
+37 (9.9)
+</td>
+<td style="text-align:left;">
+41 (8.1)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 6
+</td>
+<td style="text-align:left;">
+112 (12.7)
+</td>
+<td style="text-align:left;">
+0 (0.0)
+</td>
+<td style="text-align:left;">
+112 (22.1)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 7
+</td>
+<td style="text-align:left;">
+65 (7.4)
+</td>
+<td style="text-align:left;">
+32 (8.6)
+</td>
+<td style="text-align:left;">
+33 (6.5)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 8
+</td>
+<td style="text-align:left;">
+34 (3.9)
+</td>
+<td style="text-align:left;">
+14 (3.7)
+</td>
+<td style="text-align:left;">
+20 (3.9)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 9
+</td>
+<td style="text-align:left;">
+30 (3.4)
+</td>
+<td style="text-align:left;">
+17 (4.5)
+</td>
+<td style="text-align:left;">
+13 (2.6)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 10
+</td>
+<td style="text-align:left;">
+64 (7.3)
+</td>
+<td style="text-align:left;">
+22 (5.9)
+</td>
+<td style="text-align:left;">
+42 (8.3)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 11
+</td>
+<td style="text-align:left;">
+32 (3.6)
+</td>
+<td style="text-align:left;">
+16 (4.3)
+</td>
+<td style="text-align:left;">
+16 (3.2)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 12
+</td>
+<td style="text-align:left;">
+79 (9.0)
+</td>
+<td style="text-align:left;">
+34 (9.1)
+</td>
+<td style="text-align:left;">
+45 (8.9)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LTACH 13
+</td>
+<td style="text-align:left;">
+59 (6.7)
+</td>
+<td style="text-align:left;">
+39 (10.4)
+</td>
+<td style="text-align:left;">
+20 (3.9)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="curate-the-table" class="section level1">
+<h1>Curate the table</h1>
+<pre class="r"><code>table &lt;- bind_rows(patient_table,source_hospital)
+
+table$Characteristics &lt;- recode(table$Characteristics, 
                          &quot;participant_age_at_first_enc (median [IQR])&quot; = &quot;Age in years, median (IQR)&quot;,
                          &quot;participant_sex = male (%)&quot; = &quot;Male sex&quot;,
                          &quot;participant_race (%)&quot; = &quot;Race&quot;,
@@ -698,8 +1387,20 @@ table$Variable &lt;- recode(table$Variable,
                          &quot;los_before_culture (median [IQR])&quot; = &quot;Length of stay before culture, median [IQR]&quot;,
                          &quot;hospital_location_recode (%)&quot; = &quot;Long-term acute care hospital (LTACH)&quot;)
 
+table$`P-value` &lt;- recode(table$`P-value`,&quot;P-value&quot;=&quot;&quot;)
+table$Test &lt;- recode(table$Test,&quot;Test&quot;=&quot;&quot;)
+
+recode_variable &lt;- function(variable,name){
+  gsub(paste0(&quot;^&quot;, name, &quot; &quot;), &quot;&quot;, variable)
+}
+
+table$Overall &lt;- recode_variable(table$Overall,&quot;Overall&quot;)
+table$`2014-15 study` &lt;- recode_variable(table$`2014-15 study`,&quot;2014-15&quot;)
+table$`2021-23 study` &lt;- recode_variable(table$`2021-23 study`,&quot;2021-23&quot;) 
+
 table  </code></pre>
-<pre><code>                                      Variable      Overall (n=707)
+<pre><code>                               Characteristics              Overall
+1                      Patient characteristics              (n=707)
 2                   Age in years, median (IQR) 71.00 [62.00, 79.00]
 3                                     Male sex           367 (51.9)
 4                                         Race                     
@@ -710,28 +1411,30 @@ table  </code></pre>
 9                           More than one race              4 (1.1)
 10                                       Other            71 (18.7)
 11                          Non-Hispanic white           140 (36.9)
-12                           Site of infection                     
-13                                       Blood            76 (10.7)
-14                                       Other             10 (1.4)
-15                                 Respiratory           364 (51.5)
-16                                       Urine           191 (27.0)
-17                                       Wound             66 (9.3)
-18 Length of stay before culture, median [IQR]  25.00 [8.00, 55.00]
-19       Long-term acute care hospital (LTACH)                     
-20                                     LTACH 1            97 (13.7)
-21                                     LTACH 2             26 (3.7)
-22                                     LTACH 3             63 (8.9)
-23                                     LTACH 4            85 (12.0)
-24                                     LTACH 5             69 (9.8)
-25                                     LTACH 6             67 (9.5)
-26                                     LTACH 7             55 (7.8)
-27                                     LTACH 8             27 (3.8)
-28                                     LTACH 9             26 (3.7)
-29                                    LTACH 10             53 (7.5)
-30                                    LTACH 11             25 (3.5)
-31                                    LTACH 12             65 (9.2)
-32                                    LTACH 13             49 (6.9)
-        2014-15 (n=328)      2021-23 (n=379) P-value    Test
+12 Length of stay before culture, median [IQR]  25.00 [8.00, 55.00]
+13                     Isolate characteristics              (n=881)
+14                           Site of infection                     
+15                                       Blood            95 (10.8)
+16                                       Other             10 (1.1)
+17                                 Respiratory           459 (52.1)
+18                                       Urine           234 (26.6)
+19                                       Wound             83 (9.4)
+20       Long-term acute care hospital (LTACH)                     
+21                                     LTACH 1           107 (12.1)
+22                                     LTACH 2             30 (3.4)
+23                                     LTACH 3            88 (10.0)
+24                                     LTACH 4           103 (11.7)
+25                                     LTACH 5             78 (8.9)
+26                                     LTACH 6           112 (12.7)
+27                                     LTACH 7             65 (7.4)
+28                                     LTACH 8             34 (3.9)
+29                                     LTACH 9             30 (3.4)
+30                                    LTACH 10             64 (7.3)
+31                                    LTACH 11             32 (3.6)
+32                                    LTACH 12             79 (9.0)
+33                                    LTACH 13             59 (6.7)
+          2014-15 study        2021-23 study P-value    Test
+1               (n=328)              (n=379)                
 2  73.00 [64.00, 82.00] 69.00 [61.00, 77.00]  &lt;0.001 nonnorm
 3            170 (51.8)           197 (52.0)   1.000        
 4                                                NaN        
@@ -742,27 +1445,28 @@ table  </code></pre>
 9               0 (NaN)              4 (1.1)                
 10              0 (NaN)            71 (18.7)                
 11              0 (NaN)           140 (36.9)     NaN        
-12                                            &lt;0.001   exact
-13             27 (8.2)            49 (12.9)                
-14              0 (0.0)             10 (2.6)                
-15           184 (56.1)           180 (47.5)                
-16           111 (33.8)            80 (21.1)                
-17              6 (1.8)            60 (15.8)                
-18  20.00 [5.00, 43.00] 32.00 [11.00, 71.00]  &lt;0.001 nonnorm
-19                                            &lt;0.001   exact
-20            52 (15.9)            45 (11.9)                
-21             13 (4.0)             13 (3.4)                
-22             32 (9.8)             31 (8.2)                
-23            44 (13.4)            41 (10.8)                
-24            36 (11.0)             33 (8.7)                
-25              0 (0.0)            67 (17.7)                
-26             26 (7.9)             29 (7.7)                
-27             13 (4.0)             14 (3.7)                
-28             16 (4.9)             10 (2.6)                
-29             18 (5.5)             35 (9.2)                
-30             15 (4.6)             10 (2.6)                
-31             32 (9.8)             33 (8.7)                
-32             31 (9.5)             18 (4.7)                </code></pre>
+12  20.00 [5.00, 43.00] 32.00 [11.00, 71.00]  &lt;0.001 nonnorm
+13              (n=374)              (n=507)                
+14                                            &lt;0.001   exact
+15             30 (8.0)            65 (12.8)                
+16              0 (0.0)             10 (2.0)                
+17           217 (58.0)           242 (47.7)                
+18           121 (32.4)           113 (22.3)                
+19              6 (1.6)            77 (15.2)                
+20                                            &lt;0.001   exact
+21            59 (15.8)             48 (9.5)                
+22             14 (3.7)             16 (3.2)                
+23            39 (10.4)             49 (9.7)                
+24            51 (13.6)            52 (10.3)                
+25             37 (9.9)             41 (8.1)                
+26              0 (0.0)           112 (22.1)                
+27             32 (8.6)             33 (6.5)                
+28             14 (3.7)             20 (3.9)                
+29             17 (4.5)             13 (2.6)                
+30             22 (5.9)             42 (8.3)                
+31             16 (4.3)             16 (3.2)                
+32             34 (9.1)             45 (8.9)                
+33            39 (10.4)             20 (3.9)                </code></pre>
 </div>
 <div id="validate-p-value-for-site-and-ltach" class="section level1">
 <h1>Validate p-value for site and LTACH</h1>
@@ -829,11 +1533,11 @@ ltach_shared_table</code></pre>
   LTACH 13      31      18</code></pre>
 <pre class="r"><code>ltach_shared_table_pvalue &lt;-  fisher.test(ltach_shared_table,simulate.p.value = T)
 ltach_shared_table_pvalue$p.value</code></pre>
-<pre><code>[1] 0.3733133</code></pre>
+<pre><code>[1] 0.3673163</code></pre>
 <pre class="r"><code>ltach_shared_table_pvalue_rounded &lt;- round(ltach_shared_table_pvalue$p.value ,digits = 2)
 ltach_shared_table_pvalue_rounded</code></pre>
 <pre><code>[1] 0.37</code></pre>
-<pre class="r"><code>table$`P-value` &lt;- ifelse(table$Variable == &quot;Long-term acute care hospital (LTACH)&quot;,ltach_shared_table_pvalue_rounded,table$`P-value`)
+<pre class="r"><code>table$`P-value` &lt;- ifelse(table$Characteristics == &quot;Long-term acute care hospital (LTACH)&quot;,ltach_shared_table_pvalue_rounded,table$`P-value`)
 table$`P-value` &lt;- ifelse(table$`P-value` == &quot;1.000&quot;,&quot;1.00&quot;,table$`P-value`)
 table[table==&quot;0 (NaN)&quot;] &lt;- &quot;-&quot;   
 
@@ -846,16 +1550,16 @@ table &lt;- table %&gt;% mutate(across(where(is.character),
 <thead>
 <tr>
 <th style="text-align:left;">
-Variable
+Characteristics
 </th>
 <th style="text-align:left;">
-Overall (n=707)
+Overall
 </th>
 <th style="text-align:left;">
-2014-15 (n=328)
+2014-15 study
 </th>
 <th style="text-align:left;">
-2021-23 (n=379)
+2021-23 study
 </th>
 <th style="text-align:left;">
 P-value
@@ -866,6 +1570,24 @@ Test
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Patient characteristics
+</td>
+<td style="text-align:left;">
+(n=707)
+</td>
+<td style="text-align:left;">
+(n=328)
+</td>
+<td style="text-align:left;">
+(n=379)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Age in years, median (IQR)
@@ -1050,6 +1772,44 @@ NaN
 </tr>
 <tr>
 <td style="text-align:left;">
+Length of stay before culture, median (IQR)
+</td>
+<td style="text-align:left;">
+25.00 (8.00, 55.00)
+</td>
+<td style="text-align:left;">
+20.00 (5.00, 43.00)
+</td>
+<td style="text-align:left;">
+32.00 (11.00, 71.00)
+</td>
+<td style="text-align:left;">
+&lt;0.001
+</td>
+<td style="text-align:left;">
+nonnorm
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Isolate characteristics
+</td>
+<td style="text-align:left;">
+(n=881)
+</td>
+<td style="text-align:left;">
+(n=374)
+</td>
+<td style="text-align:left;">
+(n=507)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 Site of infection
 </td>
 <td style="text-align:left;">
@@ -1070,13 +1830,13 @@ exact
 Blood
 </td>
 <td style="text-align:left;">
-76 (10.7)
+95 (10.8)
 </td>
 <td style="text-align:left;">
-27 (8.2)
+30 (8.0)
 </td>
 <td style="text-align:left;">
-49 (12.9)
+65 (12.8)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1088,13 +1848,13 @@ Blood
 Other
 </td>
 <td style="text-align:left;">
-10 (1.4)
+10 (1.1)
 </td>
 <td style="text-align:left;">
 0 (0.0)
 </td>
 <td style="text-align:left;">
-10 (2.6)
+10 (2.0)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1106,13 +1866,13 @@ Other
 Respiratory
 </td>
 <td style="text-align:left;">
-364 (51.5)
+459 (52.1)
 </td>
 <td style="text-align:left;">
-184 (56.1)
+217 (58.0)
 </td>
 <td style="text-align:left;">
-180 (47.5)
+242 (47.7)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1124,13 +1884,13 @@ Respiratory
 Urine
 </td>
 <td style="text-align:left;">
-191 (27.0)
+234 (26.6)
 </td>
 <td style="text-align:left;">
-111 (33.8)
+121 (32.4)
 </td>
 <td style="text-align:left;">
-80 (21.1)
+113 (22.3)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1142,37 +1902,17 @@ Urine
 Wound
 </td>
 <td style="text-align:left;">
-66 (9.3)
+83 (9.4)
 </td>
 <td style="text-align:left;">
-6 (1.8)
+6 (1.6)
 </td>
 <td style="text-align:left;">
-60 (15.8)
+77 (15.2)
 </td>
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Length of stay before culture, median (IQR)
-</td>
-<td style="text-align:left;">
-25.00 (8.00, 55.00)
-</td>
-<td style="text-align:left;">
-20.00 (5.00, 43.00)
-</td>
-<td style="text-align:left;">
-32.00 (11.00, 71.00)
-</td>
-<td style="text-align:left;">
-&lt;0.001
-</td>
-<td style="text-align:left;">
-nonnorm
 </td>
 </tr>
 <tr>
@@ -1197,13 +1937,13 @@ exact
 LTACH 1
 </td>
 <td style="text-align:left;">
-97 (13.7)
+107 (12.1)
 </td>
 <td style="text-align:left;">
-52 (15.9)
+59 (15.8)
 </td>
 <td style="text-align:left;">
-45 (11.9)
+48 (9.5)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1215,13 +1955,13 @@ LTACH 1
 LTACH 2
 </td>
 <td style="text-align:left;">
-26 (3.7)
+30 (3.4)
 </td>
 <td style="text-align:left;">
-13 (4.0)
+14 (3.7)
 </td>
 <td style="text-align:left;">
-13 (3.4)
+16 (3.2)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1233,13 +1973,13 @@ LTACH 2
 LTACH 3
 </td>
 <td style="text-align:left;">
-63 (8.9)
+88 (10.0)
 </td>
 <td style="text-align:left;">
-32 (9.8)
+39 (10.4)
 </td>
 <td style="text-align:left;">
-31 (8.2)
+49 (9.7)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1251,13 +1991,13 @@ LTACH 3
 LTACH 4
 </td>
 <td style="text-align:left;">
-85 (12.0)
+103 (11.7)
 </td>
 <td style="text-align:left;">
-44 (13.4)
+51 (13.6)
 </td>
 <td style="text-align:left;">
-41 (10.8)
+52 (10.3)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1269,13 +2009,13 @@ LTACH 4
 LTACH 5
 </td>
 <td style="text-align:left;">
-69 (9.8)
+78 (8.9)
 </td>
 <td style="text-align:left;">
-36 (11.0)
+37 (9.9)
 </td>
 <td style="text-align:left;">
-33 (8.7)
+41 (8.1)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1287,13 +2027,13 @@ LTACH 5
 LTACH 6
 </td>
 <td style="text-align:left;">
-67 (9.5)
+112 (12.7)
 </td>
 <td style="text-align:left;">
 0 (0.0)
 </td>
 <td style="text-align:left;">
-67 (17.7)
+112 (22.1)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1305,13 +2045,13 @@ LTACH 6
 LTACH 7
 </td>
 <td style="text-align:left;">
-55 (7.8)
+65 (7.4)
 </td>
 <td style="text-align:left;">
-26 (7.9)
+32 (8.6)
 </td>
 <td style="text-align:left;">
-29 (7.7)
+33 (6.5)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1323,13 +2063,13 @@ LTACH 7
 LTACH 8
 </td>
 <td style="text-align:left;">
-27 (3.8)
-</td>
-<td style="text-align:left;">
-13 (4.0)
+34 (3.9)
 </td>
 <td style="text-align:left;">
 14 (3.7)
+</td>
+<td style="text-align:left;">
+20 (3.9)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1341,13 +2081,13 @@ LTACH 8
 LTACH 9
 </td>
 <td style="text-align:left;">
-26 (3.7)
+30 (3.4)
 </td>
 <td style="text-align:left;">
-16 (4.9)
+17 (4.5)
 </td>
 <td style="text-align:left;">
-10 (2.6)
+13 (2.6)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1359,13 +2099,13 @@ LTACH 9
 LTACH 10
 </td>
 <td style="text-align:left;">
-53 (7.5)
+64 (7.3)
 </td>
 <td style="text-align:left;">
-18 (5.5)
+22 (5.9)
 </td>
 <td style="text-align:left;">
-35 (9.2)
+42 (8.3)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1377,13 +2117,13 @@ LTACH 10
 LTACH 11
 </td>
 <td style="text-align:left;">
-25 (3.5)
+32 (3.6)
 </td>
 <td style="text-align:left;">
-15 (4.6)
+16 (4.3)
 </td>
 <td style="text-align:left;">
-10 (2.6)
+16 (3.2)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1395,13 +2135,13 @@ LTACH 11
 LTACH 12
 </td>
 <td style="text-align:left;">
-65 (9.2)
+79 (9.0)
 </td>
 <td style="text-align:left;">
-32 (9.8)
+34 (9.1)
 </td>
 <td style="text-align:left;">
-33 (8.7)
+45 (8.9)
 </td>
 <td style="text-align:left;">
 </td>
@@ -1413,13 +2153,13 @@ LTACH 12
 LTACH 13
 </td>
 <td style="text-align:left;">
-49 (6.9)
+59 (6.7)
 </td>
 <td style="text-align:left;">
-31 (9.5)
+39 (10.4)
 </td>
 <td style="text-align:left;">
-18 (4.7)
+20 (3.9)
 </td>
 <td style="text-align:left;">
 </td>

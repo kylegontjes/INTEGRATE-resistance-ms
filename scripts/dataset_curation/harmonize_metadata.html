@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>Haromonize metadata and merge datasets</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Haromonize metadata and merge datasets</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -387,7 +387,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -443,16 +443,17 @@ df_202123 &lt;-  readRDS(&quot;./data/dataset/INTEGRATE_metadata_qcd_merged.RDS&
 </div>
 <div id="source" class="section level1">
 <h1>Source</h1>
-<pre class="r"><code># 2014-15
+<pre class="r"><code># 2014-15 study
 table(df_201415$source)</code></pre>
 <pre><code>
 blood  resp urine wound 
    33   238   131     6 </code></pre>
 <pre class="r"><code>df_201415$source_site &lt;- df_201415$source
-# Rename to broad categories
+
+## Rename to broad categories
 df_201415$source_simplified &lt;- recode(df_201415$source,&quot;blood&quot;=&#39;blood&#39;,&#39;resp&#39;=&#39;respiratory&#39;,&#39;urine&#39;=&#39;urine&#39;,&#39;wound&#39;=&#39;wound&#39;,&#39;Wound&#39;=&#39;wound&#39;)
 
-# INTEGRATE
+# 2021-23 study
 table(df_202123$source_site)</code></pre>
 <pre><code>
                           Abdomen                              Bile 
@@ -515,8 +516,7 @@ df_202123$los_after_culture &lt;- as.numeric(df_202123$discharge_date - df_20212
 <div id="sex-age-race-data" class="section level2">
 <h2>Sex, age, race data</h2>
 <pre class="r"><code># Age, sex, race, ethnicitiy 
-df_202123$participant_sex &lt;- recode(df_202123$patient_sex,&#39;F&#39;=&#39;female&#39;,
-                                    &#39;M&#39;=&#39;male&#39;)
+df_202123$participant_sex &lt;- recode(df_202123$patient_sex, &#39;F&#39;=&#39;female&#39;, &#39;M&#39;=&#39;male&#39;)
 df_201415$participant_sex &lt;- df_201415$sex
 
 # Age
@@ -552,7 +552,7 @@ shared_new_variables_w_old_not_res &lt;- colnames(df_202123)[colnames(df_202123)
 # Obtain the variables of interest
 variables_of_interest &lt;- unique(c(&quot;sample_id&quot;,&quot;isolate_no&quot;,shared_new_variables_w_old_not_res,resistance_variables))
 
-## Shared dataset
+## Shared variable dataset
 df_202123_shared &lt;- df_202123 %&gt;% select(any_of(variables_of_interest))
 df_201415_shared &lt;- df_201415  %&gt;% select(any_of(variables_of_interest))</code></pre>
 </div>
@@ -599,6 +599,10 @@ recode_LTACH_string &lt;- sort(df_metadata_all$hospital_location) %&gt;% unique 
 
 df_metadata_all$hospital_location_recode &lt;- dplyr::recode(df_metadata_all$hospital_location, !!! recode_LTACH_string)   %&gt;% factor(.,levels = paste0(&quot;LTACH &quot;, 1:length(recode_LTACH_string)) )
 
+# Resistance using SENSITIRE
+df_metadata_all$MERO_IMI_R_SENSITITRE &lt;- ifelse(is.na(df_metadata_all$MERO)==T &amp; is.na(df_metadata_all$IMI) ==T,NA,
+                                                ifelse(df_metadata_all$MERO_cat == &quot;Resistant&quot; | df_metadata_all$IMI_cat == &quot;Resistant&quot;,1,0))
+   
 # Rownames
 rownames(df_metadata_all) &lt;- df_metadata_all$isolate_no</code></pre>
 </div>
@@ -607,7 +611,7 @@ rownames(df_metadata_all) &lt;- df_metadata_all$isolate_no</code></pre>
 <pre class="r"><code>paste0(&quot;Number of final rows: &quot;, nrow(df_metadata_all))</code></pre>
 <pre><code>[1] &quot;Number of final rows: 1780&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Number of final columns: &quot;, ncol(df_metadata_all))</code></pre>
-<pre><code>[1] &quot;Number of final columns: 121&quot;</code></pre>
+<pre><code>[1] &quot;Number of final columns: 123&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Columns in dataset: &quot;)</code></pre>
 <pre><code>[1] &quot;Columns in dataset: &quot;</code></pre>
 <pre class="r"><code>colnames(df_metadata_all)</code></pre>
@@ -648,90 +652,92 @@ rownames(df_metadata_all) &lt;- df_metadata_all$isolate_no</code></pre>
  [35] &quot;species&quot;                                 
  [36] &quot;qc_pass&quot;                                 
  [37] &quot;CRE&quot;                                     
- [38] &quot;ST&quot;                                      
- [39] &quot;source_simplified&quot;                       
- [40] &quot;date&quot;                                    
- [41] &quot;year&quot;                                    
- [42] &quot;year_quarter&quot;                            
- [43] &quot;los_before_culture&quot;                      
- [44] &quot;los_after_culture&quot;                       
- [45] &quot;participant_sex&quot;                         
- [46] &quot;participant_age_at_first_enc&quot;            
- [47] &quot;participant_race&quot;                        
- [48] &quot;participant_ethnicity&quot;                   
- [49] &quot;blbli_dich_num&quot;                          
- [50] &quot;CST&quot;                                     
- [51] &quot;CST_cat&quot;                                 
- [52] &quot;CST_dich_num&quot;                            
- [53] &quot;CST_log_2&quot;                               
- [54] &quot;CST_num&quot;                                 
- [55] &quot;CZA&quot;                                     
- [56] &quot;CZA_cat&quot;                                 
- [57] &quot;CZA_dich_num&quot;                            
- [58] &quot;CZA_log_2&quot;                               
- [59] &quot;CZA_num&quot;                                 
- [60] &quot;FOS&quot;                                     
- [61] &quot;FOS_cat&quot;                                 
- [62] &quot;FOS_dich_num&quot;                            
- [63] &quot;FOS_log_2&quot;                               
- [64] &quot;FOS_num&quot;                                 
- [65] &quot;IMI&quot;                                     
- [66] &quot;IMI_cat&quot;                                 
- [67] &quot;IMI_dich_num&quot;                            
- [68] &quot;IMI_log_2&quot;                               
- [69] &quot;IMI_num&quot;                                 
- [70] &quot;IR&quot;                                      
- [71] &quot;IR_cat&quot;                                  
- [72] &quot;IR_dich_num&quot;                             
- [73] &quot;IR_log_2&quot;                                
- [74] &quot;IR_num&quot;                                  
- [75] &quot;MERO&quot;                                    
- [76] &quot;MERO_cat&quot;                                
- [77] &quot;MERO_dich_num&quot;                           
- [78] &quot;MERO_log_2&quot;                              
- [79] &quot;MERO_num&quot;                                
- [80] &quot;MVB&quot;                                     
- [81] &quot;MVB_cat&quot;                                 
- [82] &quot;MVB_dich_num&quot;                            
- [83] &quot;MVB_log_2&quot;                               
- [84] &quot;MVB_num&quot;                                 
- [85] &quot;PLZ&quot;                                     
- [86] &quot;PLZ_cat&quot;                                 
- [87] &quot;PLZ_dich_num&quot;                            
- [88] &quot;PLZ_log_2&quot;                               
- [89] &quot;PLZ_num&quot;                                 
- [90] &quot;CT&quot;                                      
- [91] &quot;CT_cat&quot;                                  
- [92] &quot;CT_dich_num&quot;                             
- [93] &quot;CT_log_2&quot;                                
- [94] &quot;CT_num&quot;                                  
- [95] &quot;DLX&quot;                                     
- [96] &quot;DLX_cat&quot;                                 
- [97] &quot;DLX_dich_num&quot;                            
- [98] &quot;DLX_log_2&quot;                               
- [99] &quot;DLX_num&quot;                                 
-[100] &quot;ERV&quot;                                     
-[101] &quot;ERV_cat&quot;                                 
-[102] &quot;ERV_dich_num&quot;                            
-[103] &quot;ERV_log_2&quot;                               
-[104] &quot;ERV_num&quot;                                 
-[105] &quot;FDC&quot;                                     
-[106] &quot;FDC_cat&quot;                                 
-[107] &quot;FDC_dich_num&quot;                            
-[108] &quot;FDC_log_2&quot;                               
-[109] &quot;FDC_num&quot;                                 
-[110] &quot;OMC&quot;                                     
-[111] &quot;OMC_cat&quot;                                 
-[112] &quot;OMC_dich_num&quot;                            
-[113] &quot;OMC_log_2&quot;                               
-[114] &quot;OMC_num&quot;                                 
-[115] &quot;Species_ST&quot;                              
-[116] &quot;genus&quot;                                   
-[117] &quot;study&quot;                                   
-[118] &quot;rectal&quot;                                  
-[119] &quot;rectal_logical&quot;                          
-[120] &quot;extraintestinal_logical&quot;                 
-[121] &quot;hospital_location_recode&quot;                </code></pre>
+ [38] &quot;blbli_dich&quot;                              
+ [39] &quot;ST&quot;                                      
+ [40] &quot;source_simplified&quot;                       
+ [41] &quot;date&quot;                                    
+ [42] &quot;year&quot;                                    
+ [43] &quot;year_quarter&quot;                            
+ [44] &quot;los_before_culture&quot;                      
+ [45] &quot;los_after_culture&quot;                       
+ [46] &quot;participant_sex&quot;                         
+ [47] &quot;participant_age_at_first_enc&quot;            
+ [48] &quot;participant_race&quot;                        
+ [49] &quot;participant_ethnicity&quot;                   
+ [50] &quot;blbli_dich_num&quot;                          
+ [51] &quot;CST&quot;                                     
+ [52] &quot;CST_cat&quot;                                 
+ [53] &quot;CST_dich_num&quot;                            
+ [54] &quot;CST_log_2&quot;                               
+ [55] &quot;CST_num&quot;                                 
+ [56] &quot;CZA&quot;                                     
+ [57] &quot;CZA_cat&quot;                                 
+ [58] &quot;CZA_dich_num&quot;                            
+ [59] &quot;CZA_log_2&quot;                               
+ [60] &quot;CZA_num&quot;                                 
+ [61] &quot;FOS&quot;                                     
+ [62] &quot;FOS_cat&quot;                                 
+ [63] &quot;FOS_dich_num&quot;                            
+ [64] &quot;FOS_log_2&quot;                               
+ [65] &quot;FOS_num&quot;                                 
+ [66] &quot;IMI&quot;                                     
+ [67] &quot;IMI_cat&quot;                                 
+ [68] &quot;IMI_dich_num&quot;                            
+ [69] &quot;IMI_log_2&quot;                               
+ [70] &quot;IMI_num&quot;                                 
+ [71] &quot;IR&quot;                                      
+ [72] &quot;IR_cat&quot;                                  
+ [73] &quot;IR_dich_num&quot;                             
+ [74] &quot;IR_log_2&quot;                                
+ [75] &quot;IR_num&quot;                                  
+ [76] &quot;MERO&quot;                                    
+ [77] &quot;MERO_cat&quot;                                
+ [78] &quot;MERO_dich_num&quot;                           
+ [79] &quot;MERO_log_2&quot;                              
+ [80] &quot;MERO_num&quot;                                
+ [81] &quot;MVB&quot;                                     
+ [82] &quot;MVB_cat&quot;                                 
+ [83] &quot;MVB_dich_num&quot;                            
+ [84] &quot;MVB_log_2&quot;                               
+ [85] &quot;MVB_num&quot;                                 
+ [86] &quot;PLZ&quot;                                     
+ [87] &quot;PLZ_cat&quot;                                 
+ [88] &quot;PLZ_dich_num&quot;                            
+ [89] &quot;PLZ_log_2&quot;                               
+ [90] &quot;PLZ_num&quot;                                 
+ [91] &quot;CT&quot;                                      
+ [92] &quot;CT_cat&quot;                                  
+ [93] &quot;CT_dich_num&quot;                             
+ [94] &quot;CT_log_2&quot;                                
+ [95] &quot;CT_num&quot;                                  
+ [96] &quot;DLX&quot;                                     
+ [97] &quot;DLX_cat&quot;                                 
+ [98] &quot;DLX_dich_num&quot;                            
+ [99] &quot;DLX_log_2&quot;                               
+[100] &quot;DLX_num&quot;                                 
+[101] &quot;ERV&quot;                                     
+[102] &quot;ERV_cat&quot;                                 
+[103] &quot;ERV_dich_num&quot;                            
+[104] &quot;ERV_log_2&quot;                               
+[105] &quot;ERV_num&quot;                                 
+[106] &quot;FDC&quot;                                     
+[107] &quot;FDC_cat&quot;                                 
+[108] &quot;FDC_dich_num&quot;                            
+[109] &quot;FDC_log_2&quot;                               
+[110] &quot;FDC_num&quot;                                 
+[111] &quot;OMC&quot;                                     
+[112] &quot;OMC_cat&quot;                                 
+[113] &quot;OMC_dich_num&quot;                            
+[114] &quot;OMC_log_2&quot;                               
+[115] &quot;OMC_num&quot;                                 
+[116] &quot;Species_ST&quot;                              
+[117] &quot;genus&quot;                                   
+[118] &quot;study&quot;                                   
+[119] &quot;rectal&quot;                                  
+[120] &quot;rectal_logical&quot;                          
+[121] &quot;extraintestinal_logical&quot;                 
+[122] &quot;hospital_location_recode&quot;                
+[123] &quot;MERO_IMI_R_SENSITITRE&quot;                   </code></pre>
 </div>
 <div id="save-the-merged-dataset" class="section level1">
 <h1>Save the merged dataset</h1>

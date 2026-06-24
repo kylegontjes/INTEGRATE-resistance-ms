@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>Results section 5: Carbapenemase data</title>
 
@@ -576,7 +576,7 @@ display: none;
 
 <h1 class="title toc-ignore">Results section 5: Carbapenemase data</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -712,8 +712,8 @@ df$porin_mutation &lt;-  df$OmpK36_mutation  == 1 | df$OmpK35_mutation ==1
 df$non_carbapenemase_blactam_andor_omp_mutation &lt;- df$blactamase_non_carbapenmase_bin==T | df$porin_mutation == T
 df$non_carbapenemase_blactam_and_omp_mutation &lt;- df$blactamase_non_carbapenmase_bin==T &amp; df$porin_mutation == T</code></pre>
 </div>
-<div id="differences-across-study-periods-in-carbapenemase" class="section level1">
-<h1>Differences across study periods in carbapenemase</h1>
+<div id="differences-across-study-periods-in-carbapenemase-content" class="section level1">
+<h1>Differences across study periods in carbapenemase content</h1>
 <pre class="r"><code>convert_tableone_into_df(dataset = df,vars = c(&#39;blaKPC_presence&#39;,&quot;blaNDM&quot;,&quot;blaOXA&quot;,&#39;carbapenemase&#39;,&#39;no_carbapenemase&#39;,&quot;porin_mutation&quot;,&quot;OmpK35_mutation&quot;,&quot;OmpK36_mutation&quot;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;,&#39;non_carbapenemase_blactam_andor_omp_mutation&#39;),strata = &#39;study&#39;,outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;),factorVars = c(&#39;carbapenemase&#39;,&quot;blaNDM&quot;,&quot;blaOXA&quot;,&#39;no_carbapenemase&#39;,&quot;porin_mutation&quot;,&quot;OmpK35_mutation&quot;,&quot;OmpK36_mutation&quot;,&#39;non_carbapenemase_blactam_andor_omp_mutation&#39;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;),exact = &quot;carbapenemase&quot;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;) %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
@@ -744,7 +744,7 @@ blaKPC_presence = TRUE (%)
 364 (97.3)
 </td>
 <td style="text-align:left;">
-425 (83.8)
+431 (85.0)
 </td>
 <td style="text-align:left;">
 &lt;0.001
@@ -891,6 +891,36 @@ blaKPC-3*
 </tr>
 <tr>
 <td style="text-align:left;">
+blaKPC-31
+</td>
+<td style="text-align:left;">
+0 (0.0)
+</td>
+<td style="text-align:left;">
+4 (0.8)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+blaKPC-49
+</td>
+<td style="text-align:left;">
+0 (0.0)
+</td>
+<td style="text-align:left;">
+1 (0.2)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 blaKPC-5
 </td>
 <td style="text-align:left;">
@@ -898,6 +928,21 @@ blaKPC-5
 </td>
 <td style="text-align:left;">
 0 (0.0)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+blaKPC-68
+</td>
+<td style="text-align:left;">
+0 (0.0)
+</td>
+<td style="text-align:left;">
+1 (0.2)
 </td>
 <td style="text-align:left;">
 </td>
@@ -972,7 +1017,7 @@ No carbapenemase
 10 (2.7)
 </td>
 <td style="text-align:left;">
-70 (13.8)
+64 (12.6)
 </td>
 <td style="text-align:left;">
 </td>
@@ -987,7 +1032,7 @@ no_carbapenemase = TRUE (%)
 10 (2.7)
 </td>
 <td style="text-align:left;">
-70 (13.8)
+64 (12.6)
 </td>
 <td style="text-align:left;">
 &lt;0.001
@@ -1078,9 +1123,10 @@ non_carbapenemase_blactam_andor_omp_mutation = TRUE (%)
 </tbody>
 </table>
 </div>
-<div id="differences-among-noncarbepenmase-genomes" class="section level1">
-<h1>Differences among noncarbepenmase genomes</h1>
+<div id="differences-among-non-carbapenemase-harboring-genomes" class="section level1">
+<h1>Differences among non-carbapenemase-harboring genomes</h1>
 <pre class="r"><code>df_nocarb &lt;- df %&gt;% subset(carbapenemase == &#39;No carbapenemase&#39;)
+
 convert_tableone_into_df(dataset = df_nocarb,vars = c(&#39;blaKPC_presence&#39;,&quot;blaNDM&quot;,&quot;blaOXA&quot;,&#39;carbapenemase&#39;,&quot;porin_mutation&quot;,&quot;OmpK35_mutation&quot;,&quot;OmpK36_mutation&quot;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;,&#39;blactamase_non_carbapenmase_bin&#39;,&#39;non_carbapenemase_blactam_andor_omp_mutation&#39;),strata = &#39;study&#39;,outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;),factorVars = c(&#39;carbapenemase&#39;,&quot;blaNDM&quot;,&quot;blaOXA&quot;,&quot;porin_mutation&quot;,&quot;OmpK35_mutation&quot;,&quot;OmpK36_mutation&quot;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;,&#39;blactamase_non_carbapenmase_bin&#39;,&#39;non_carbapenemase_blactam_andor_omp_mutation&#39;),exact =c(&#39;carbapenemase&#39;,&quot;blaNDM&quot;,&quot;blaOXA&quot;,&#39;no_carbapenemase&#39;,&quot;porin_mutation&quot;,&quot;OmpK35_mutation&quot;,&quot;OmpK36_mutation&quot;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;,&#39;blactamase_non_carbapenmase_bin&#39;,&#39;non_carbapenemase_blactam_andor_omp_mutation&#39;)) %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
@@ -1092,7 +1138,7 @@ Variable
 2014-15 (n=10)
 </th>
 <th style="text-align:left;">
-2021-23 (n=70)
+2021-23 (n=64)
 </th>
 <th style="text-align:left;">
 P-value
@@ -1111,7 +1157,7 @@ blaKPC_presence = FALSE (%)
 10 (100.0)
 </td>
 <td style="text-align:left;">
-70 (100.0)
+64 (100.0)
 </td>
 <td style="text-align:left;">
 NA
@@ -1127,7 +1173,7 @@ blaNDM = FALSE (%)
 10 (100.0)
 </td>
 <td style="text-align:left;">
-70 (100.0)
+64 (100.0)
 </td>
 <td style="text-align:left;">
 NA
@@ -1144,7 +1190,7 @@ blaOXA = FALSE (%)
 10 (100.0)
 </td>
 <td style="text-align:left;">
-70 (100.0)
+64 (100.0)
 </td>
 <td style="text-align:left;">
 NA
@@ -1161,7 +1207,7 @@ carbapenemase = No carbapenemase (%)
 10 (100.0)
 </td>
 <td style="text-align:left;">
-70 (100.0)
+64 (100.0)
 </td>
 <td style="text-align:left;">
 NA
@@ -1178,10 +1224,10 @@ porin_mutation = TRUE (%)
 7 (70.0)
 </td>
 <td style="text-align:left;">
-59 (84.3)
+53 (82.8)
 </td>
 <td style="text-align:left;">
-0.368
+0.388
 </td>
 <td style="text-align:left;">
 exact
@@ -1195,10 +1241,10 @@ OmpK35_mutation = 1 (%)
 5 (50.0)
 </td>
 <td style="text-align:left;">
-47 (67.1)
+43 (67.2)
 </td>
 <td style="text-align:left;">
-0.308
+0.307
 </td>
 <td style="text-align:left;">
 exact
@@ -1212,10 +1258,10 @@ OmpK36_mutation = 1 (%)
 4 (40.0)
 </td>
 <td style="text-align:left;">
-23 (32.9)
+20 (31.2)
 </td>
 <td style="text-align:left;">
-0.726
+0.719
 </td>
 <td style="text-align:left;">
 exact
@@ -1229,10 +1275,10 @@ non_carbapenemase_blactam_and_omp_mutation = TRUE (%)
 7 (70.0)
 </td>
 <td style="text-align:left;">
-58 (82.9)
+52 (81.2)
 </td>
 <td style="text-align:left;">
-0.387
+0.414
 </td>
 <td style="text-align:left;">
 exact
@@ -1246,7 +1292,7 @@ blactamase_non_carbapenmase_bin = TRUE (%)
 10 (100.0)
 </td>
 <td style="text-align:left;">
-68 (97.1)
+62 (96.9)
 </td>
 <td style="text-align:left;">
 1.000
@@ -1263,7 +1309,7 @@ non_carbapenemase_blactam_andor_omp_mutation = TRUE (%)
 10 (100.0)
 </td>
 <td style="text-align:left;">
-69 (98.6)
+63 (98.4)
 </td>
 <td style="text-align:left;">
 1.000
@@ -1279,6 +1325,7 @@ exact
 <h1>Data across ST258</h1>
 <pre class="r"><code>df_ST258 &lt;- subset(df,df$ST == &quot;ST258&quot;)
 df_ST258$GD_KPC2 &lt;- df_ST258$ompK36_D135DGD==1 &amp; df_ST258$`blaKPC-2` ==1
+
 convert_tableone_into_df(dataset = df_ST258,vars = c(&#39;blaKPC_presence&#39;,&quot;blaNDM&quot;,&quot;blaOXA&quot;,&#39;carbapenemase&#39;,&quot;porin_mutation&quot;,&quot;OmpK35_mutation&quot;,&quot;OmpK36_mutation&quot;,&quot;ompK36_D135DD&quot;,&quot;ompK36_D135DGD&quot;,&quot;ompK36_Q313STOP&quot;,&quot;ompK36_T136TDT&quot;,&quot;ompK36_W125STOP&quot;,&quot;GD_KPC2&quot;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;,&#39;blactamase_non_carbapenmase_bin&#39;,&#39;non_carbapenemase_blactam_andor_omp_mutation&#39;),strata = &#39;study&#39;,outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;),argsNormal = &quot;carbapenemase&quot;,factorVars = c(&#39;carbapenemase&#39;,&quot;blaNDM&quot;,&quot;blaOXA&quot;,&quot;porin_mutation&quot;,&quot;OmpK35_mutation&quot;,&quot;OmpK36_mutation&quot;,&quot;ompK36_D135DD&quot;,&quot;ompK36_D135DGD&quot;,&quot;ompK36_Q313STOP&quot;,&quot;ompK36_T136TDT&quot;,&quot;ompK36_W125STOP&quot;,&quot;GD_KPC2&quot;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;,&#39;blactamase_non_carbapenmase_bin&#39;,&#39;non_carbapenemase_blactam_andor_omp_mutation&#39;),exact = c(&#39;carbapenemase&#39;,&quot;GD_KPC2&quot;,&quot;ompK36_D135DD&quot;,&quot;ompK36_Q313STOP&quot;,&quot;ompK36_T136TDT&quot;,&quot;ompK36_W125STOP&quot;,&#39;GD_KPC2&#39;,&#39;non_carbapenemase_blactam_and_omp_mutation&#39;,&#39;blactamase_non_carbapenmase_bin&#39;,&#39;non_carbapenemase_blactam_andor_omp_mutation&#39;)) %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
@@ -1309,10 +1356,10 @@ blaKPC_presence = TRUE (%)
 348 (98.9)
 </td>
 <td style="text-align:left;">
-204 (96.7)
+205 (97.2)
 </td>
 <td style="text-align:left;">
-0.135
+0.248
 </td>
 <td style="text-align:left;">
 </td>
@@ -1426,6 +1473,21 @@ blaKPC-3?
 </tr>
 <tr>
 <td style="text-align:left;">
+blaKPC-31
+</td>
+<td style="text-align:left;">
+0 (0.0)
+</td>
+<td style="text-align:left;">
+1 (0.5)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 blaKPC-5
 </td>
 <td style="text-align:left;">
@@ -1462,7 +1524,7 @@ No carbapenemase
 4 (1.1)
 </td>
 <td style="text-align:left;">
-7 (3.3)
+6 (2.8)
 </td>
 <td style="text-align:left;">
 </td>

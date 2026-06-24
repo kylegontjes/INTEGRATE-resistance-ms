@@ -42,7 +42,7 @@ paste0("Breakdown by study: ")
 table(df_metadata_all$study)
 ```
 
-# Clinical CRE
+# Clinical CRE isolates
 
 1. Subset dataset to non-rectal isolates
 
@@ -57,7 +57,7 @@ paste0("Breakdown by study: ")
 table(df_metadata_all_clinical$study)
 ```
 
-# Clinical CRKP
+# Clinical CRKP isolates
 
 1. Subset dataset to Kpn isolates
 
@@ -87,7 +87,7 @@ paste0("Breakdown by study: ")
 table(df_metadata_all_clinical_kpn$study)
 ```
 
-# Add metadata to Kpn dataset
+# Add metadata to Klebsiella pneumoniae dataset
 
 ```{r}
 create_Kpn_Species_ST_variable <- function(dataset){
@@ -105,7 +105,7 @@ df_metadata_all_clinical_kpn_first_isolate_per_Q <- df_metadata_all_clinical_kpn
   cbind(create_Kpn_Species_ST_variable(df_metadata_all_clinical_kpn_first_isolate_per_Q) ) 
 ```
 
-# First isolate
+# First isolate per patient
 
 ```{r}
 # First isolate  
@@ -113,14 +113,13 @@ saveRDS(df_metadata_all_clinical_kpn_first_isolate,"./data/dataset/CA_LTACH_firs
 write_csv(df_metadata_all_clinical_kpn_first_isolate,"./data/dataset/CA_LTACH_first_clinical_CRKP_genomes_merged_studies_metadata.csv")
 ```
 
-# First isolate per quarter
+# First isolate per patient per calendar quarter
 
 ```{r}
 # First isolate per quarter
 saveRDS(df_metadata_all_clinical_kpn_first_isolate_per_Q,"./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS") 
 write_csv(df_metadata_all_clinical_kpn_first_isolate_per_Q,"./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.csv")
 ```
-
 
 # Summary
 

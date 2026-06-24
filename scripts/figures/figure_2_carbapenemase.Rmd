@@ -34,11 +34,9 @@ sessionInfo()
 df <- readRDS("./data/dataset/CA_LTACH_first_clinical_per_quarter_CRKP_genomes_merged_studies_metadata.RDS")   
 ```
 
-# Coordinate sequence type data
+# Subset dataset to studies
 
 ```{r}  
-df$Species_ST_recode_no_species <- gsub("Klebsiella pneumoniae ","",df$Species_ST)
- 
 df_201415 <- df%>% subset(study == "2014-15")
 df_202123<- df%>% subset(study == "2021-23")
 ```
@@ -51,7 +49,7 @@ df <- left_join(df,carbapenemase_content)
 df$carbapenemase_md <- format_carbapenemase(df$carbapenemase) 
 ```
 
-# A. Fill being carbapenemase
+# A. Count of carbapenemases, with the fill being carbapenemase
 ```{r} 
 df_split <-  df %>%
   separate_rows(carbapenemase_md, sep = " & ")
@@ -83,8 +81,7 @@ A <- ggplot(data=df_split,
 A
 ```
 
-
-## C. Species ST
+## C. Perecentage of isolates in ST with the carbapenemase
 ```{r}  
 carbapenemase_percentage_ST_data <- df  %>%
   count(study, Species_ST_recode,carbapenemase_md) %>%
@@ -104,7 +101,6 @@ carbapenemase_percentage_ST_data <- carbapenemase_percentage_ST_data %>%
   select(-carb_parts, -carb_secondary_raw)
 
 carbapenemase_percentage_ST_data$carb_primary <-  factor(carbapenemase_percentage_ST_data$carb_primary,levels = carbapenemase_scale$breaks)
- 
 carbapenemase_percentage_ST_data$carb_secondary <- factor(carbapenemase_percentage_ST_data$carb_secondary,levels =unique(carbapenemase_percentage_ST_data$carb_secondary) %>% sort(na.last = F)) 
 
 carbapenemase_percentage_ST_data <- arrange(carbapenemase_percentage_ST_data,carb_secondary)
@@ -137,7 +133,8 @@ C <- ggplot(
 C
 ```
 
-# B. Compare carbapenemase genotypes between studies
+# B. Compare carbapenemase genotypes distribution among studies
+
 ```{r} 
 df_long <- df %>%
   separate_rows(carbapenemase_md, sep = " & ") %>%   # split multi-genotypes
@@ -155,7 +152,7 @@ df_plot$carbapenemase_md <-  factor(df_plot$carbapenemase_md,levels = carbapenem
     
 B <- ggplot(data = df_plot  ,aes(x = study,stratum = carbapenemase_md,alluvium = carbapenemase_md,y=weighted_pct,fill = carbapenemase_md)) +
   geom_alluvium(width=0.66,alpha=0.75) +
-  geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Weighted percentage of isolates") + carbapenemase_scale + theme(legend.position = "bottom",
+  geom_stratum(width=0.66,linewidth = 0.075) + theme_bw_me + xlab("Study") + ylab("Weighted percentage of isolates") + carbapenemase_scale + theme(legend.position = "bottom",
                   axis.text =   element_markdown(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_markdown(size=8, color="black"),
@@ -165,7 +162,7 @@ B <- ggplot(data = df_plot  ,aes(x = study,stratum = carbapenemase_md,alluvium =
 B
 ``` 
 
-# D. Compare carbapenemases among Kpn ST258
+# D. Compare carbapenemase distribution among Kpn ST258
 ```{r}
 df_long_ST258 <- df  %>% subset(Species_ST == "Klebsiella pneumoniae ST258")  %>% 
   separate_rows(carbapenemase_md, sep = " & ") %>%   # split multi-genotypes
@@ -183,7 +180,7 @@ df_plot_ST258$carbapenemase_md <-  factor(df_plot_ST258$carbapenemase_md,levels 
 
 D <- ggplot(data = df_plot  ,aes(x = study,stratum = carbapenemase_md,alluvium = carbapenemase_md,y=weighted_pct,fill = carbapenemase_md)) +
   geom_alluvium(width=0.66,alpha=0.75) +
-  geom_stratum(width=0.66,linewidth = 0.2) + theme_bw_me + xlab("Study") + ylab("Percentage of isolates") + carbapenemase_scale + theme(legend.position = "bottom",
+  geom_stratum(width=0.66,linewidth = 0.075) + theme_bw_me + xlab("Study") + ylab("Percentage of isolates") + carbapenemase_scale + theme(legend.position = "bottom",
                   axis.text =   element_markdown(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_markdown(size=8, color="black"),

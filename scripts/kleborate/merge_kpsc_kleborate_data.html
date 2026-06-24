@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>Merge Kleborate data and curate matrix</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Merge Kleborate data and curate matrix</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -374,8 +374,11 @@ kleborate_INTEGRATE &lt;-  read_delim(&quot;./data/kleborate/kpsc_INTEGRATE//kle
 
 saveRDS(kleborate_joint,&quot;./data/kleborate/kleborate_kpsc_both_studies.RDS&quot;)</code></pre>
 </div>
-<div id="matrix-of-ompk36-mutations-for-future-usage-truncations" class="section level1">
-<h1>Matrix of OmpK36 mutations for future usage (truncations)</h1>
+<div id="matrix-of-ompk36-mutations-for-future-usage-e.g.-focus-on-truncations" class="section level1">
+<h1>Matrix of OmpK36 mutations for future usage (e.g., focus on
+truncations)</h1>
+<p>Note: We’ll use AMRFinder’s insertion data, as that’s more up to
+date</p>
 <pre class="r"><code>rownames(kleborate_joint) &lt;- kleborate_joint$isolate_no
 kleborate_matrix &lt;- get_presence_absence_matrix(df = kleborate_joint,variable = &#39;Omp_mutations&#39;) %&gt;% as.data.frame
 

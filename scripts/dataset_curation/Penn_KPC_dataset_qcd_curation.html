@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
 <title>2014-15 CA CRKP LTACH isolate collection dataset curation</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">2014-15 CA CRKP LTACH isolate collection
 dataset curation</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -627,7 +627,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -869,18 +869,21 @@ paste0(&quot;MVB has some issues that needed recoding: &quot;)</code></pre>
   &gt;32/8 ≤0.25/8   0.5/8     1/8    16/8     2/4     2/8    32/8     4/8     8/8 
       3     266      22      59      10       1      44       7      24      22 </code></pre>
 <pre class="r"><code>SENSITITRE &lt;- SENSITITRE %&gt;% mutate(MVB = dplyr::recode(MVB,&quot;2/4&quot; = &quot;2/8&quot;))
-
-## Create MIC Variable
+table(SENSITITRE$MVB)</code></pre>
+<pre><code>
+  &gt;32/8 ≤0.25/8   0.5/8     1/8    16/8     2/8    32/8     4/8     8/8 
+      3     266      22      59      10      45       7      24      22 </code></pre>
+<pre class="r"><code>## Create MIC Variable
 MIC_variables &lt;- c(&quot;Ceftazidime-avibactam&quot;=&quot;CZA&quot;,&quot;Meropenem-vaborbactam&quot;=&quot;MVB&quot;,&quot;Imipenem-relebactam&quot;=&quot;IR&quot;,&quot;Tigeycline&quot;=&quot;TGC&quot;,&quot;Colistin&quot;=&quot;CST&quot;,&quot;Amikacin&quot;=&quot;AMK&quot;,&quot;Plazomicin&quot;=&quot;PLZ&quot;,&quot;MERO&quot;,&quot;IMI&quot;,&quot;FOS&quot;)
+
+# Character variable
+for(i in MIC_variables){
+  SENSITITRE[,paste0(i)] &lt;- as.character(SENSITITRE[,paste0(i)] )
+}
 
 ## Numerize MIC Data
 for(i in MIC_variables){
   SENSITITRE[,paste0(i,&quot;_num&quot;)] &lt;- SENSITITRE[,paste0(i)]  %&gt;% gsub(&quot;≤&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;&gt;&quot;,&quot;&quot;,.) %&gt;% gsub(&quot;/.&quot;,&quot;&quot;,.) %&gt;% trimws(.,&#39;both&#39;) %&gt;% as.numeric
-}
-
-## Factorize Raw MIC Data
-for(i in MIC_variables){
-  SENSITITRE[,i] &lt;- factorize_MIC(SENSITITRE,i)
 }
 
 ## Log-2 Transform Data
@@ -918,7 +921,7 @@ for sake of fitting the susceptible vs. resistant paradigm</p></li>
   AMK_cat =  ifelse(AMK_num &lt;= 16,&quot;S&quot;,ifelse(AMK_num == 32,&quot;I&quot;,&quot;R&quot;)),
   ### Plazomicin (PLZ): Susceptible (MIC≤2), Intermediate (MIC=4), Resistant (MIC≥8) 
   PLZ_cat = ifelse(PLZ_num &lt;= 2,&quot;S&quot;,ifelse(PLZ_num == 4,&quot;I&quot;,&quot;R&quot;)),
-  # Fosfomycin (FOS): Susceptible &lt;=64. We only had &gt;64 reported, which would be classified as at least intermediate category
+  # Fosfomycin (FOS): Susceptible &lt;=64. We only had &gt;64 reported, which would be classified as at least within the intermediate category
   FOS_cat = ifelse(FOS == &quot;&gt;64&quot;,&quot;I&quot;,&quot;S&quot;)) 
 
 ## Factorize Categorical Data
@@ -930,7 +933,7 @@ for(i in MIC_variables_cat){
 }
 
 ## Create Binary Non-Susceptible Variable 
-MIC_variables_no_CST&lt;- c(&quot;MERO&quot;,&quot;IMI&quot;,&quot;MVB&quot;,&quot;IR&quot;,&quot;CZA&quot;,&quot;AMK&quot;,&quot;PLZ&quot;,&quot;TGC&quot;,&quot;FOS&quot;)
+MIC_variables_no_CST&lt;- MIC_variables %&gt;% subset(.!= &quot;CST&quot;)
 for(i in MIC_variables_no_CST){
   SENSITITRE[,paste0(i,&quot;_dich&quot;)] &lt;- binarize_MIC(SENSITITRE,paste0(i,&quot;_cat&quot;))
 }
@@ -958,6 +961,7 @@ for(i in MIC_variables_dich){
 IR</li>
 </ol>
 <pre class="r"><code>SENSITITRE$blbli_dich &lt;- ifelse(SENSITITRE$MVB_dich==&quot;Non-Susceptible&quot; | SENSITITRE$IR_dich==&quot;Non-Susceptible&quot;  | SENSITITRE$CZA_dich == &quot;Non-Susceptible&quot;,&quot;Non-Susceptible&quot;,&quot;Susceptible&quot;)  %&gt;% factor(.,levels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;),labels = c(&quot;Susceptible&quot;,&quot;Non-Susceptible&quot;))
+
 SENSITITRE$blbli_dich_num &lt;- ifelse(SENSITITRE$blbli_dich == &quot;Non-Susceptible&quot;,1,0) </code></pre>
 </div>
 <div id="merge-resistance-data" class="section level2">
@@ -994,6 +998,10 @@ df_2014_15 &lt;- left_join(df_2014_15,qcd_201415) </code></pre>
 </div>
 <div id="prioritize-sequence-type-st-data-via-kleborate" class="section level1">
 <h1>Prioritize Sequence type (ST) data via Kleborate</h1>
+<ol style="list-style-type: decimal">
+<li>We are prioritizing the dataset from Kleborate not the default from
+QCD (mlst)</li>
+</ol>
 <pre class="r"><code>kleborate_kpsc_penn &lt;- read_delim(&quot;./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt&quot;)  %&gt;% mutate(isolate_no = gsub(&quot;_contigs_l1000&quot;,&quot;&quot;,strain))
 
 ST_data_201415 &lt;- lapply(df_2014_15$isolate_no,FUN=function(x){
@@ -1014,8 +1022,8 @@ df_2014_15 &lt;- left_join(df_2014_15,ST_data_201415) %&gt;% rename(mlst_st=st)<
 <pre class="r"><code>paste0(&quot;Number of qc_passing CRE isolates &amp; full metadata: &quot;,sum(df_2014_15$qc_pass==TRUE &amp; df_2014_15$CRE==TRUE &amp; df_2014_15$has_full_metadata==T))</code></pre>
 <pre><code>[1] &quot;Number of qc_passing CRE isolates &amp; full metadata: 407&quot;</code></pre>
 </div>
-<div id="save-the-dataset" class="section level1">
-<h1>Save the dataset</h1>
+<div id="save-the-2014-15-dataset" class="section level1">
+<h1>Save the 2014-15 dataset</h1>
 <pre class="r"><code>saveRDS(df_2014_15,&quot;./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.RDS&quot;)
 write_csv(df_2014_15,&quot;./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.csv&quot;)</code></pre>
 </div>

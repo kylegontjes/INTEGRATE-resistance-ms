@@ -51,7 +51,7 @@ df <- left_join(df,carbapenemase_content)
 
 # Load plasmid data
 ```{r}
-mobtyper_merged <- readRDS("./data/mobsuite/mobtyper_merged_w_carbapenemase_data.RDS") %>% subset(isolate_no %in% df$isolate_no)
+mobtyper_merged <- readRDS("./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.RDS") %>% subset(isolate_no %in% df$isolate_no)
 ```
 
 # A. KPC plasmids
@@ -155,7 +155,7 @@ df_plasmid_plot$carbapenemase_plasmid <-  factor(df_plasmid_plot$carbapenemase_p
 
 B <-  ggplot(df_plasmid_plot  ,aes(x = study,stratum = carbapenemase_plasmid,alluvium = carbapenemase_plasmid,y=weighted_pct,fill = carbapenemase_plasmid)) +
   geom_alluvium(aes(fill = carbapenemase_plasmid),width=0.66,alpha=0.75) +
-  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Weighted percentage of isolates")  + theme(legend.position = "bottom",
+  geom_stratum(width=0.66,linewidth = 0.075) + theme_bw_me + xlab("Study") + ylab("Weighted percentage of isolates")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
@@ -183,7 +183,7 @@ df_plot_plasmid_ST258$carbapenemase_plasmid <-  factor(df_plot_plasmid_ST258$car
 
 D <-  ggplot(df_plot_plasmid_ST258  ,aes(x = study,stratum = carbapenemase_plasmid,alluvium = carbapenemase_plasmid,y=weighted_pct,fill = carbapenemase_plasmid)) +
   geom_alluvium(aes(fill = carbapenemase_plasmid),width=0.66,alpha=0.75) +
-  geom_stratum(width=0.66,linewidth = 0.15) + theme_bw_me + xlab("Study") + ylab("Percentage of isolates")  + theme(legend.position = "bottom",
+  geom_stratum(width=0.66,linewidth = 0.075) + theme_bw_me + xlab("Study") + ylab("Percentage of isolates")  + theme(legend.position = "bottom",
                   axis.text =   element_text(size=12, color="black"),
                   axis.title = element_text(size = 14, color="black"),
                   legend.text =   element_text(size=8, color="black"),
@@ -192,6 +192,8 @@ D <-  ggplot(df_plot_plasmid_ST258  ,aes(x = study,stratum = carbapenemase_plasm
   
 D
 ```  
+
+# Merge and save final figure
 
 ```{r,fig.width=9,fig.height=9} 
 AB <-  cowplot::plot_grid(A,B + theme(legend.position = 'none') ,ncol=2,rel_widths = c(1,.33),labels = c("A","B"),label_size=14)  

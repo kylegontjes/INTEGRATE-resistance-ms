@@ -11,9 +11,9 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-09" />
+<meta name="date" content="2026-06-24" />
 
-<title>Curate betalactamase and OMP mutation matrix</title>
+<title>Curate betalactamase and porin mutation matrix</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,10 +350,10 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Curate betalactamase and OMP mutation
+<h1 class="title toc-ignore">Curate betalactamase and porin mutation
 matrix</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-09</h4>
+<h4 class="date">2026-06-24</h4>
 
 </div>
 
@@ -379,7 +379,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -444,8 +444,9 @@ amrfinder &lt;- subset(amrfinder,amrfinder$isolate_no %in% df$isolate_no) </code
 <pre class="r"><code># Betalactamase
 amrfinder_beta &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;)
 # Get bla
-amrfinder_beta_bla &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;&amp; grepl(&quot;bla|ampC&quot;,element_symbol_renamed))
-amrfinder_carb_bla &lt;- amrfinder %&gt;% subset(subclass == &quot;CARBAPENEM&quot; &amp; grepl(&quot;bla&quot;,element_symbol_renamed) | grepl(&quot;KPC|NDM|VIM|IMP&quot;,element_symbol_renamed) | grepl(&quot;OXA-48 family&quot;,closest_reference_name))
+amrfinder_beta_bla &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;&amp; grepl(&quot;^(bla|ampC)&quot;,element_symbol_renamed) )
+amrfinder_carb_bla &lt;- amrfinder %&gt;% subset((subclass == &quot;CARBAPENEM&quot; &amp; grepl(&quot;^bla&quot;,element_symbol_renamed)) | grepl(&quot;^bla(KPC|NDM|VIM|IMP)&quot;,element_symbol_renamed) | grepl(&quot;OXA-48 family&quot;,closest_reference_name)) 
+amrfinder_beta_bla_non_carb &lt;- amrfinder %&gt;% subset(class == &quot;BETA-LACTAM&quot;&amp; grepl(&quot;^(bla|ampC)&quot;,element_symbol_renamed)) %&gt;% subset(!element_symbol_renamed %in% c(unique(amrfinder_carb_bla$element_symbol_renamed))) 
 amrfinder_carb_ompK &lt;- amrfinder %&gt;% subset(subclass == &quot;CARBAPENEM&quot; &amp; ! element_symbol_renamed %in% amrfinder_carb_bla$element_symbol_renamed)</code></pre>
 </div>
 <div id="amrfinder-matrix-curation" class="section level1">
@@ -471,7 +472,8 @@ kleborate_matrix$isolate_no &lt;- rownames(kleborate_matrix) </code></pre>
 rownames(df) &lt;- df$isolate_no 
 df_carb_omp &lt;- df %&gt;% select(any_of(c(unique(amrfinder_beta$element_symbol) ,colnames(kleborate_matrix))))   
 
-saveRDS(df_carb_omp,&quot;./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_datasets.RDS&quot;)</code></pre>
+saveRDS(df_carb_omp,&quot;./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_datasets.RDS&quot;)
+write.csv(df_carb_omp,&quot;./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_datasets.csv&quot;,row.names = T) </code></pre>
 </div>
 <div id="first-isolate-per-quarter-dataset-curation" class="section level1">
 <h1>First isolate per quarter dataset curation</h1>
@@ -504,7 +506,8 @@ store_thes &lt;- lapply(families_under_four,FUN=function(x,df_carb_omp_first,bla
 },df_carb_omp_first,bla_under_4)  
 
 df_carb_omp_first &lt;- df_carb_omp_first %&gt;% select(-bla_under_4)</code></pre>
-<pre class="r"><code>saveRDS(df_carb_omp_first,&quot;./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.RDS&quot;)</code></pre>
+<pre class="r"><code>saveRDS(df_carb_omp_first,&quot;./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.RDS&quot;)
+write.csv(df_carb_omp_first,&quot;./data/carbapenemase_content/carbapenem_resistance_genotype_content_merged_first_clinical_CRKP_isolate_per_quarter.csv&quot;,row.names = T)</code></pre>
 </div>
 
 

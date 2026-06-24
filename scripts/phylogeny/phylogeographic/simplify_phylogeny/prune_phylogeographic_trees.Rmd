@@ -180,5 +180,3 @@ ggtree(tr_ST258_pruned)
 ggtree(tr_ST307)
 ggtree(tr_ST307_pruned)
 ```
-
-

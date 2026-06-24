@@ -40,11 +40,50 @@ df_w_metadata$non_hispanic_white <- df_w_metadata$participant_race=="Caucasian" 
 ```
 
 # Create table
+## Patient table
 
 ```{r}
-table <-  convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","non_hispanic_white",'source_simplified',"los_before_culture",'hospital_location_recode'), factorVars = c("participant_sex","participant_race","non_hispanic_white",'source_simplified','hospital_location_recode'),strata='study',outcome_names = c("2014-15","2021-23"),exact = c("source_simplified","hospital_location_recode"),argsExact = list(simulate.p.value=T),nonnormal_vars =c( 'participant_age_at_first_enc','los_before_culture'),addOverall=T)
+patient_table <- convert_tableone_into_df(dataset = df_w_metadata, 
+                                          vars = c("participant_age_at_first_enc","participant_sex","participant_race","non_hispanic_white","los_before_culture"), 
+                                          factorVars = c("participant_sex","participant_race","non_hispanic_white"),
+                                          strata='study',
+                                          outcome_names = c("2014-15","2021-23"),
+                                          exact = c("source_simplified","hospital_location_recode"),
+                                          argsExact = list(simulate.p.value=T), 
+                                          nonnormal_vars =c( 'participant_age_at_first_enc','los_before_culture'),addOverall=T)
 
-table$Variable <- recode(table$Variable,
+patient_table <- rbind(colnames(patient_table), patient_table)
+colnames(patient_table) <- c("Characteristics","Overall","2014-15 study","2021-23 study","P-value","Test")
+patient_table$Characteristics <- ifelse(patient_table$Characteristics=="Variable","Patient characteristics",patient_table$Characteristics) 
+
+patient_table %>% favorite_kable()
+```
+
+## Isolate characteristics
+
+```{r}
+source_hospital <- convert_tableone_into_df(dataset = df, 
+                                            vars = c('source_simplified','hospital_location_recode'), 
+                                            factorVars = c('source_simplified','hospital_location_recode'),
+                                            strata='study',
+                                            outcome_names = c("2014-15","2021-23"),
+                                            exact = c("source_simplified","hospital_location_recode"),
+                                            argsExact = list(simulate.p.value=T),
+                                            nonnormal_vars =c( 'participant_age_at_first_enc','los_before_culture'),addOverall=T)
+
+source_hospital <- rbind(colnames(source_hospital), source_hospital)
+colnames(source_hospital) <- c("Characteristics","Overall","2014-15 study","2021-23 study","P-value","Test")
+source_hospital$Characteristics <- ifelse(source_hospital$Characteristics=="Variable","Isolate characteristics",source_hospital$Characteristics) 
+
+source_hospital %>% favorite_kable()
+```
+
+# Curate the table
+
+```{r}
+table <- bind_rows(patient_table,source_hospital)
+
+table$Characteristics <- recode(table$Characteristics, 
                          "participant_age_at_first_enc (median [IQR])" = "Age in years, median (IQR)",
                          "participant_sex = male (%)" = "Male sex",
                          "participant_race (%)" = "Race",
@@ -59,6 +98,17 @@ table$Variable <- recode(table$Variable,
                          "non_hispanic_white = TRUE (%)" = "Non-Hispanic white",
                          "los_before_culture (median [IQR])" = "Length of stay before culture, median [IQR]",
                          "hospital_location_recode (%)" = "Long-term acute care hospital (LTACH)")
+
+table$`P-value` <- recode(table$`P-value`,"P-value"="")
+table$Test <- recode(table$Test,"Test"="")
+
+recode_variable <- function(variable,name){
+  gsub(paste0("^", name, " "), "", variable)
+}
+
+table$Overall <- recode_variable(table$Overall,"Overall")
+table$`2014-15 study` <- recode_variable(table$`2014-15 study`,"2014-15")
+table$`2021-23 study` <- recode_variable(table$`2021-23 study`,"2021-23") 
 
 table  
 ```
@@ -92,7 +142,7 @@ ltach_shared_table_pvalue_rounded
 ```
 
 ```{r}
-table$`P-value` <- ifelse(table$Variable == "Long-term acute care hospital (LTACH)",ltach_shared_table_pvalue_rounded,table$`P-value`)
+table$`P-value` <- ifelse(table$Characteristics == "Long-term acute care hospital (LTACH)",ltach_shared_table_pvalue_rounded,table$`P-value`)
 table$`P-value` <- ifelse(table$`P-value` == "1.000","1.00",table$`P-value`)
 table[table=="0 (NaN)"] <- "-"   
 

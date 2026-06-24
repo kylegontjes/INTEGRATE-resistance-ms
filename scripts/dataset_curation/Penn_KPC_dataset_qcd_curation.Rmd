@@ -12,7 +12,6 @@ opts_chunk$set(echo = T,warning = FALSE, message = FALSE,error=F,comment=NA)
 opts_knit$set(root.dir='~/Desktop/gl_nfs/')
 ```
 
-
 # Environment
 
 ```{r environment, echo=T, message=T, include=T, results=T}
@@ -74,6 +73,7 @@ df_2014_15$has_full_metadata <- !df_2014_15$isolate_no %in% wrong_Cx_data$isolat
 
 # Antibiotic resistance 
 ## Load data
+
 ```{r}
 SENSITITRE <- readxl::read_excel("./Project_Penn_KPC/Analysis/Antibiotic_resistance/data/SENSITITRE MICs.xlsx", range = "B1:N460") %>% as.data.frame
 SENSITITRE <- SENSITITRE %>% mutate(isolate_no = paste0("PCMP_H",str_remove(gsub('CRKP_','',SENSITITRE$ISOLATES),"^0+"))) %>% `rownames<-`(.$isolate_no)
@@ -89,26 +89,29 @@ SENSITITRE <- subset(SENSITITRE,!isolate_no %in% c("PCMP_H472","PCMP_H473"))
 2. Fixed coding issue with inhibitor of MVB
 
 3. Numerize, factored, log transformed MIC data 
+
 ```{r}
 ## Convert names
 SENSITITRE <-  dplyr::rename(SENSITITRE,MVB = "MEV",IR = "IMK", CST = "COL", AMK = "AMI", FOS = "FOS+",PT = "P/T4")
 
 ## Fix MVB data due to miscoding (vaborbactom is a constant 8 µg/mL not 4 µg/mL)
 paste0("MVB has some issues that needed recoding: ")
+
 table(SENSITITRE$MVB)
 SENSITITRE <- SENSITITRE %>% mutate(MVB = dplyr::recode(MVB,"2/4" = "2/8"))
+table(SENSITITRE$MVB)
 
 ## Create MIC Variable
 MIC_variables <- c("Ceftazidime-avibactam"="CZA","Meropenem-vaborbactam"="MVB","Imipenem-relebactam"="IR","Tigeycline"="TGC","Colistin"="CST","Amikacin"="AMK","Plazomicin"="PLZ","MERO","IMI","FOS")
 
+# Character variable
+for(i in MIC_variables){
+  SENSITITRE[,paste0(i)] <- as.character(SENSITITRE[,paste0(i)] )
+}
+
 ## Numerize MIC Data
 for(i in MIC_variables){
   SENSITITRE[,paste0(i,"_num")] <- SENSITITRE[,paste0(i)]  %>% gsub("≤","",.) %>% gsub(">","",.) %>% gsub("/.","",.) %>% trimws(.,'both') %>% as.numeric
-}
-
-## Factorize Raw MIC Data
-for(i in MIC_variables){
-  SENSITITRE[,i] <- factorize_MIC(SENSITITRE,i)
 }
 
 ## Log-2 Transform Data
@@ -128,6 +131,7 @@ Select references:
 3. See our prior work in ICHE: Zhang H et al., Infection Control & Hospital Epidemiology, 2022 (PMC9883590)
 
 4. Note: We recoded colistin intermediate category as 'susceptible' for sake of fitting the susceptible vs. resistant paradigm
+
 ```{r}
 SENSITITRE <- SENSITITRE %>% mutate(
   ### Meropenem (MERO): ≤1/2/≥4
@@ -148,7 +152,7 @@ SENSITITRE <- SENSITITRE %>% mutate(
   AMK_cat =  ifelse(AMK_num <= 16,"S",ifelse(AMK_num == 32,"I","R")),
   ### Plazomicin (PLZ): Susceptible (MIC≤2), Intermediate (MIC=4), Resistant (MIC≥8) 
   PLZ_cat = ifelse(PLZ_num <= 2,"S",ifelse(PLZ_num == 4,"I","R")),
-  # Fosfomycin (FOS): Susceptible <=64. We only had >64 reported, which would be classified as at least intermediate category
+  # Fosfomycin (FOS): Susceptible <=64. We only had >64 reported, which would be classified as at least within the intermediate category
   FOS_cat = ifelse(FOS == ">64","I","S")) 
 
 ## Factorize Categorical Data
@@ -160,7 +164,7 @@ for(i in MIC_variables_cat){
 }
 
 ## Create Binary Non-Susceptible Variable 
-MIC_variables_no_CST<- c("MERO","IMI","MVB","IR","CZA","AMK","PLZ","TGC","FOS")
+MIC_variables_no_CST<- MIC_variables %>% subset(.!= "CST")
 for(i in MIC_variables_no_CST){
   SENSITITRE[,paste0(i,"_dich")] <- binarize_MIC(SENSITITRE,paste0(i,"_cat"))
 }
@@ -185,12 +189,15 @@ for(i in MIC_variables_dich){
 ## Create BL/BLI combination therapy outcome
 
 1. This will focus on KPC-inhibiting BL/BLI antibiotics: MVB, CZA, and IR
+
 ```{r}
 SENSITITRE$blbli_dich <- ifelse(SENSITITRE$MVB_dich=="Non-Susceptible" | SENSITITRE$IR_dich=="Non-Susceptible"  | SENSITITRE$CZA_dich == "Non-Susceptible","Non-Susceptible","Susceptible")  %>% factor(.,levels = c("Susceptible","Non-Susceptible"),labels = c("Susceptible","Non-Susceptible"))
+
 SENSITITRE$blbli_dich_num <- ifelse(SENSITITRE$blbli_dich == "Non-Susceptible",1,0) 
 ```
 
 ## Merge resistance data
+
 ```{r}
 df_2014_15 <- left_join(SENSITITRE,df_2014_15) %>% subset(state=='CA')
 ```
@@ -199,6 +206,7 @@ df_2014_15 <- left_join(SENSITITRE,df_2014_15) %>% subset(state=='CA')
 ## Load and curate
 
 1. Using an Enterobacterales species call list (although it doesn't matter as we're working with Kpn here)
+
 ```{r}
 # ESCrE list containing Enterobacterales designation
 escre_list <- read.csv("./Project_INTEGRATE/Analysis/data/INTEGRATE_MERLIN_WGS_Species_calls_030925_LLC.csv")
@@ -220,6 +228,9 @@ df_2014_15 <- left_join(df_2014_15,qcd_201415)
 ```
 
 # Prioritize Sequence type (ST) data via Kleborate
+
+1. We are prioritizing the dataset from Kleborate not the default from QCD (mlst)
+
 ```{r}
 kleborate_kpsc_penn <- read_delim("./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/kleborate/kpsc_Penn_KPC/klebsiella_pneumo_complex_output.txt")  %>% mutate(isolate_no = gsub("_contigs_l1000","",strain))
 
@@ -240,7 +251,7 @@ paste0("Number of qc_passing CRE isolates: ",sum(df_2014_15$qc_pass==TRUE & df_2
 paste0("Number of qc_passing CRE isolates & full metadata: ",sum(df_2014_15$qc_pass==TRUE & df_2014_15$CRE==TRUE & df_2014_15$has_full_metadata==T))
 ```
 
-# Save the dataset
+# Save the 2014-15 dataset
 
 ```{r}
 saveRDS(df_2014_15,"./Project_INTEGRATE/Analysis/Resistance_dynamics/INTEGRATE-resistance-ms/data/dataset/Penn_KPC_metadata_qcd_merged.RDS")
