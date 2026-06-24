@@ -14,7 +14,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 # Environment
 
-```{r environment, echo=F, message=FALSE, include=F, results=F}
+```{r environment}
 #Packages
 packages <- c("tidyverse",'ape','ggtree','phytools','ggnewscale')
 
