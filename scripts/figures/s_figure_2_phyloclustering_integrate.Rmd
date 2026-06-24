@@ -16,7 +16,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r environment, echo=F, message=FALSE, include=F, results=F}
 #Packages
-packages <- c("tidyverse",'ape','ggtree','phytools')
+packages <- c("tidyverse",'ape','ggtree','phytools','ggnewscale')
 
 #Load Packages
 invisible(lapply(packages,library,character.only=T,quietly=T))
@@ -124,7 +124,7 @@ get_phylogeny <- function(st,tr,df,pcdf,col_offset,ymax,point_size,line_width,co
   CA_isolates <- df_ST %>% subset(california==T) %>% .$isolate_no
   tr_data <- as_tibble(tr) %>% left_join(.,df_ST, by = c("label" = "isolate_no")) 
   painted_tree <- phyloAMR::paint_tree_with_states(parent_child_df = pcdf, tr = tr, scale_labels = c("California","Other"),legend_name = "California",scale_colors = c("red","#CCCCCC"))
-  painted_tree_w_new_scale <- painted_tree + ggnewscale::new_scale_color()  
+  painted_tree_w_new_scale <- painted_tree + new_scale_color()  
   painted_tip_tree <- painted_tree_w_new_scale %<+% tr_data + geom_tippoint(aes(subset = california == T, x=tip_x,color = type),size = point_size,position='dodge') + study_scale_color 
   painted_tip_tree <- painted_tip_tree 
   
@@ -144,7 +144,7 @@ get_phylogeny <- function(st,tr,df,pcdf,col_offset,ymax,point_size,line_width,co
   ) 
   
   p0 <-  gheatmap(painted_tip_tree_dashed , df_ST %>% select(collection_decade) %>% `colnames<-`("Decade"), color=NULL, width=0.05, colnames_position = 'top', colnames_angle = 90, colnames_offset_y = colname_offset_y, hjust=0) + decade_scale + ylim(NA,ymax)  
-  p0.1 <- p0+ggnewscale::new_scale_fill()
+  p0.1 <- p0+ new_scale_fill()
   figure <- gheatmap(p0.1, df_ST %>% select(continent)  %>% `colnames<-`("Continent") ,color=NULL,width=0.05,offset=col_offset,colnames_position = 'top',colnames_angle = 90,colnames_offset_y = colname_offset_y,hjust=0) + continent_scale + ylim(NA,ymax) + theme(plot.margin = unit(c(0, 0, -0.33, 0), "cm")) + geom_treescale(y = y_tscale, offset = offset_tscale)
   return(figure)
 }
@@ -153,7 +153,7 @@ get_phylogeny <- function(st,tr,df,pcdf,col_offset,ymax,point_size,line_width,co
 ## ST258
 
 ```{r,fig.height=7.5} 
-A <- get_phylogeny(st='ST258',tr=tr_ST258,df = combined_phylogeographic_df, pcdf = CA_asr$ST258$parent_child_df, col_offset = .00024,ymax = 1840,point_size=0.1,line_width=0.1,colname_offset_y=2,y_tscale=-35,offset_tscale=5)
+A <- get_phylogeny(st='ST258',tr=tr_ST258,df = combined_phylogeographic_df, pcdf = CA_asr$ST258$parent_child_df, col_offset = .00023,ymax = 1840,point_size=0.1,line_width=0.1,colname_offset_y=2,y_tscale=-35,offset_tscale=5)
 A  + theme(legend.position='none')  
 ```
 

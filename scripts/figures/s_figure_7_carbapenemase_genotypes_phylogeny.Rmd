@@ -16,7 +16,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","cowplot","ComplexHeatmap",'ggalluvial','ape','ggtree','ggtext')
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","cowplot","ComplexHeatmap",'ggalluvial','ape','ggtree','ggtext','ggnewscale')
 lapply(packages,library,character.only=T)
 
 # Functions
@@ -76,12 +76,12 @@ colnames(genotype_matrix) <-  recode_genotypes(colnames(genotype_matrix))
 # Sequence type
 p0 <- gheatmap(ggtree(tr),df_carb_omp %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type (ST)"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale_3_row +  theme(legend.key = element_rect(colour = c('black')))
 
-p0.1 <- p0 + ggnewscale::new_scale_fill()
+p0.1 <- p0 + new_scale_fill()
 
 # Carbapenemase markdown
 p1 <- gheatmap(p0.1,df_carb_omp %>% select(carbapenemase_md) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0035,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_scale_4_row + theme(legend.key = element_rect(colour = c('black')))
 
-p1.1 <- p1 + ggnewscale::new_scale_fill()
+p1.1 <- p1 + new_scale_fill()
 
 # Genotype matrix
 figure <- gheatmap(p1.1,genotype_matrix, color  = NULL,width=0.05*length(geno_vars), offset=0.007, colnames_position = 'top', colnames_angle = 90, hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,615) + theme(legend.position = 'bottom',legend.direction="horizontal",  legend.justification = "center", legend.key = element_rect(colour = c('black')),legend.text=element_markdown()) + geom_treescale(y = -13, offset = 2)

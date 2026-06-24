@@ -16,7 +16,7 @@ opts_knit$set(root.dir='~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance_d
 
 ```{r}
 # Packages
-packages <- c("tidyverse","gridExtra","kableExtra","tableone","cowplot","ComplexHeatmap",'ggalluvial','ape','ggtree','phytools')
+packages <- c("tidyverse","gridExtra","kableExtra","tableone","cowplot","ComplexHeatmap",'ggalluvial','ape','ggtree','phytools',"ggnewscale")
 lapply(packages,library,character.only=T)
 
 # Functions
@@ -58,9 +58,9 @@ get_short_phylogeny <- function(tr,df,col_width,col_offset,col_offset_y,col_font
   df <- as.data.frame(df)
   rownames(df) <- df$isolate_no
   # ST 
-  p0 <- gheatmap(ggtree(tr),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=col_width,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = col_offset_y,font.size = col_fontsize) + ST_scale_3_row  + phylo_theme+  ggnewscale::new_scale_fill() 
+  p0 <- gheatmap(ggtree(tr),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=col_width,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = col_offset_y,font.size = col_fontsize) + ST_scale_3_row  + phylo_theme+  new_scale_fill() 
   # Carbapenemase
-  p1 <- gheatmap(p0,df %>% select(carbapenemase_md) %>% `colnames<-`("Carbapenemase"),color = NULL,width=col_width,offset=col_offset,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = col_offset_y,font.size = col_fontsize)  + carbapenemase_scale  + phylo_theme + ggnewscale::new_scale_fill() 
+  p1 <- gheatmap(p0,df %>% select(carbapenemase_md) %>% `colnames<-`("Carbapenemase"),color = NULL,width=col_width,offset=col_offset,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = col_offset_y,font.size = col_fontsize)  + carbapenemase_scale  + phylo_theme + new_scale_fill() 
   # Resistance
   resistance_matrix <- df[,resistance_variable_order] %>% mutate_all(as.factor)
   colnames(resistance_matrix) <- recode_resistance_variables(colnames(resistance_matrix))

@@ -361,7 +361,7 @@ phylogeny</h1>
 <div id="environment" class="section level1">
 <h1>Environment</h1>
 <pre class="r"><code># Packages
-packages &lt;- c(&quot;tidyverse&quot;,&quot;ComplexHeatmap&quot;,&#39;ape&#39;,&#39;ggtree&#39;)
+packages &lt;- c(&quot;tidyverse&quot;,&quot;ComplexHeatmap&quot;,&#39;ape&#39;,&#39;ggtree&#39;,&#39;ggnewscale&#39;)
 lapply(packages,library,character.only=T)</code></pre>
 <pre><code>[[1]]
  [1] &quot;lubridate&quot; &quot;forcats&quot;   &quot;stringr&quot;   &quot;dplyr&quot;     &quot;purrr&quot;     &quot;readr&quot;    
@@ -389,7 +389,15 @@ lapply(packages,library,character.only=T)</code></pre>
  [9] &quot;purrr&quot;          &quot;readr&quot;          &quot;tidyr&quot;          &quot;tibble&quot;        
 [13] &quot;ggplot2&quot;        &quot;tidyverse&quot;      &quot;knitr&quot;          &quot;stats&quot;         
 [17] &quot;graphics&quot;       &quot;grDevices&quot;      &quot;utils&quot;          &quot;datasets&quot;      
-[21] &quot;methods&quot;        &quot;base&quot;          </code></pre>
+[21] &quot;methods&quot;        &quot;base&quot;          
+
+[[5]]
+ [1] &quot;ggnewscale&quot;     &quot;ggtree&quot;         &quot;ape&quot;            &quot;ComplexHeatmap&quot;
+ [5] &quot;grid&quot;           &quot;lubridate&quot;      &quot;forcats&quot;        &quot;stringr&quot;       
+ [9] &quot;dplyr&quot;          &quot;purrr&quot;          &quot;readr&quot;          &quot;tidyr&quot;         
+[13] &quot;tibble&quot;         &quot;ggplot2&quot;        &quot;tidyverse&quot;      &quot;knitr&quot;         
+[17] &quot;stats&quot;          &quot;graphics&quot;       &quot;grDevices&quot;      &quot;utils&quot;         
+[21] &quot;datasets&quot;       &quot;methods&quot;        &quot;base&quot;          </code></pre>
 <pre class="r"><code># Functions
 source(&quot;./lib/consistent_themes.R&quot;) 
 
@@ -402,7 +410,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -432,11 +440,12 @@ attached base packages:
 
 other attached packages:
  [1] colorspace_2.1-2      kableExtra_1.4.0      ggtext_0.1.2         
- [4] gridExtra_2.3         ggtree_4.2.0          ape_5.8-1            
- [7] ComplexHeatmap_2.28.0 lubridate_1.9.5       forcats_1.0.1        
-[10] stringr_1.6.0         dplyr_1.2.1           purrr_1.2.2          
-[13] readr_2.2.0           tidyr_1.3.2           tibble_3.3.1         
-[16] ggplot2_4.0.3         tidyverse_2.0.0       knitr_1.51           
+ [4] gridExtra_2.3         ggnewscale_0.5.2      ggtree_4.2.0         
+ [7] ape_5.8-1             ComplexHeatmap_2.28.0 lubridate_1.9.5      
+[10] forcats_1.0.1         stringr_1.6.0         dplyr_1.2.1          
+[13] purrr_1.2.2           readr_2.2.0           tidyr_1.3.2          
+[16] tibble_3.3.1          ggplot2_4.0.3         tidyverse_2.0.0      
+[19] knitr_1.51           
 
 loaded via a namespace (and not attached):
  [1] ggiraph_0.9.6           tidyselect_1.2.1        viridisLite_0.4.3      
@@ -506,8 +515,8 @@ colnames(plasmid_matrix) &lt;- recode_genotypes(colnames(plasmid_matrix))</code>
 <h2>Phylogeny creation</h2>
 <pre class="r"><code>df &lt;- as.data.frame(df)
 rownames(df) &lt;- df$isolate_no
-p0 &lt;- gheatmap(ggtree(tr),df %&gt;% select(Species_ST_recode) %&gt;% `colnames&lt;-`(&quot;Sequence type&quot;),color = NULL,width=0.05,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale_4_row  + theme(legend.key = element_rect(colour = c(&#39;black&#39;))) + ggnewscale::new_scale_fill() 
-p1 &lt;- gheatmap(p0,df %&gt;% select(carbapenemase_md) %&gt;% `colnames&lt;-`(&quot;Carbapenemase&quot;),color = NULL,width=0.05,offset=0.0035,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_scale_4_row + theme( legend.key = element_rect(colour = c(&#39;black&#39;))) + ggnewscale::new_scale_fill() 
+p0 &lt;- gheatmap(ggtree(tr),df %&gt;% select(Species_ST_recode) %&gt;% `colnames&lt;-`(&quot;Sequence type&quot;),color = NULL,width=0.05,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale_4_row  + theme(legend.key = element_rect(colour = c(&#39;black&#39;))) + new_scale_fill() 
+p1 &lt;- gheatmap(p0,df %&gt;% select(carbapenemase_md) %&gt;% `colnames&lt;-`(&quot;Carbapenemase&quot;),color = NULL,width=0.05,offset=0.0035,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_scale_4_row + theme( legend.key = element_rect(colour = c(&#39;black&#39;))) + new_scale_fill() 
 figure &lt;- gheatmap(p1,plasmid_matrix,color = NULL,width=0.05*length(geno_vars),offset=0.007,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_presence_scale + ylim(NA,565) + theme(legend.position = &#39;bottom&#39;, legend.key = element_rect(colour = c(&#39;black&#39;)),legend.text=element_markdown())  + geom_treescale(y = -14, offset = 2)</code></pre>
 </div>
 </div>

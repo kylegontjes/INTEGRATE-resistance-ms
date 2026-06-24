@@ -16,7 +16,7 @@ opts_knit$set(root.dir = '~/Desktop/gl_nfs/Project_INTEGRATE/Analysis/Resistance
 
 ```{r}
 # Packages
-packages <- c("tidyverse","ComplexHeatmap",'ape','ggtree')
+packages <- c("tidyverse","ComplexHeatmap",'ape','ggtree','ggnewscale')
 lapply(packages,library,character.only=T)
 
 # Functions
@@ -72,8 +72,8 @@ colnames(plasmid_matrix) <- recode_genotypes(colnames(plasmid_matrix))
 ```{r,fig.width=9.25,fig.height=9.25}  
 df <- as.data.frame(df)
 rownames(df) <- df$isolate_no
-p0 <- gheatmap(ggtree(tr),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale_4_row  + theme(legend.key = element_rect(colour = c('black'))) + ggnewscale::new_scale_fill() 
-p1 <- gheatmap(p0,df %>% select(carbapenemase_md) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0035,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_scale_4_row + theme( legend.key = element_rect(colour = c('black'))) + ggnewscale::new_scale_fill() 
+p0 <- gheatmap(ggtree(tr),df %>% select(Species_ST_recode) %>% `colnames<-`("Sequence type"),color = NULL,width=0.05,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale_4_row  + theme(legend.key = element_rect(colour = c('black'))) + new_scale_fill() 
+p1 <- gheatmap(p0,df %>% select(carbapenemase_md) %>% `colnames<-`("Carbapenemase"),color = NULL,width=0.05,offset=0.0035,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_scale_4_row + theme( legend.key = element_rect(colour = c('black'))) + new_scale_fill() 
 figure <- gheatmap(p1,plasmid_matrix,color = NULL,width=0.05*length(geno_vars),offset=0.007,colnames_position = 'top',colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_presence_scale + ylim(NA,565) + theme(legend.position = 'bottom', legend.key = element_rect(colour = c('black')),legend.text=element_markdown())  + geom_treescale(y = -14, offset = 2)
 ```
 

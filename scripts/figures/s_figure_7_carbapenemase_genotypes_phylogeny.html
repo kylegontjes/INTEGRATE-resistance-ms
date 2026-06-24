@@ -361,7 +361,7 @@ phylogeny</h1>
 <div id="environment" class="section level1">
 <h1>Environment</h1>
 <pre class="r"><code># Packages
-packages &lt;- c(&quot;tidyverse&quot;,&quot;gridExtra&quot;,&quot;kableExtra&quot;,&quot;tableone&quot;,&quot;cowplot&quot;,&quot;ComplexHeatmap&quot;,&#39;ggalluvial&#39;,&#39;ape&#39;,&#39;ggtree&#39;,&#39;ggtext&#39;)
+packages &lt;- c(&quot;tidyverse&quot;,&quot;gridExtra&quot;,&quot;kableExtra&quot;,&quot;tableone&quot;,&quot;cowplot&quot;,&quot;ComplexHeatmap&quot;,&#39;ggalluvial&#39;,&#39;ape&#39;,&#39;ggtree&#39;,&#39;ggtext&#39;,&#39;ggnewscale&#39;)
 lapply(packages,library,character.only=T)</code></pre>
 <pre><code>[[1]]
  [1] &quot;lubridate&quot; &quot;forcats&quot;   &quot;stringr&quot;   &quot;dplyr&quot;     &quot;purrr&quot;     &quot;readr&quot;    
@@ -436,7 +436,17 @@ lapply(packages,library,character.only=T)</code></pre>
 [13] &quot;stringr&quot;        &quot;dplyr&quot;          &quot;purrr&quot;          &quot;readr&quot;         
 [17] &quot;tidyr&quot;          &quot;tibble&quot;         &quot;ggplot2&quot;        &quot;tidyverse&quot;     
 [21] &quot;knitr&quot;          &quot;stats&quot;          &quot;graphics&quot;       &quot;grDevices&quot;     
-[25] &quot;utils&quot;          &quot;datasets&quot;       &quot;methods&quot;        &quot;base&quot;          </code></pre>
+[25] &quot;utils&quot;          &quot;datasets&quot;       &quot;methods&quot;        &quot;base&quot;          
+
+[[11]]
+ [1] &quot;ggnewscale&quot;     &quot;ggtext&quot;         &quot;ggtree&quot;         &quot;ape&quot;           
+ [5] &quot;ggalluvial&quot;     &quot;ComplexHeatmap&quot; &quot;grid&quot;           &quot;cowplot&quot;       
+ [9] &quot;tableone&quot;       &quot;kableExtra&quot;     &quot;gridExtra&quot;      &quot;lubridate&quot;     
+[13] &quot;forcats&quot;        &quot;stringr&quot;        &quot;dplyr&quot;          &quot;purrr&quot;         
+[17] &quot;readr&quot;          &quot;tidyr&quot;          &quot;tibble&quot;         &quot;ggplot2&quot;       
+[21] &quot;tidyverse&quot;      &quot;knitr&quot;          &quot;stats&quot;          &quot;graphics&quot;      
+[25] &quot;grDevices&quot;      &quot;utils&quot;          &quot;datasets&quot;       &quot;methods&quot;       
+[29] &quot;base&quot;          </code></pre>
 <pre class="r"><code># Functions
 source(&quot;./lib/consistent_themes.R&quot;) 
 source(&quot;./lib/common_functions.R&quot;) 
@@ -450,7 +460,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -479,13 +489,14 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] colorspace_2.1-2      ggtext_0.1.2          ggtree_4.2.0         
- [4] ape_5.8-1             ggalluvial_0.12.6     ComplexHeatmap_2.28.0
- [7] cowplot_1.2.0         tableone_0.13.2       kableExtra_1.4.0     
-[10] gridExtra_2.3         lubridate_1.9.5       forcats_1.0.1        
-[13] stringr_1.6.0         dplyr_1.2.1           purrr_1.2.2          
-[16] readr_2.2.0           tidyr_1.3.2           tibble_3.3.1         
-[19] ggplot2_4.0.3         tidyverse_2.0.0       knitr_1.51           
+ [1] colorspace_2.1-2      ggnewscale_0.5.2      ggtext_0.1.2         
+ [4] ggtree_4.2.0          ape_5.8-1             ggalluvial_0.12.6    
+ [7] ComplexHeatmap_2.28.0 cowplot_1.2.0         tableone_0.13.2      
+[10] kableExtra_1.4.0      gridExtra_2.3         lubridate_1.9.5      
+[13] forcats_1.0.1         stringr_1.6.0         dplyr_1.2.1          
+[16] purrr_1.2.2           readr_2.2.0           tidyr_1.3.2          
+[19] tibble_3.3.1          ggplot2_4.0.3         tidyverse_2.0.0      
+[22] knitr_1.51           
 
 loaded via a namespace (and not attached):
  [1] DBI_1.3.0               rlang_1.2.0             magrittr_2.0.5         
@@ -558,12 +569,12 @@ colnames(genotype_matrix) &lt;-  recode_genotypes(colnames(genotype_matrix))</co
 <pre class="r"><code># Sequence type
 p0 &lt;- gheatmap(ggtree(tr),df_carb_omp %&gt;% select(Species_ST_recode) %&gt;% `colnames&lt;-`(&quot;Sequence type (ST)&quot;),color = NULL,width=0.05,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = 0.25) + ST_scale_3_row +  theme(legend.key = element_rect(colour = c(&#39;black&#39;)))
 
-p0.1 &lt;- p0 + ggnewscale::new_scale_fill()
+p0.1 &lt;- p0 + new_scale_fill()
 
 # Carbapenemase markdown
 p1 &lt;- gheatmap(p0.1,df_carb_omp %&gt;% select(carbapenemase_md) %&gt;% `colnames&lt;-`(&quot;Carbapenemase&quot;),color = NULL,width=0.05,offset=0.0035,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = 0.25)  + carbapenemase_scale_4_row + theme(legend.key = element_rect(colour = c(&#39;black&#39;)))
 
-p1.1 &lt;- p1 + ggnewscale::new_scale_fill()
+p1.1 &lt;- p1 + new_scale_fill()
 
 # Genotype matrix
 figure &lt;- gheatmap(p1.1,genotype_matrix, color  = NULL,width=0.05*length(geno_vars), offset=0.007, colnames_position = &#39;top&#39;, colnames_angle = 90, hjust=0, colnames_offset_y = 0.25)  + feature_scale + ylim(NA,615) + theme(legend.position = &#39;bottom&#39;,legend.direction=&quot;horizontal&quot;,  legend.justification = &quot;center&quot;, legend.key = element_rect(colour = c(&#39;black&#39;)),legend.text=element_markdown()) + geom_treescale(y = -13, offset = 2)

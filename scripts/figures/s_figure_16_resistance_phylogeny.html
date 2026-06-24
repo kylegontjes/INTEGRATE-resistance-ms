@@ -361,7 +361,7 @@ with resistance</h1>
 <div id="environment" class="section level1">
 <h1>Environment</h1>
 <pre class="r"><code># Packages
-packages &lt;- c(&quot;tidyverse&quot;,&quot;gridExtra&quot;,&quot;kableExtra&quot;,&quot;tableone&quot;,&quot;cowplot&quot;,&quot;ComplexHeatmap&quot;,&#39;ggalluvial&#39;,&#39;ape&#39;,&#39;ggtree&#39;,&#39;phytools&#39;)
+packages &lt;- c(&quot;tidyverse&quot;,&quot;gridExtra&quot;,&quot;kableExtra&quot;,&quot;tableone&quot;,&quot;cowplot&quot;,&quot;ComplexHeatmap&quot;,&#39;ggalluvial&#39;,&#39;ape&#39;,&#39;ggtree&#39;,&#39;phytools&#39;,&quot;ggnewscale&quot;)
 lapply(packages,library,character.only=T)</code></pre>
 <pre><code>[[1]]
  [1] &quot;lubridate&quot; &quot;forcats&quot;   &quot;stringr&quot;   &quot;dplyr&quot;     &quot;purrr&quot;     &quot;readr&quot;    
@@ -437,7 +437,17 @@ lapply(packages,library,character.only=T)</code></pre>
 [17] &quot;readr&quot;          &quot;tidyr&quot;          &quot;tibble&quot;         &quot;ggplot2&quot;       
 [21] &quot;tidyverse&quot;      &quot;knitr&quot;          &quot;stats&quot;          &quot;graphics&quot;      
 [25] &quot;grDevices&quot;      &quot;utils&quot;          &quot;datasets&quot;       &quot;methods&quot;       
-[29] &quot;base&quot;          </code></pre>
+[29] &quot;base&quot;          
+
+[[11]]
+ [1] &quot;ggnewscale&quot;     &quot;phytools&quot;       &quot;maps&quot;           &quot;ggtree&quot;        
+ [5] &quot;ape&quot;            &quot;ggalluvial&quot;     &quot;ComplexHeatmap&quot; &quot;grid&quot;          
+ [9] &quot;cowplot&quot;        &quot;tableone&quot;       &quot;kableExtra&quot;     &quot;gridExtra&quot;     
+[13] &quot;lubridate&quot;      &quot;forcats&quot;        &quot;stringr&quot;        &quot;dplyr&quot;         
+[17] &quot;purrr&quot;          &quot;readr&quot;          &quot;tidyr&quot;          &quot;tibble&quot;        
+[21] &quot;ggplot2&quot;        &quot;tidyverse&quot;      &quot;knitr&quot;          &quot;stats&quot;         
+[25] &quot;graphics&quot;       &quot;grDevices&quot;      &quot;utils&quot;          &quot;datasets&quot;      
+[29] &quot;methods&quot;        &quot;base&quot;          </code></pre>
 <pre class="r"><code># Functions
 source(&quot;./lib/consistent_themes.R&quot;)
 
@@ -450,7 +460,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                      &quot;ltms0622.umhs.med.umich.edu&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -479,14 +489,14 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] colorspace_2.1-2      ggtext_0.1.2          phytools_2.5-2       
- [4] maps_3.4.3            ggtree_4.2.0          ape_5.8-1            
- [7] ggalluvial_0.12.6     ComplexHeatmap_2.28.0 cowplot_1.2.0        
-[10] tableone_0.13.2       kableExtra_1.4.0      gridExtra_2.3        
-[13] lubridate_1.9.5       forcats_1.0.1         stringr_1.6.0        
-[16] dplyr_1.2.1           purrr_1.2.2           readr_2.2.0          
-[19] tidyr_1.3.2           tibble_3.3.1          ggplot2_4.0.3        
-[22] tidyverse_2.0.0       knitr_1.51           
+ [1] colorspace_2.1-2      ggtext_0.1.2          ggnewscale_0.5.2     
+ [4] phytools_2.5-2        maps_3.4.3            ggtree_4.2.0         
+ [7] ape_5.8-1             ggalluvial_0.12.6     ComplexHeatmap_2.28.0
+[10] cowplot_1.2.0         tableone_0.13.2       kableExtra_1.4.0     
+[13] gridExtra_2.3         lubridate_1.9.5       forcats_1.0.1        
+[16] stringr_1.6.0         dplyr_1.2.1           purrr_1.2.2          
+[19] readr_2.2.0           tidyr_1.3.2           tibble_3.3.1         
+[22] ggplot2_4.0.3         tidyverse_2.0.0       knitr_1.51           
 
 loaded via a namespace (and not attached):
   [1] mnormt_2.1.2            DBI_1.3.0               phangorn_2.12.1        
@@ -549,9 +559,9 @@ df$carbapenemase_md &lt;- format_carbapenemase(df$carbapenemase) </code></pre>
   df &lt;- as.data.frame(df)
   rownames(df) &lt;- df$isolate_no
   # ST 
-  p0 &lt;- gheatmap(ggtree(tr),df %&gt;% select(Species_ST_recode) %&gt;% `colnames&lt;-`(&quot;Sequence type&quot;),color = NULL,width=col_width,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = col_offset_y,font.size = col_fontsize) + ST_scale_3_row  + phylo_theme+  ggnewscale::new_scale_fill() 
+  p0 &lt;- gheatmap(ggtree(tr),df %&gt;% select(Species_ST_recode) %&gt;% `colnames&lt;-`(&quot;Sequence type&quot;),color = NULL,width=col_width,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = col_offset_y,font.size = col_fontsize) + ST_scale_3_row  + phylo_theme+  new_scale_fill() 
   # Carbapenemase
-  p1 &lt;- gheatmap(p0,df %&gt;% select(carbapenemase_md) %&gt;% `colnames&lt;-`(&quot;Carbapenemase&quot;),color = NULL,width=col_width,offset=col_offset,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = col_offset_y,font.size = col_fontsize)  + carbapenemase_scale  + phylo_theme + ggnewscale::new_scale_fill() 
+  p1 &lt;- gheatmap(p0,df %&gt;% select(carbapenemase_md) %&gt;% `colnames&lt;-`(&quot;Carbapenemase&quot;),color = NULL,width=col_width,offset=col_offset,colnames_position = &#39;top&#39;,colnames_angle = 90,hjust=0, colnames_offset_y = col_offset_y,font.size = col_fontsize)  + carbapenemase_scale  + phylo_theme + new_scale_fill() 
   # Resistance
   resistance_matrix &lt;- df[,resistance_variable_order] %&gt;% mutate_all(as.factor)
   colnames(resistance_matrix) &lt;- recode_resistance_variables(colnames(resistance_matrix))
