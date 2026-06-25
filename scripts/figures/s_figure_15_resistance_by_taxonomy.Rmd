@@ -120,16 +120,18 @@ fig_legend_image <- grid.grabExpr(draw(fig_legend),width = 2.16) %>% cowplot::pl
 # Curate and save figure
 
 ```{r,fig.width=7.2,fig.height=9.25}
-# Grab graphical expressions
+# Grab graphical expressions 
 p1 = grid.grabExpr(draw(A,heatmap_legend_list=fig_legend,heatmap_legend_side = "bottom",align_heatmap_legend = "heatmap_center"))
 p2 = grid.grabExpr(draw(B))
 
-A_fig <- cowplot::plot_grid(p1,NULL,rel_heights = c(1,1.245),ncol=1,align = 'v')
+A_fig <- cowplot::plot_grid(p1,NULL,rel_heights = c(1,0.98525),ncol=1,align = 'v')
 
 # Combine different dimensions
 figure <- plot_grid(A_fig, p2, ncol = 2,rel_widths = c(0.6,1),labels = c("A","B"),hjust = -0.1)
 
 figure
+
+# Save
 
 ggsave(filename = "./figures/s_figure_15_resistance_by_taxonomy.png",figure,width=7.2,height=9.25,units = 'in',dpi=900,bg='white')
 ``` 
