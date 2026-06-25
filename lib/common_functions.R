@@ -562,3 +562,40 @@ recode_resistance_variables <- function(variables){
          "CT_dich_num" = "Ceftolozane-tazobactam",
          "FDC_dich_num"="Cefiderocol")
 }
+
+# Functions for comparing resistance
+get_frequency_stats <- function(variable,df,name){
+  freq <- df[[variable]] %>% sum(.,na.rm=T)
+  tested <- df[[variable]] %>% subset(is.na(.)==F) %>% length
+  not_tested <- nrow(df) - tested
+  prop <- round(freq / tested * 100,2) 
+  data.frame(variable = variable,study = name,freq,tested,prop,not_tested)
+}
+
+get_frequency_stats_compare <- function(variable,df,comparitor){
+  renamed_variable <- recode_resistance_variables(variable)
+  data_table <- table(df[[variable]],df[[comparitor]],useNA = 'no') 
+  test <- if(sum(unlist(data_table) <5)>0){
+    fisher.test(data_table,simulate.p.value = T)
+  } else {
+    chisq.test(data_table)
+  }
+  group1 <- colnames(data_table)[1]
+  group2 <- colnames(data_table)[2]
+  
+  group1_total <- sum(data_table[,1])
+  group2_total <- sum(data_table[,2])
+  
+  group1_count <- data_table[,1] %>% subset(names(.)==1)
+  group2_count <- data_table[,2] %>% subset(names(.)==1)
+  
+  group1_perc <- round(c(group1_count/group1_total)*100,1)
+  group2_perc <- round(c(group2_count/group2_total)*100,1)
+  
+  sig_test <- ifelse(class(test)=="htest" & test$method == "Fisher's Exact Test for Count Data","Fisher's Exact Test","Chi-squared")
+  p_value <- test$p.value
+  
+  data.frame(name = renamed_variable, variable=variable,group1=group1,group1_total=group1_total,group1_count=group1_count,group1_perc=group1_perc,
+             group2=group2,group2_total=group2_total,group2_count=group2_count,group2_perc=group2_perc,
+             test=sig_test,p_value=p_value)
+}

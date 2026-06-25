@@ -45,44 +45,16 @@ MIC_variables <- c('MERO',"IMI",'blbli','MVB','IR','CZA',"FDC","CT","OMC","ERV",
 resistance_vars <- paste0(MIC_variables,"_dich_num")  
 ``` 
 
-# Frequency statistics comparison
-```{r} 
-get_frequency_stats_compare <- function(variable,df,comparitor){
-  print(variable)
- data_table <- table(df[[variable]],df[[comparitor]],useNA = 'no')  
- test <- if(sum(unlist(data_table) <5)>0){
-    fisher.test(data_table,simulate.p.value = T)
-  } else {
-    chisq.test(data_table)
-  }
-  group1 <- colnames(data_table)[1]
-  group2 <- colnames(data_table)[2]
-  
-  group1_total <- sum(data_table[,1])
-  group2_total <- sum(data_table[,2])
-    
-  group1_count <- data_table[,1] %>% subset(names(.)==1)
-  group2_count <- data_table[,2] %>% subset(names(.)==1)
-  
-  group1_perc <- round(c(group1_count/group1_total)*100,1)
-  group2_perc <- round(c(group2_count/group2_total)*100,1)
-  
-  sig_test <- ifelse(class(test)=="htest" & test$method == "Fisher's Exact Test for Count Data","Fisher's Exact Test","Chi-squared")
-  p_value <- test$p.value 
-  data.frame(variable=variable,group1=group1,group1_total=group1_total,group1_count=group1_count,group1_perc=group1_perc,
-             group2=group2,group2_total=group2_total,group2_count=group2_count,group2_perc=group2_perc,
-             test=sig_test,p_value=p_value)
-}
-```
+# Frequency statistics comparison 
 
-# Differences in resistance across ST258 isolates
+## Differences in resistance across ST258 isolates
 
 ```{r}
 df_kpn_ST258 <-  subset(df,ST258 == T) 
 lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_kpn_ST258,comparitor='study') %>% do.call(rbind,.)%>% favorite_kable() 
 ```
 
-#  Differences in resistance across 2021-23 ST258 vs 2021-23 not ST258
+##  Differences in resistance across 2021-23 ST258 vs 2021-23 not ST258
 
 ```{r}     
 lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_202123,comparitor='ST258') %>% do.call(rbind,.)%>% favorite_kable() 

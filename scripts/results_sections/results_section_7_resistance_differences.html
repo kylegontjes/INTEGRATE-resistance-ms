@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-24" />
+<meta name="date" content="2026-06-25" />
 
 <title>Results section 7: Differences in resistance across study periods</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">Results section 7: Differences in
 resistance across study periods</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-24</h4>
+<h4 class="date">2026-06-25</h4>
 
 </div>
 
@@ -874,42 +874,7 @@ NA
 </div>
 <div id="differences-across-groups" class="section level1">
 <h1>Differences across groups</h1>
-<pre class="r"><code>get_frequency_stats &lt;- function(variable,df,name){
-   freq &lt;- df[[variable]] %&gt;% sum(.,na.rm=T)
-  tested &lt;- df[[variable]] %&gt;% subset(is.na(.)==F) %&gt;% length
-  not_tested &lt;- nrow(df) - tested
-  prop &lt;- round(freq / tested * 100,2) 
-  data.frame(variable = variable,study = name,freq,tested,prop,not_tested)
-}
-
-get_frequency_stats_compare &lt;- function(variable,df,comparitor){
- data_table &lt;- table(df[[variable]],df[[comparitor]],useNA = &#39;no&#39;) 
- test &lt;- if(sum(unlist(data_table) &lt;5)&gt;0){
-    fisher.test(data_table,simulate.p.value = T)
-  } else {
-    chisq.test(data_table)
-  }
-  group1 &lt;- colnames(data_table)[1]
-  group2 &lt;- colnames(data_table)[2]
-  
-  group1_total &lt;- sum(data_table[,1])
-  group2_total &lt;- sum(data_table[,2])
-    
-  group1_count &lt;- data_table[,1] %&gt;% subset(names(.)==1)
-  group2_count &lt;- data_table[,2] %&gt;% subset(names(.)==1)
-  
-  group1_perc &lt;- round(c(group1_count/group1_total)*100,1)
-  group2_perc &lt;- round(c(group2_count/group2_total)*100,1)
-  
-  sig_test &lt;- ifelse(class(test)==&quot;htest&quot; &amp; test$method == &quot;Fisher&#39;s Exact Test for Count Data&quot;,&quot;Fisher&#39;s Exact Test&quot;,&quot;Chi-squared&quot;)
-  p_value &lt;- test$p.value
-  
-  data.frame(variable=variable,group1=group1,group1_total=group1_total,group1_count=group1_count,group1_perc=group1_perc,
-             group2=group2,group2_total=group2_total,group2_count=group2_count,group2_perc=group2_perc,
-             test=sig_test,p_value=p_value)
-}
-
-# New agents tested in the study (not found in old study)
+<pre class="r"><code># New agents tested in the study (not found in old study)
 lapply(novel_antibiotics,FUN=get_frequency_stats,df=df_202123,name = &#39;2021-23&#39;) %&gt;% do.call(rbind,.) %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
@@ -1043,6 +1008,9 @@ lapply(shared_antibiotics,FUN=get_frequency_stats_compare,df=df,comparitor=&#39;
 <thead>
 <tr>
 <th style="text-align:left;">
+name
+</th>
+<th style="text-align:left;">
 variable
 </th>
 <th style="text-align:left;">
@@ -1080,6 +1048,9 @@ p_value
 <tbody>
 <tr>
 <td style="text-align:left;">
+Meropenem
+</td>
+<td style="text-align:left;">
 MERO_dich_num
 </td>
 <td style="text-align:left;">
@@ -1114,6 +1085,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Imipenem
+</td>
 <td style="text-align:left;">
 IMI_dich_num
 </td>
@@ -1150,6 +1124,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+KPC-inhibiting BL/BLIs
+</td>
+<td style="text-align:left;">
 blbli_dich_num
 </td>
 <td style="text-align:left;">
@@ -1184,6 +1161,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Meropenem-vaborbactam
+</td>
 <td style="text-align:left;">
 MVB_dich_num
 </td>
@@ -1220,6 +1200,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+Imipenem-relebactam
+</td>
+<td style="text-align:left;">
 IR_dich_num
 </td>
 <td style="text-align:left;">
@@ -1254,6 +1237,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Ceftazidime-avibactam
+</td>
 <td style="text-align:left;">
 CZA_dich_num
 </td>
@@ -1290,6 +1276,9 @@ Fisher’s Exact Test
 </tr>
 <tr>
 <td style="text-align:left;">
+Colistin
+</td>
+<td style="text-align:left;">
 CST_dich_num
 </td>
 <td style="text-align:left;">
@@ -1325,6 +1314,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+Plazomicin
+</td>
+<td style="text-align:left;">
 PLZ_dich_num
 </td>
 <td style="text-align:left;">
@@ -1359,6 +1351,9 @@ Fisher’s Exact Test
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Fosfomycin
+</td>
 <td style="text-align:left;">
 FOS_dich_num
 </td>

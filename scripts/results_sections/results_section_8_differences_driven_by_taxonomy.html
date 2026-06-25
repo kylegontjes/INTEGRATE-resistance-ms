@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-24" />
+<meta name="date" content="2026-06-25" />
 
 <title>Results section 8: Differences among taxonomic groups</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">Results section 8: Differences among
 taxonomic groups</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-24</h4>
+<h4 class="date">2026-06-25</h4>
 
 </div>
 
@@ -667,54 +667,16 @@ resistance_vars &lt;- paste0(MIC_variables,&quot;_dich_num&quot;)  </code></pre>
 </div>
 <div id="frequency-statistics-comparison" class="section level1">
 <h1>Frequency statistics comparison</h1>
-<pre class="r"><code>get_frequency_stats_compare &lt;- function(variable,df,comparitor){
-  print(variable)
- data_table &lt;- table(df[[variable]],df[[comparitor]],useNA = &#39;no&#39;)  
- test &lt;- if(sum(unlist(data_table) &lt;5)&gt;0){
-    fisher.test(data_table,simulate.p.value = T)
-  } else {
-    chisq.test(data_table)
-  }
-  group1 &lt;- colnames(data_table)[1]
-  group2 &lt;- colnames(data_table)[2]
-  
-  group1_total &lt;- sum(data_table[,1])
-  group2_total &lt;- sum(data_table[,2])
-    
-  group1_count &lt;- data_table[,1] %&gt;% subset(names(.)==1)
-  group2_count &lt;- data_table[,2] %&gt;% subset(names(.)==1)
-  
-  group1_perc &lt;- round(c(group1_count/group1_total)*100,1)
-  group2_perc &lt;- round(c(group2_count/group2_total)*100,1)
-  
-  sig_test &lt;- ifelse(class(test)==&quot;htest&quot; &amp; test$method == &quot;Fisher&#39;s Exact Test for Count Data&quot;,&quot;Fisher&#39;s Exact Test&quot;,&quot;Chi-squared&quot;)
-  p_value &lt;- test$p.value 
-  data.frame(variable=variable,group1=group1,group1_total=group1_total,group1_count=group1_count,group1_perc=group1_perc,
-             group2=group2,group2_total=group2_total,group2_count=group2_count,group2_perc=group2_perc,
-             test=sig_test,p_value=p_value)
-}</code></pre>
-</div>
-<div id="differences-in-resistance-across-st258-isolates" class="section level1">
-<h1>Differences in resistance across ST258 isolates</h1>
+<div id="differences-in-resistance-across-st258-isolates" class="section level2">
+<h2>Differences in resistance across ST258 isolates</h2>
 <pre class="r"><code>df_kpn_ST258 &lt;-  subset(df,ST258 == T) 
 lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_kpn_ST258,comparitor=&#39;study&#39;) %&gt;% do.call(rbind,.)%&gt;% favorite_kable() </code></pre>
-<pre><code>[1] &quot;MERO_dich_num&quot;
-[1] &quot;IMI_dich_num&quot;
-[1] &quot;blbli_dich_num&quot;
-[1] &quot;MVB_dich_num&quot;
-[1] &quot;IR_dich_num&quot;
-[1] &quot;CZA_dich_num&quot;
-[1] &quot;FDC_dich_num&quot;
-[1] &quot;CT_dich_num&quot;
-[1] &quot;OMC_dich_num&quot;
-[1] &quot;ERV_dich_num&quot;
-[1] &quot;DLX_dich_num&quot;
-[1] &quot;CST_dich_num&quot;
-[1] &quot;PLZ_dich_num&quot;
-[1] &quot;FOS_dich_num&quot;</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
+<th style="text-align:left;">
+name
+</th>
 <th style="text-align:left;">
 variable
 </th>
@@ -753,6 +715,9 @@ p_value
 <tbody>
 <tr>
 <td style="text-align:left;">
+Meropenem
+</td>
+<td style="text-align:left;">
 MERO_dich_num
 </td>
 <td style="text-align:left;">
@@ -787,6 +752,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Imipenem
+</td>
 <td style="text-align:left;">
 IMI_dich_num
 </td>
@@ -823,6 +791,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+KPC-inhibiting BL/BLIs
+</td>
+<td style="text-align:left;">
 blbli_dich_num
 </td>
 <td style="text-align:left;">
@@ -857,6 +828,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Meropenem-vaborbactam
+</td>
 <td style="text-align:left;">
 MVB_dich_num
 </td>
@@ -893,6 +867,9 @@ Fisher’s Exact Test
 </tr>
 <tr>
 <td style="text-align:left;">
+Imipenem-relebactam
+</td>
+<td style="text-align:left;">
 IR_dich_num
 </td>
 <td style="text-align:left;">
@@ -927,6 +904,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Ceftazidime-avibactam
+</td>
 <td style="text-align:left;">
 CZA_dich_num
 </td>
@@ -963,6 +943,9 @@ Fisher’s Exact Test
 </tr>
 <tr>
 <td style="text-align:left;">
+Cefiderocol
+</td>
+<td style="text-align:left;">
 FDC_dich_num
 </td>
 <td style="text-align:left;">
@@ -997,6 +980,9 @@ Fisher’s Exact Test
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Ceftolozane-tazobactam
+</td>
 <td style="text-align:left;">
 CT_dich_num
 </td>
@@ -1033,6 +1019,9 @@ Fisher’s Exact Test
 </tr>
 <tr>
 <td style="text-align:left;">
+Omadacycline
+</td>
+<td style="text-align:left;">
 OMC_dich_num
 </td>
 <td style="text-align:left;">
@@ -1067,6 +1056,9 @@ Fisher’s Exact Test
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Eravacycline
+</td>
 <td style="text-align:left;">
 ERV_dich_num
 </td>
@@ -1103,6 +1095,9 @@ Fisher’s Exact Test
 </tr>
 <tr>
 <td style="text-align:left;">
+Delafloxacin
+</td>
+<td style="text-align:left;">
 DLX_dich_num
 </td>
 <td style="text-align:left;">
@@ -1137,6 +1132,9 @@ Fisher’s Exact Test
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Colistin
+</td>
 <td style="text-align:left;">
 CST_dich_num
 </td>
@@ -1173,6 +1171,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+Plazomicin
+</td>
+<td style="text-align:left;">
 PLZ_dich_num
 </td>
 <td style="text-align:left;">
@@ -1207,6 +1208,9 @@ Fisher’s Exact Test
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Fosfomycin
+</td>
 <td style="text-align:left;">
 FOS_dich_num
 </td>
@@ -1244,27 +1248,16 @@ Chi-squared
 </tbody>
 </table>
 </div>
-<div id="differences-in-resistance-across-2021-23-st258-vs-2021-23-not-st258" class="section level1">
-<h1>Differences in resistance across 2021-23 ST258 vs 2021-23 not
-ST258</h1>
+<div id="differences-in-resistance-across-2021-23-st258-vs-2021-23-not-st258" class="section level2">
+<h2>Differences in resistance across 2021-23 ST258 vs 2021-23 not
+ST258</h2>
 <pre class="r"><code>lapply(resistance_vars,FUN=get_frequency_stats_compare,df=df_202123,comparitor=&#39;ST258&#39;) %&gt;% do.call(rbind,.)%&gt;% favorite_kable() </code></pre>
-<pre><code>[1] &quot;MERO_dich_num&quot;
-[1] &quot;IMI_dich_num&quot;
-[1] &quot;blbli_dich_num&quot;
-[1] &quot;MVB_dich_num&quot;
-[1] &quot;IR_dich_num&quot;
-[1] &quot;CZA_dich_num&quot;
-[1] &quot;FDC_dich_num&quot;
-[1] &quot;CT_dich_num&quot;
-[1] &quot;OMC_dich_num&quot;
-[1] &quot;ERV_dich_num&quot;
-[1] &quot;DLX_dich_num&quot;
-[1] &quot;CST_dich_num&quot;
-[1] &quot;PLZ_dich_num&quot;
-[1] &quot;FOS_dich_num&quot;</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
+<th style="text-align:left;">
+name
+</th>
 <th style="text-align:left;">
 variable
 </th>
@@ -1303,6 +1296,9 @@ p_value
 <tbody>
 <tr>
 <td style="text-align:left;">
+Meropenem
+</td>
+<td style="text-align:left;">
 MERO_dich_num
 </td>
 <td style="text-align:left;">
@@ -1337,6 +1333,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Imipenem
+</td>
 <td style="text-align:left;">
 IMI_dich_num
 </td>
@@ -1373,6 +1372,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+KPC-inhibiting BL/BLIs
+</td>
+<td style="text-align:left;">
 blbli_dich_num
 </td>
 <td style="text-align:left;">
@@ -1407,6 +1409,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Meropenem-vaborbactam
+</td>
 <td style="text-align:left;">
 MVB_dich_num
 </td>
@@ -1443,6 +1448,9 @@ Fisher’s Exact Test
 </tr>
 <tr>
 <td style="text-align:left;">
+Imipenem-relebactam
+</td>
+<td style="text-align:left;">
 IR_dich_num
 </td>
 <td style="text-align:left;">
@@ -1477,6 +1485,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Ceftazidime-avibactam
+</td>
 <td style="text-align:left;">
 CZA_dich_num
 </td>
@@ -1513,6 +1524,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+Cefiderocol
+</td>
+<td style="text-align:left;">
 FDC_dich_num
 </td>
 <td style="text-align:left;">
@@ -1547,6 +1561,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Ceftolozane-tazobactam
+</td>
 <td style="text-align:left;">
 CT_dich_num
 </td>
@@ -1583,6 +1600,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+Omadacycline
+</td>
+<td style="text-align:left;">
 OMC_dich_num
 </td>
 <td style="text-align:left;">
@@ -1617,6 +1637,9 @@ Chi-squared
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Eravacycline
+</td>
 <td style="text-align:left;">
 ERV_dich_num
 </td>
@@ -1653,6 +1676,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+Delafloxacin
+</td>
+<td style="text-align:left;">
 DLX_dich_num
 </td>
 <td style="text-align:left;">
@@ -1687,6 +1713,9 @@ Fisher’s Exact Test
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Colistin
+</td>
 <td style="text-align:left;">
 CST_dich_num
 </td>
@@ -1723,6 +1752,9 @@ Chi-squared
 </tr>
 <tr>
 <td style="text-align:left;">
+Plazomicin
+</td>
+<td style="text-align:left;">
 PLZ_dich_num
 </td>
 <td style="text-align:left;">
@@ -1757,6 +1789,9 @@ Fisher’s Exact Test
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+Fosfomycin
+</td>
 <td style="text-align:left;">
 FOS_dich_num
 </td>
@@ -1793,6 +1828,7 @@ Chi-squared
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 
 
