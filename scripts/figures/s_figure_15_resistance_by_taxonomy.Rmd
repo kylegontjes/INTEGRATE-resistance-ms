@@ -124,7 +124,7 @@ fig_legend_image <- grid.grabExpr(draw(fig_legend),width = 2.16) %>% cowplot::pl
 p1 = grid.grabExpr(draw(A,heatmap_legend_list=fig_legend,heatmap_legend_side = "bottom",align_heatmap_legend = "heatmap_center"))
 p2 = grid.grabExpr(draw(B))
 
-A_fig <- cowplot::plot_grid(p1,NULL,rel_heights = c(1,0.98525),ncol=1,align = 'v')
+A_fig <- cowplot::plot_grid(p1,NULL,rel_heights = c(1,0.985275),ncol=1,align = 'v')
 
 # Combine different dimensions
 figure <- plot_grid(A_fig, p2, ncol = 2,rel_widths = c(0.6,1),labels = c("A","B"),hjust = -0.1)
