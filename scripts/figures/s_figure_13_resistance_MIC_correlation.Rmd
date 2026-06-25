@@ -38,20 +38,19 @@ df_202123<- df%>% subset(study == "2021-23")
 # Complete case analysis
 
 ```{r}
-paste0("Number of isolates: ", nrow(df_202123))
-paste0("Number of individuals without metadata: ", nrow(df_202123 %>% subset(is.na(participant_id))))  
+paste0("Number of isolates: ", nrow(df_202123)) 
 
-complete_case <- df_202123[df_202123 %>% select(resistance_vars) %>% is.na() %>% rowSums()  ==0  ,] 
+complete_case <- df_202123[df_202123 %>% select(resistance_vars %>% subset(!. %in% c("blbli_dich_num","FDC_dich_num"))) %>% is.na() %>% rowSums()  ==0  ,] 
 
-paste0("Number of considered individuals with complete resistance datafor this analysis: ", nrow(complete_case ))
+paste0("Number of considered individuals with complete MIC resistance data for this analysis: ", nrow(complete_case ))
 ```
 
 
 # Supplemental figure: Correlation matrix of MIC values
 
 ```{r,message=F,error=F,warning=F,fig.width=8.5,fig.height=6} 
-MIC_variables_no_blbli <- subset(MIC_variables,MIC_variables != 'blbli')
-MIC_correlation <-  cor(complete_case %>% select(paste0(MIC_variables_no_blbli,"_log_2")) , method="spearman",use='pairwise.complete.obs') %>% round(.,2)
+MIC_variables_no_blbli_cef <- subset(MIC_variables,!MIC_variables %in% c('blbli',"FDC"))
+MIC_correlation <-  cor(complete_case %>% select(paste0(MIC_variables_no_blbli_cef,"_log_2")) , method="spearman",use='pairwise.complete.obs') %>% round(.,2)
  
 rownames(MIC_correlation) <-  rownames(MIC_correlation) %>% gsub("_log_2","_dich_num",.) %>% recode_resistance_variables()
 colnames(MIC_correlation) <-  colnames(MIC_correlation) %>% gsub("_log_2","_dich_num",.) %>% recode_resistance_variables() 
@@ -70,17 +69,17 @@ fig_legend <- Legend(at = c(-1, -0.5, 0, 0.5, 1),labels = c("-1.00", "-0.50", "0
 fig_heatmap_image <- grid.grabExpr(draw(corr_heatmap))
 fig_legend_image <- grid.grabExpr(draw(fig_legend))
 
-corrfig <- plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="hv",rel_heights = c(1,.15))
+corrfig <- plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="hv",rel_heights = c(1,.125))
 ```
 
 # Print figure
 
-```{r,message=F,error=F,warning=F,fig.width=7.25,fig.height=7.25}
+```{r,message=F,error=F,warning=F,fig.width=7,fig.height=7}
 corrfig
 ```
 
 # Save figure
 
 ```{r}
-ggsave(plot = corrfig, filename = "./figures/s_figure_13_resistance_MIC_correlations.png", width = 7.25, height = 7.25, bg = "white",dpi=900)
+ggsave(plot = corrfig, filename = "./figures/s_figure_13_resistance_MIC_correlations.png", width = 7, height = 7, bg = "white", dpi=900)
 ```
