@@ -569,7 +569,8 @@ get_frequency_stats <- function(variable,df,name){
   tested <- df[[variable]] %>% subset(is.na(.)==F) %>% length
   not_tested <- nrow(df) - tested
   prop <- round(freq / tested * 100,2) 
-  data.frame(variable = variable,study = name,freq,tested,prop,not_tested)
+  renamed_variable <- recode_resistance_variables(variable)
+  data.frame(renamed_variable=renamed_variable,variable = variable,study = name,freq,tested,prop,not_tested)
 }
 
 get_frequency_stats_compare <- function(variable,df,comparitor){
