@@ -112,7 +112,7 @@ return(fig)
 A <- get_figure(df_201415,ST_order,resistance_vars = rev(resistance_vars %>% subset(!. %in% c("FDC_dich_num","OMC_dich_num","ERV_dich_num","DLX_dich_num","CT_dich_num"  ))),title = '2014-15')
 B <- get_figure(df_202123,ST_order,resistance_vars = rev(resistance_vars),title = '2021-23')
 
-fig_legend <- Legend(at = c(0, 0.2,0.4,0.6,0.8, 1),labels = c("0%", "25%", "40%", "60%", "80%","100%"),title = "Percentage of isolates",direction = "horizontal",col_fun = colorRamp2(breaks = c(0, 1),colors = c("white","red")), title_gp = gpar(fontsize = 10),labels_gp=gpar(fontsize=8),legend_width = unit(4.5, "cm"), title_position = 'topcenter')
+fig_legend <- Legend(at = c(0, 0.2,0.4,0.6,0.8, 1),labels = c("0%", "25%", "40%", "60%", "80%","100%"),title = "Resistance (%)",direction = "horizontal",col_fun = colorRamp2(breaks = c(0, 1),colors = c("white","red")), title_gp = gpar(fontsize = 10),labels_gp=gpar(fontsize=8),legend_width = unit(4.5, "cm"), title_position = 'topcenter')
   
 fig_legend_image <- grid.grabExpr(draw(fig_legend),width = 2.16) %>% cowplot::plot_grid(.,align = 'hv')
 ```
