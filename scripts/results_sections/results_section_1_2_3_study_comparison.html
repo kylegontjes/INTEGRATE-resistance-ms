@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-24" />
+<meta name="date" content="2026-06-25" />
 
 <title>Results section 1-3: Propsective surveillance of CRKP from California LTACHs and differences across studies</title>
 
@@ -578,7 +578,7 @@ display: none;
 surveillance of CRKP from California LTACHs and differences across
 studies</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-24</h4>
+<h4 class="date">2026-06-25</h4>
 
 </div>
 
@@ -680,8 +680,10 @@ loaded via a namespace (and not attached):
 df_201415 &lt;- df%&gt;% subset(study == &quot;2014-15&quot;)
 df_202123 &lt;- df%&gt;% subset(study == &quot;2021-23&quot;) </code></pre>
 </div>
-<div id="period-1-study" class="section level1">
-<h1>2014-15 (period 1) study</h1>
+<div id="surveillance-in-ltachs" class="section level1">
+<h1>Surveillance in LTACHs</h1>
+<div id="period-1-study" class="section level2">
+<h2>2014-15 (period 1) study</h2>
 <ol style="list-style-type: decimal">
 <li>From August 1 to 25 July 2025</li>
 </ol>
@@ -694,8 +696,8 @@ paste0(&quot;Number of specimens: &quot;,nrow(df_201415))</code></pre>
 paste0(&quot;Number of facilities: &quot;,length(unique(df_201415$hospital_location %&gt;% subset(.!=&#39;NA&#39;),na.rm=T)))</code></pre>
 <pre><code>[1] &quot;Number of facilities: 12&quot;</code></pre>
 </div>
-<div id="overview-of-clinical-specimens-from-2021-23" class="section level1">
-<h1>Overview of clinical specimens from 2021-23</h1>
+<div id="overview-of-clinical-specimens-from-2021-23" class="section level2">
+<h2>Overview of clinical specimens from 2021-23</h2>
 <ol style="list-style-type: decimal">
 <li>Per Leigh - Study was from June 7, 2021 to December 31, 2023.</li>
 </ol>
@@ -713,6 +715,10 @@ paste0(&quot;Minimum date: &quot;,min(INTEGRATE_full_dataest$collect_date,na.rm=
 <pre class="r"><code># Facilities
 paste0(&quot;Number of facilities: &quot;,length(unique(df_202123$hospital_location)))</code></pre>
 <pre><code>[1] &quot;Number of facilities: 13&quot;</code></pre>
+</div>
+</div>
+<div id="patient-characteristics" class="section level1">
+<h1>Patient characteristics</h1>
 <div id="integrate-metadata-availability" class="section level2">
 <h2>INTEGRATE metadata availability</h2>
 <pre class="r"><code>df_202123_no_metadata &lt;- df %&gt;% subset(is.na(hospital_location) &amp; study ==&#39;2021-23&#39;)
@@ -724,9 +730,8 @@ paste0(&quot;Number of isolates with metadata: &quot;,nrow(df_202123_w_metadata)
 <pre class="r"><code>paste0(&quot;Proportion of isolates with metadata: &quot;,round(nrow(df_202123_w_metadata)/ sum(nrow(df_202123_no_metadata),nrow(df_202123_w_metadata)),3))</code></pre>
 <pre><code>[1] &quot;Proportion of isolates with metadata: 1&quot;</code></pre>
 </div>
-</div>
-<div id="age-sex-differences" class="section level1">
-<h1>Age &amp; sex differences</h1>
+<div id="age-sex-differences" class="section level2">
+<h2>Age &amp; sex differences</h2>
 <ol style="list-style-type: decimal">
 <li>Preferentially select first isolate with metadata</li>
 </ol>
@@ -739,7 +744,7 @@ paste0(&quot;Total patients with metadata: &quot;,nrow(df_w_metadata))</code></p
 <pre><code>[1] &quot;Total patients with metadata: 708&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Prop patients with metadata: &quot;,nrow(df_w_metadata) / nrow(df) * 100)</code></pre>
 <pre><code>[1] &quot;Prop patients with metadata: 80.3632236095346&quot;</code></pre>
-<pre class="r"><code>convert_tableone_into_df(dataset = df_w_metadata, vars = c(&quot;participant_age_at_first_enc&quot;,&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;participant_ethnicity&quot;,&quot;non_hispanic_white&quot;), factorVars = c(&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;participant_ethnicity&quot;,&quot;non_hispanic_white&quot;),strata=&#39;study&#39;,outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;)) %&gt;% favorite_kable</code></pre>
+<pre class="r"><code>convert_tableone_into_df(dataset = df_w_metadata, vars = c(&quot;participant_age_at_first_enc&quot;,&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;participant_ethnicity&quot;,&quot;non_hispanic_white&quot;), factorVars = c(&quot;participant_sex&quot;,&quot;participant_race&quot;,&quot;participant_ethnicity&quot;,&quot;non_hispanic_white&quot;),strata=&#39;study&#39;,outcome_names = c(&quot;2014-15&quot;,&quot;2021-23&quot;),nonnormal_vars = &#39;participant_age_at_first_enc&#39;) %&gt;% favorite_kable</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -763,18 +768,19 @@ Test
 <tbody>
 <tr>
 <td style="text-align:left;">
-participant_age_at_first_enc (mean (SD))
+participant_age_at_first_enc (median [IQR])
 </td>
 <td style="text-align:left;">
-71.14 (14.82)
+73.00 [64.00, 82.00]
 </td>
 <td style="text-align:left;">
-67.19 (13.99)
+69.00 [61.00, 77.00]
 </td>
 <td style="text-align:left;">
 &lt;0.001
 </td>
 <td style="text-align:left;">
+nonnorm
 </td>
 </tr>
 <tr>
@@ -950,6 +956,7 @@ NaN
 median_IQR(&quot;participant_age_at_first_enc&quot;,df_w_metadata)</code></pre>
 <pre><code>                      Variable overall study_201415 study_202123       pvalue
 1 participant_age_at_first_enc 71 (17)      73 (18)      69 (16) 8.792819e-05</code></pre>
+</div>
 <div id="length-of-stay-data" class="section level2">
 <h2>Length of stay data</h2>
 <ol style="list-style-type: decimal">
@@ -967,11 +974,8 @@ median_IQR(&quot;participant_age_at_first_enc&quot;,df_w_metadata)</code></pre>
 <pre><code>            Variable overall study_201415 study_202123       pvalue
 1 los_before_culture 25 (47)      20 (38)      32 (60) 4.842353e-06</code></pre>
 </div>
-</div>
-<div id="frequency-differences" class="section level1">
-<h1>Frequency differences</h1>
-<div id="count" class="section level2">
-<h2>Count</h2>
+<div id="hospital-differences" class="section level2">
+<h2>Hospital differences</h2>
 <pre class="r"><code>paste0(&quot;Differences by study&quot;)</code></pre>
 <pre><code>[1] &quot;Differences by study&quot;</code></pre>
 <pre class="r"><code>hospital_study_table &lt;- table(df_w_metadata$study,df_w_metadata$hospital_location) 
@@ -1041,7 +1045,7 @@ hospital_study_table_no_par</code></pre>
     replicates)
 
 data:  .
-X-squared = 11.105, df = NA, p-value = 0.4358</code></pre>
+X-squared = 11.105, df = NA, p-value = 0.4288</code></pre>
 </div>
 </div>
 <div id="source-data" class="section level1">
@@ -1068,7 +1072,7 @@ source_table  </code></pre>
 data:  .
 p-value = 0.0004998
 alternative hypothesis: two.sided</code></pre>
-<pre class="r"><code>convert_tableone_into_df(dataset=df ,vars = c(&quot;source_simplified&quot;,&quot;blood&quot;,&quot;other&quot;,&quot;resp&quot;,&quot;urine&quot;,&quot;wound&quot;),strata=&#39;study&#39;,outcome_names = c(&#39;2014-15&#39;,&quot;2021-23&quot;),factorVars = c(&quot;source_simplified&quot;,&quot;blood&quot;,&quot;other&quot;,&quot;resp&quot;,&quot;urine&quot;,&quot;wound&quot;),exact = c(&quot;other&quot;)) %&gt;% favorite_kable()</code></pre>
+<pre class="r"><code>convert_tableone_into_df(dataset=df ,vars = c(&quot;source_simplified&quot;,&quot;blood&quot;,&quot;other&quot;,&quot;resp&quot;,&quot;urine&quot;,&quot;wound&quot;),strata=&#39;study&#39;,outcome_names = c(&#39;2014-15&#39;,&quot;2021-23&quot;),factorVars = c(&quot;source_simplified&quot;,&quot;blood&quot;,&quot;other&quot;,&quot;resp&quot;,&quot;urine&quot;,&quot;wound&quot;),exact = c(&quot;source_simplified&quot;,&quot;other&quot;)) %&gt;% favorite_kable()</code></pre>
 <table style="width:100%; color: black; margin-left: auto; margin-right: auto;" class="table table-striped table-hover table-condensed table-responsive">
 <thead>
 <tr>
@@ -1099,9 +1103,10 @@ source_simplified (%)
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-&lt;0.001
+NA
 </td>
 <td style="text-align:left;">
+exact
 </td>
 </tr>
 <tr>

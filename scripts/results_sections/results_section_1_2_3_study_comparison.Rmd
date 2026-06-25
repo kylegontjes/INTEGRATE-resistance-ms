@@ -37,7 +37,9 @@ df_201415 <- df%>% subset(study == "2014-15")
 df_202123 <- df%>% subset(study == "2021-23") 
 ```
 
-# 2014-15 (period 1) study
+# Surveillance in LTACHs
+
+## 2014-15 (period 1) study
 
 1. From August 1 to 25 July 2025
 
@@ -50,7 +52,7 @@ paste0("Number of patients: ",length(unique(df_201415$participant_id)))
 paste0("Number of facilities: ",length(unique(df_201415$hospital_location %>% subset(.!='NA'),na.rm=T)))
 ``` 
 
-# Overview of clinical specimens from 2021-23
+## Overview of clinical specimens from 2021-23
 
 1. Per Leigh - Study was from June 7, 2021 to December 31, 2023.
 
@@ -68,6 +70,8 @@ paste0("Maximum date: ",max(INTEGRATE_full_dataest$collect_date,na.rm=T))
 paste0("Number of facilities: ",length(unique(df_202123$hospital_location)))
 ```
 
+# Patient characteristics
+
 ## INTEGRATE metadata availability
 
 ```{r}
@@ -79,7 +83,7 @@ paste0("Number of isolates with metadata: ",nrow(df_202123_w_metadata))
 paste0("Proportion of isolates with metadata: ",round(nrow(df_202123_w_metadata)/ sum(nrow(df_202123_no_metadata),nrow(df_202123_w_metadata)),3))
 ```
 
-# Age & sex differences
+## Age & sex differences
 
 1. Preferentially select first isolate with metadata
 
@@ -91,7 +95,7 @@ df_w_metadata$non_hispanic_white <- df_w_metadata$participant_race=="Caucasian" 
 paste0("Total patients with metadata: ",nrow(df_w_metadata))
 paste0("Prop patients with metadata: ",nrow(df_w_metadata) / nrow(df) * 100)
 
-convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","participant_ethnicity","non_hispanic_white"), factorVars = c("participant_sex","participant_race","participant_ethnicity","non_hispanic_white"),strata='study',outcome_names = c("2014-15","2021-23")) %>% favorite_kable
+convert_tableone_into_df(dataset = df_w_metadata, vars = c("participant_age_at_first_enc","participant_sex","participant_race","participant_ethnicity","non_hispanic_white"), factorVars = c("participant_sex","participant_race","participant_ethnicity","non_hispanic_white"),strata='study',outcome_names = c("2014-15","2021-23"),nonnormal_vars = 'participant_age_at_first_enc') %>% favorite_kable
          
 paste0("Wilcox test for age")                  
 median_IQR <- function(variable,df){
@@ -123,8 +127,7 @@ paste0("Wilcox test for length of stay")
 median_IQR("los_before_culture",df_w_metadata)
 ```
 
-# Frequency differences
-## Count
+## Hospital differences 
 
 ```{r}
 paste0("Differences by study")
@@ -155,7 +158,7 @@ source_table <- table(df$study,df$source_simplified)
 source_table  
 source_table %>% fisher.test(simulate.p.value = T)
 
-convert_tableone_into_df(dataset=df ,vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c('2014-15',"2021-23"),factorVars = c("source_simplified","blood","other","resp","urine","wound"),exact = c("other")) %>% favorite_kable()
+convert_tableone_into_df(dataset=df ,vars = c("source_simplified","blood","other","resp","urine","wound"),strata='study',outcome_names = c('2014-15',"2021-23"),factorVars = c("source_simplified","blood","other","resp","urine","wound"),exact = c("source_simplified","other")) %>% favorite_kable()
 
 paste0("Isolates with other source declaration: ")
 df %>% subset(source_simplified == "other") %>% .$source_site
