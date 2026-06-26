@@ -123,7 +123,16 @@ E <- ggplot(frequency_per_ST,
            y = ST,
            fill = perc_participants)) +
     geom_tile() +
-    facet_wrap(~study) + geom_text(aes(label = round(perc_participants,1)),color='black',size = 2.75) + theme_bw_me + xlab("Number of contributed isolates") + ylab("Sequence type (ST)") + scale_fill_gradient(breaks = c(0,20,40,60,80,100),low = 'white',high='red',name = 'Percentage of patients',limits = c(0,100))
+    facet_wrap(~study) + geom_text(aes(label = round(perc_participants,1)),color='black',size = 2.75) + theme_bw_me + xlab("Number of contributed isolates") + ylab("Sequence type (ST)") + 
+  scale_fill_gradient(
+      breaks = c(0,20,40,60,80,100),
+      labels = c("0%", "25%", "40%", "60%", "80%","100%"),
+      low = 'white',high='red',
+      name = 'Percentage of patients',
+      limits = c(0,100),
+      guide = guide_colorbar( barwidth = unit(2, "in"),
+      barheight = unit(0.2, "in"))) + theme(legend.title.position = 'top',
+                                       legend.title = element_text(hjust = 0.5),legend.box.spacing = unit(0, "pt") )
 ```
 
 
@@ -189,10 +198,9 @@ f <- ggplot(data = diffs ,aes(x = value)) + geom_histogram(fill='black',bins = 5
 AB <- cowplot::plot_grid(A,B,rel_widths = c(1,0.66),labels = "AUTO",ncol=2)
 CD <- cowplot::plot_grid(C,D,rel_widths = c(1,1),labels = c("C","D"),ncol=2)
 CDF <-  cowplot::plot_grid(CD,f,rel_widths = c(1.25,1),labels = c("","F"),ncol=2)
-
-E_legend <- cowplot::get_legend(E) %>% cowplot::plot_grid()
-E_fig <- cowplot::plot_grid(E + theme(legend.position= 'none'),E_legend,ncol=1,rel_heights = c(1,0.07))
-figure <-  cowplot::plot_grid(AB,CDF,E_fig,ncol=1,rel_heights = c(1,1,2.45),labels = c("","","E")) 
+ 
+E_fig <- cowplot::plot_grid(E,ncol=1,rel_heights = 1)
+figure <-  cowplot::plot_grid(AB,CDF,E_fig,ncol=1,rel_heights = c(1,1,2.55),labels = c("","","E")) 
 figure
 ```
 
