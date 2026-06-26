@@ -102,7 +102,7 @@ fig <- ComplexHeatmap::Heatmap(df_wide_mat,
   column_gap = unit(0, "mm"),
   row_gap = unit(0, "mm"),
   show_heatmap_legend = FALSE,
-  height =   nrow(df_wide_mat)*unit(5, "mm"),
+  height =   nrow(df_wide_mat)*unit(4, "mm"),
   width =   ncol(df_wide_mat)*unit(5, "mm")
     
 )
@@ -119,19 +119,21 @@ fig_legend_image <- grid.grabExpr(draw(fig_legend),width = 2.16) %>% cowplot::pl
 
 # Curate and save figure
 
-```{r,fig.width=7.2,fig.height=9.25}
+```{r,fig.width=6.888,fig.height=7.75}
 # Grab graphical expressions 
 p1 = grid.grabExpr(draw(A,heatmap_legend_list=fig_legend,heatmap_legend_side = "bottom",align_heatmap_legend = "heatmap_center"))
 p2 = grid.grabExpr(draw(B))
 
-A_fig <- cowplot::plot_grid(p1,NULL,rel_heights = c(1,0.985275),ncol=1,align = 'v')
+A_fig <- cowplot::plot_grid(p1,NULL,rel_heights = c(1,0.85),ncol=1,align = 'v')
 
 # Combine different dimensions
 figure <- plot_grid(A_fig, p2, ncol = 2,rel_widths = c(0.6,1),labels = c("A","B"),hjust = -0.1)
 
 figure
+``` 
 
 # Save
+```{r} 
+ggsave(filename = "./figures/s_figure_15_resistance_by_taxonomy.png",figure,width=6.888,height=7.75,units = 'in',dpi=900,bg='white')
+```
 
-ggsave(filename = "./figures/s_figure_15_resistance_by_taxonomy.png",figure,width=7.2,height=9.25,units = 'in',dpi=900,bg='white')
-``` 

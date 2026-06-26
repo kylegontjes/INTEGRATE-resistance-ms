@@ -105,14 +105,14 @@ fig_legend <- Legend(at = c(0, 25, 50, 75, 100),labels = c("0%", "25%", "50%", "
 fig_heatmap_image <- grid.grabExpr(draw(co_occurrence_heatmap))
 fig_legend_image <- grid.grabExpr(draw(fig_legend))
 
-figure <- plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="hv",rel_heights = c(1,.16))  
+figure <- plot_grid(fig_heatmap_image,fig_legend_image,ncol=1,axis="l", align="hv",rel_heights = c(1,.13))  
 ```
 
 # Print & Save
-```{r,message=F,error=F,warning=F,fig.width=9.75,fig.height=4.875}
+```{r,message=F,error=F,warning=F,fig.width=9.6,fig.height=4.8}
 figure
 ```
 
 ```{r}
-ggsave(plot = figure, filename = "./figures/s_figure_14_cross_resistance.png", width = 9.75, height = 4.875, bg = "white",dpi=900)
+ggsave(plot = figure, filename = "./figures/s_figure_14_cross_resistance.png", width = 9.6, height = 4.8, bg = "white",dpi=900)
 ```
