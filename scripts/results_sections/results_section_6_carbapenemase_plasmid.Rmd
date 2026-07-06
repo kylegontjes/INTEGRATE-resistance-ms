@@ -58,7 +58,7 @@ df <- left_join(df,carbapenemase_content)
 ```{r} 
 KPC_plasmid_matrix <- readRDS("./data/carbapenemase_content/carbapenemase_plasmid_matrix.RDS") %>% subset(rownames(.) %in% df$isolate_no)
 df <- left_join(df,KPC_plasmid_matrix %>% mutate(isolate_no = rownames(.)))
-mobtyper_mat <- readRDS("./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.RDS") %>% subset(isolate_no %in% df$isolate_no)
+mobtyper_mat <- readRDS("./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.RDS") %>% subset(isolate_no %in% df$isolate_no) 
 ```
 
 # Descriptive statistics 
@@ -95,3 +95,24 @@ convert_tableone_into_df(dataset=df %>% subset(ST=='ST258' & carbapenemase_plasm
 
 table(df %>% subset(carbapenemase_plasmid != "No carbapenemase" & ST=="ST258") %>% .$carbapenemase_plasmid, df %>% subset(carbapenemase_plasmid != "No carbapenemase" & ST=="ST258") %>% .$study) %>% fisher.test(simulate.p.value = T)
 ```
+
+# Identify the replicon types per carbapenemase-containing plasmids
+```{r}
+plasmid_clusters <- colnames(KPC_plasmid_matrix %>% select_if(colSums(.)>0) ) %>% subset(!. %in% c("Chromosome","No carbapenemase")) %>% sort
+
+df_split <-  df %>%
+  separate_rows(carbapenemase_plasmid, sep = " & ")  
+
+get_replicon_data_patterns <- function(plasmid,df,mobtyper_mat){
+ harboring_isolates <- df %>% subset(carbapenemase_plasmid == plasmid)
+ mobtyper_subset <- mobtyper_mat %>% subset(primary_cluster_id == plasmid & isolate_no %in% harboring_isolates$isolate_no)
+ table(mobtyper_subset$`rep_type(s)`,dnn = plasmid) %>% sort
+}
+
+sapply(plasmid_clusters,get_replicon_data_patterns,df = df_split, mobtyper_mat=mobtyper_mat) 
+```
+
+```{r}
+
+```
+

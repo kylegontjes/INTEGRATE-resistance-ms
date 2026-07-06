@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-24" />
+<meta name="date" content="2026-07-06" />
 
 <title>Results section 6: Carbapenemase plasmids</title>
 
@@ -577,7 +577,7 @@ display: none;
 <h1 class="title toc-ignore">Results section 6: Carbapenemase
 plasmids</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-24</h4>
+<h4 class="date">2026-07-06</h4>
 
 </div>
 
@@ -631,7 +631,7 @@ Sys.info()</code></pre>
                                                                                             version 
 &quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
                                                                                            nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                                   &quot;msla0572.local&quot; 
                                                                                             machine 
                                                                                            &quot;x86_64&quot; 
                                                                                               login 
@@ -707,7 +707,7 @@ df &lt;- left_join(df,carbapenemase_content)</code></pre>
 <h1>Load plasmid data</h1>
 <pre class="r"><code>KPC_plasmid_matrix &lt;- readRDS(&quot;./data/carbapenemase_content/carbapenemase_plasmid_matrix.RDS&quot;) %&gt;% subset(rownames(.) %in% df$isolate_no)
 df &lt;- left_join(df,KPC_plasmid_matrix %&gt;% mutate(isolate_no = rownames(.)))
-mobtyper_mat &lt;- readRDS(&quot;./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.RDS&quot;) %&gt;% subset(isolate_no %in% df$isolate_no)</code></pre>
+mobtyper_mat &lt;- readRDS(&quot;./data/carbapenemase_content/mobtyper_merged_w_carbapenemase_data.RDS&quot;) %&gt;% subset(isolate_no %in% df$isolate_no) </code></pre>
 </div>
 <div id="descriptive-statistics" class="section level1">
 <h1>Descriptive statistics</h1>
@@ -1738,6 +1738,190 @@ data:  .
 p-value = 0.0004998
 alternative hypothesis: two.sided</code></pre>
 </div>
+</div>
+<div id="identify-the-replicon-types-per-carbapenemase-containing-plasmids" class="section level1">
+<h1>Identify the replicon types per carbapenemase-containing
+plasmids</h1>
+<pre class="r"><code>plasmid_clusters &lt;- colnames(KPC_plasmid_matrix %&gt;% select_if(colSums(.)&gt;0) ) %&gt;% subset(!. %in% c(&quot;Chromosome&quot;,&quot;No carbapenemase&quot;)) %&gt;% sort
+
+df_split &lt;-  df %&gt;%
+  separate_rows(carbapenemase_plasmid, sep = &quot; &amp; &quot;)  
+
+get_replicon_data_patterns &lt;- function(plasmid,df,mobtyper_mat){
+ harboring_isolates &lt;- df %&gt;% subset(carbapenemase_plasmid == plasmid)
+ mobtyper_subset &lt;- mobtyper_mat %&gt;% subset(primary_cluster_id == plasmid &amp; isolate_no %in% harboring_isolates$isolate_no)
+ table(mobtyper_subset$`rep_type(s)`,dnn = plasmid) %&gt;% sort
+}
+
+sapply(plasmid_clusters,get_replicon_data_patterns,df = df_split, mobtyper_mat=mobtyper_mat) </code></pre>
+<pre><code>$AA002
+IncL/M 
+     1 
+
+$AA018
+AA018
+ColRNAI_rep_cluster_1857,IncFIB,IncFII,rep_cluster_2183 
+                                                      1 
+                                IncFII,rep_cluster_2183 
+                                                      1 
+                         IncFIB,IncFII,rep_cluster_2183 
+                                                     96 
+
+$AA029
+IncR 
+   1 
+
+$AA031
+IncR 
+   7 
+
+$AA038
+AA038
+ColRNAI_rep_cluster_1857,IncX3                          IncX3 
+                             7                             27 
+
+$AA274
+AA274
+                                                                                   - 
+                                                                                   1 
+                                              ColRNAI_rep_cluster_1857,IncFIB,IncFII 
+                                                                                   1 
+                                                                              IncFIB 
+                                                                                   1 
+                                                                  IncFIB,IncFII,IncR 
+                                                                                   1 
+                                                 IncFIB,IncFII,rep_cluster_2183,IncR 
+                                                                                   1 
+                                     IncFIB,IncFII,rep_cluster_2183,rep_cluster_1418 
+                                                                                   1 
+                                         ColRNAI_rep_cluster_1857,IncFIB,IncFII,IncR 
+                                                                                   2 
+                        ColRNAI_rep_cluster_1857,IncFIB,IncFII,rep_cluster_2183,IncR 
+                                                                                   2 
+       ColRNAI_rep_cluster_1857,IncFIB,IncFII,rep_cluster_2183,IncR,rep_cluster_1418 
+                                                                                   3 
+                              IncFIB,IncFII,IncFII,rep_cluster_2183,rep_cluster_1418 
+                                                                                   5 
+                                               IncFIB,IncFII,IncFII,rep_cluster_2183 
+                                                                                   7 
+ColRNAI_rep_cluster_1857,IncFIB,IncFII,IncFII,rep_cluster_2183,IncR,rep_cluster_1418 
+                                                                                  10 
+     ColRNAI_rep_cluster_1857,IncFIB,IncFII,IncFII,rep_cluster_2183,rep_cluster_1418 
+                                                                                  10 
+                                                      IncFIB,IncFII,rep_cluster_2183 
+                                                                                  13 
+                      ColRNAI_rep_cluster_1857,IncFIB,IncFII,IncFII,rep_cluster_2183 
+                                                                                  24 
+
+$AA275
+AA275
+IncFIB,IncFII,rep_cluster_2183,IncFII,rep_cluster_2183 
+                                                     1 
+                 IncFIB,IncFII,IncFII,rep_cluster_2183 
+                                                     2 
+                   IncFIB,IncFII,rep_cluster_2183,IncR 
+                                                     3 
+                        IncFIB,IncFII,rep_cluster_2183 
+                                                    25 
+
+$AA277
+AA277
+IncFIB,IncFIB,IncFII,rep_cluster_2183        IncFIB,IncFII,rep_cluster_2183 
+                                    1                                     1 
+                        IncFIB,IncFII 
+                                    4 
+
+$AA354
+IncR 
+   1 
+
+$AA356
+AA356
+                                                      ColRNAI_rep_cluster_1857,IncR 
+                                                                                  1 
+ColRNAI_rep_cluster_1987,ColRNAI_rep_cluster_1987,rep_cluster_2335,rep_cluster_2358 
+                                                                                  1 
+                                                                   rep_cluster_2335 
+                                                                                  3 
+                                                                                  - 
+                                                                                 46 
+                                                           ColRNAI_rep_cluster_1857 
+                                                                                 81 
+
+$AA357
+AA357
+IncFIA,rep_cluster_1418                       -            IncFIA,IncX3 
+                      1                       5                       8 
+                 IncFIA 
+                     32 
+
+$AA359
+- 
+1 
+
+$AA405
+AA405
+                         IncFIB IncFIB,IncHI1B,rep_cluster_1254 
+                              1                               9 
+
+$AA406
+IncFIB,IncHI1B,rep_cluster_1418 
+                              1 
+
+$AA434
+AA434
+                                               - 
+                                               2 
+                                          IncFII 
+                                               2 
+                                   IncFIA,IncFII 
+                                               3 
+ColRNAI_rep_cluster_1857,IncFII,rep_cluster_1418 
+                                               4 
+
+$AA552
+AA552
+ColRNAI_rep_cluster_1857,IncN                          IncN 
+                            6                            26 
+
+$AA627
+IncC 
+   4 
+
+$AA860
+AA860
+      IncC IncC,IncI2 
+         1          1 
+
+$AA941
+ColRNAI_rep_cluster_1857 
+                       1 
+
+$AB193
+ColRNAI_rep_cluster_1857,IncR,rep_cluster_1418 
+                                             1 
+
+$AB978
+AB978
+ColRNAI_rep_cluster_1857,rep_cluster_1367 
+                                        2 
+                         rep_cluster_1367 
+                                       11 
+
+$AC313
+rep_cluster_1195 
+               1 
+
+$AD548
+AD548
+ColRNAI_rep_cluster_1857,rep_cluster_1418 
+                                        1 
+                    IncN,rep_cluster_1418 
+                                        2 
+                         rep_cluster_1418 
+                                       55 
+                                        - 
+                                       85 </code></pre>
 </div>
 
 

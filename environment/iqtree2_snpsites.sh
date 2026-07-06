@@ -1,1 +1,0 @@
-conda create -y -c bioconda -n iqtree_3_0_1 --strict-channel-priority iqtree snp-sites
