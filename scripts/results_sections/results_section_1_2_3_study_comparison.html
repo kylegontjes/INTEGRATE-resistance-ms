@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kyle Gontjes" />
 
-<meta name="date" content="2026-06-25" />
+<meta name="date" content="2026-07-14" />
 
 <title>Results section 1-3: Propsective surveillance of CRKP from California LTACHs and differences across studies</title>
 
@@ -578,7 +578,7 @@ display: none;
 surveillance of CRKP from California LTACHs and differences across
 studies</h1>
 <h4 class="author">Kyle Gontjes</h4>
-<h4 class="date">2026-06-25</h4>
+<h4 class="date">2026-07-14</h4>
 
 </div>
 
@@ -617,26 +617,26 @@ source(&quot;./lib/common_functions.R&quot;)
 
 # Print environment
 Sys.info()</code></pre>
-<pre><code>                                                                                            sysname 
-                                                                                           &quot;Darwin&quot; 
-                                                                                            release 
-                                                                                           &quot;25.5.0&quot; 
-                                                                                            version 
-&quot;Darwin Kernel Version 25.5.0: Mon Apr 27 20:31:18 PDT 2026; root:xnu-12377.121.6~2/RELEASE_X86_64&quot; 
-                                                                                           nodename 
-                                                                      &quot;msla0572.wifi.med.umich.edu&quot; 
-                                                                                            machine 
-                                                                                           &quot;x86_64&quot; 
-                                                                                              login 
-                                                                                             &quot;root&quot; 
-                                                                                               user 
-                                                                                         &quot;kgontjes&quot; 
-                                                                                     effective_user 
-                                                                                         &quot;kgontjes&quot; </code></pre>
+<pre><code>                                                                                             sysname 
+                                                                                            &quot;Darwin&quot; 
+                                                                                             release 
+                                                                                            &quot;25.5.0&quot; 
+                                                                                             version 
+&quot;Darwin Kernel Version 25.5.0: Tue Jun  9 22:26:23 PDT 2026; root:xnu-12377.121.10~1/RELEASE_X86_64&quot; 
+                                                                                            nodename 
+                                                                       &quot;msla0572.wifi.med.umich.edu&quot; 
+                                                                                             machine 
+                                                                                            &quot;x86_64&quot; 
+                                                                                               login 
+                                                                                              &quot;root&quot; 
+                                                                                                user 
+                                                                                          &quot;kgontjes&quot; 
+                                                                                      effective_user 
+                                                                                          &quot;kgontjes&quot; </code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 4.6.0 (2026-04-24)
+<pre><code>R version 4.6.1 (2026-06-24)
 Platform: x86_64-apple-darwin20
-Running under: macOS Tahoe 26.5.1
+Running under: macOS Tahoe 26.5.2
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.6-x86_64/Resources/lib/libRblas.0.dylib 
@@ -660,17 +660,17 @@ other attached packages:
 loaded via a namespace (and not attached):
  [1] sass_0.4.10        generics_0.1.4     xml2_1.5.2         lattice_0.22-9    
  [5] stringi_1.8.7      hms_1.1.4          digest_0.6.39      magrittr_2.0.5    
- [9] evaluate_1.0.5     grid_4.6.0         timechange_0.4.0   RColorBrewer_1.1-3
+ [9] evaluate_1.0.5     grid_4.6.1         timechange_0.4.0   RColorBrewer_1.1-3
 [13] fastmap_1.2.0      Matrix_1.7-5       jsonlite_2.0.0     DBI_1.3.0         
 [17] survival_3.8-6     viridisLite_0.4.3  scales_1.4.0       textshaping_1.0.5 
 [21] jquerylib_0.1.4    cli_3.6.6          mitools_2.4        rlang_1.2.0       
-[25] splines_4.6.0      withr_3.0.2        cachem_1.1.0       yaml_2.3.12       
-[29] otel_0.2.0         tools_4.6.0        tzdb_0.5.0         hues_0.2.0        
+[25] splines_4.6.1      withr_3.0.2        cachem_1.1.0       yaml_2.3.12       
+[29] otel_0.2.0         tools_4.6.1        tzdb_0.5.0         hues_0.2.0        
 [33] vctrs_0.7.3        R6_2.6.1           lifecycle_1.0.5    pkgconfig_2.0.3   
 [37] pillar_1.11.1      bslib_0.10.0       gtable_0.3.6       Rcpp_1.1.1-1.1    
 [41] glue_1.8.1         systemfonts_1.3.2  xfun_0.57          tidyselect_1.2.1  
 [45] rstudioapi_0.18.0  farver_2.1.2       htmltools_0.5.9    survey_4.5        
-[49] rmarkdown_2.31     svglite_2.2.2      compiler_4.6.0     S7_0.2.2          
+[49] rmarkdown_2.31     svglite_2.2.2      compiler_4.6.1     S7_0.2.2          
 [53] gridtext_0.1.6    </code></pre>
 </div>
 <div id="load-data" class="section level1">
@@ -721,14 +721,13 @@ paste0(&quot;Number of facilities: &quot;,length(unique(df_202123$hospital_locat
 <h1>Patient characteristics</h1>
 <div id="integrate-metadata-availability" class="section level2">
 <h2>INTEGRATE metadata availability</h2>
-<pre class="r"><code>df_202123_no_metadata &lt;- df %&gt;% subset(is.na(hospital_location) &amp; study ==&#39;2021-23&#39;)
-df_202123_w_metadata &lt;- df %&gt;% subset(is.na(hospital_location)==F &amp; study ==&#39;2021-23&#39;)
-df_w_metadata &lt;- df %&gt;% subset(is.na(hospital_location)==F)
+<pre class="r"><code>df_202123_no_metadata &lt;- df %&gt;% subset(has_full_metadata==F &amp; study ==&#39;2021-23&#39;)
+df_202123_w_metadata &lt;- df %&gt;% subset(has_full_metadata==T &amp; study ==&#39;2021-23&#39;) 
 
 paste0(&quot;Number of isolates with metadata: &quot;,nrow(df_202123_w_metadata))</code></pre>
-<pre><code>[1] &quot;Number of isolates with metadata: 507&quot;</code></pre>
+<pre><code>[1] &quot;Number of isolates with metadata: 484&quot;</code></pre>
 <pre class="r"><code>paste0(&quot;Proportion of isolates with metadata: &quot;,round(nrow(df_202123_w_metadata)/ sum(nrow(df_202123_no_metadata),nrow(df_202123_w_metadata)),3))</code></pre>
-<pre><code>[1] &quot;Proportion of isolates with metadata: 1&quot;</code></pre>
+<pre><code>[1] &quot;Proportion of isolates with metadata: 0.955&quot;</code></pre>
 </div>
 <div id="age-sex-differences" class="section level2">
 <h2>Age &amp; sex differences</h2>
@@ -1045,7 +1044,7 @@ hospital_study_table_no_par</code></pre>
     replicates)
 
 data:  .
-X-squared = 11.105, df = NA, p-value = 0.4288</code></pre>
+X-squared = 11.105, df = NA, p-value = 0.4358</code></pre>
 </div>
 </div>
 <div id="source-data" class="section level1">

@@ -75,9 +75,8 @@ paste0("Number of facilities: ",length(unique(df_202123$hospital_location)))
 ## INTEGRATE metadata availability
 
 ```{r}
-df_202123_no_metadata <- df %>% subset(is.na(hospital_location) & study =='2021-23')
-df_202123_w_metadata <- df %>% subset(is.na(hospital_location)==F & study =='2021-23')
-df_w_metadata <- df %>% subset(is.na(hospital_location)==F)
+df_202123_no_metadata <- df %>% subset(has_full_metadata==F & study =='2021-23')
+df_202123_w_metadata <- df %>% subset(has_full_metadata==T & study =='2021-23') 
 
 paste0("Number of isolates with metadata: ",nrow(df_202123_w_metadata))
 paste0("Proportion of isolates with metadata: ",round(nrow(df_202123_w_metadata)/ sum(nrow(df_202123_no_metadata),nrow(df_202123_w_metadata)),3))
